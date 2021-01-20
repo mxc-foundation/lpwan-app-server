@@ -354,7 +354,12 @@
       }
     },
     "appserver_serves_uiVerifyEmailResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",

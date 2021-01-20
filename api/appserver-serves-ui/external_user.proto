@@ -72,6 +72,7 @@ message VerifyEmailRequest {
 }
 
 message VerifyEmailResponse {
+    string status = 1;
 }
 
 message ConfirmBindingEmailRequest {

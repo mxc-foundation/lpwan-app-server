@@ -116,7 +116,7 @@ type Store interface {
 	// GetExternalUsersByUserID gets all external users bound with userID
 	GetExternalUsersByUserID(ctx context.Context, userID int64) ([]ExternalUser, error)
 	// AddExternalUserLogin inserts new external id and user id relation
-	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
+	AddExternalUserLogin(ctx context.Context, extUser ExternalUser) error
 	// DeleteExternalUserLogin removes binding relation between external account and supernode account
 	DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error
 	// SetExternalUsername updates external user's username
@@ -125,8 +125,8 @@ type Store interface {
 	GetExternalUserByToken(ctx context.Context, service, token string) (ExternalUser, error)
 	// GetExternalUserByUsername returns external user with given external username
 	GetExternalUserByUsername(ctx context.Context, service, externalUsername string) (ExternalUser, error)
-	// SetExternalUserID updates external id of an external user
-	SetExternalUserID(ctx context.Context, extUser ExternalUser) error
+	// ConfirmExternalUserID updates external id of an external user and set verification to empty string
+	ConfirmExternalUserID(ctx context.Context, extUser ExternalUser) error
 
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices

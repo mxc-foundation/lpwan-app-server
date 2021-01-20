@@ -22,6 +22,7 @@ type ExternalUser struct {
 	ServiceName      string `db:"service"`
 	ExternalUserID   string `db:"external_id"`
 	ExternalUsername string `db:"external_username"`
+	Verification     string `db:"verification"`
 }
 
 func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret string) (*pb.AuthenticateWeChatUserResponse, error) {
@@ -174,7 +175,12 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		}
 
 		// Bind wechat account with supernode account
-		if err := a.store.AddExternalUserLogin(ctx, cred.Service, u.ID, cred.ExternalUserID, cred.ExternalUsername); err != nil {
+		if err := a.store.AddExternalUserLogin(ctx, ExternalUser{
+			UserID:           u.ID,
+			ServiceName:      cred.Service,
+			ExternalUserID:   cred.ExternalUserID,
+			ExternalUsername: cred.ExternalUsername,
+		}); err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
@@ -225,7 +231,12 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 		}
 
 		// bind new user with wechat account
-		if err := a.store.AddExternalUserLogin(ctx, cred.Service, u.ID, cred.ExternalUserID, cred.ExternalUsername); err != nil {
+		if err := a.store.AddExternalUserLogin(ctx, ExternalUser{
+			UserID:           u.ID,
+			ServiceName:      cred.Service,
+			ExternalUserID:   cred.ExternalUserID,
+			ExternalUsername: cred.ExternalUsername,
+		}); err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
@@ -285,10 +296,24 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
+	// check whether email registered in shopify store
+	_, err = a.getShopifyCustomerIDFromEmail(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+
 	// check whether external email already exist
-	_, err = a.store.GetExternalUserByUsername(ctx, auth.SHOPIFY, req.Email)
+	extUser, err := a.store.GetExternalUserByUsername(ctx, auth.SHOPIFY, req.Email)
 	if err == nil {
-		return nil, status.Errorf(codes.AlreadyExists, "email already exists")
+		if extUser.Verification == "" {
+			return nil, status.Errorf(codes.AlreadyExists, "email already exists")
+		}
+		// email exists, but haven't confirmed, just need to resend security token
+		// send token to given email address
+		if err = a.mailer.SendVerifyEmailConfirmation(req.Email, req.Language, extUser.Verification); err != nil {
+			return nil, status.Errorf(codes.Unknown, err.Error())
+		}
+		return &pb.VerifyEmailResponse{Status: fmt.Sprintf("verification token has been sent to %s", req.Email)}, nil
 	} else if err != errHandler.ErrDoesNotExist {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -302,7 +327,13 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 	}
 
 	token := OTPgen()
-	if err = a.store.AddExternalUserLogin(ctx, auth.SHOPIFY, cred.UserID, token, req.Email); err != nil {
+	if err = a.store.AddExternalUserLogin(ctx, ExternalUser{
+		UserID:           cred.UserID,
+		ServiceName:      auth.SHOPIFY,
+		ExternalUserID:   "",
+		ExternalUsername: req.Email,
+		Verification:     token,
+	}); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	// send token to given email address
@@ -310,25 +341,21 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &pb.VerifyEmailResponse{}, nil
+	return &pb.VerifyEmailResponse{Status: fmt.Sprintf("verification token has been sent to %s", req.Email)}, nil
 }
 
-func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, extUser ExternalUser) (string, error) {
+func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, email string) (string, error) {
 	url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/search.json?query=email:%s",
 		a.config.ShopifyConfig.APIKey, a.config.ShopifyConfig.Secret, a.config.ShopifyConfig.Hostname,
-		a.config.ShopifyConfig.APIVersion, extUser.ExternalUsername)
+		a.config.ShopifyConfig.APIVersion, email)
 
 	var customers ShopifyCustomerList
 	if err := auth.GetHTTPResponse(url, &customers, false); err != nil {
-		return "", err
+		return "", status.Errorf(codes.Internal, err.Error())
 	}
 
 	if len(customers.Customers) == 0 {
-		// remove email from external login
-		if err := a.store.DeleteExternalUserLogin(ctx, extUser.UserID, extUser.ServiceName); err != nil {
-			return "", err
-		}
-		return "", fmt.Errorf("no customer record found: %s", extUser.ExternalUsername)
+		return "", status.Errorf(codes.NotFound, "customer %s not found on store %s", email, a.config.ShopifyConfig.StoreName)
 	}
 
 	return fmt.Sprintf("%d", customers.Customers[0].ID), nil
@@ -348,23 +375,23 @@ func (a *Server) ConfirmBindingEmail(ctx context.Context, req *pb.ConfirmBinding
 	extUser, err := a.store.GetExternalUserByToken(ctx, auth.SHOPIFY, req.Token)
 	if err != nil {
 		if err == errHandler.ErrDoesNotExist {
-			return nil, status.Errorf(codes.InvalidArgument, "Incorrect token")
+			return nil, status.Errorf(codes.InvalidArgument, "token not found")
 		}
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	if cred.UserID != extUser.UserID {
-		return nil, status.Errorf(codes.InvalidArgument, "Incorrect token")
+		return nil, status.Errorf(codes.InvalidArgument, "incorrect token")
 	}
 
 	// get shopify customer id from email
-	customerID, err := a.getShopifyCustomerIDFromEmail(ctx, extUser)
+	customerID, err := a.getShopifyCustomerIDFromEmail(ctx, extUser.ExternalUsername)
 	if err != nil {
-		return nil, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	extUser.ExternalUserID = customerID
-	if err = a.store.SetExternalUserID(ctx, extUser); err != nil {
+	if err = a.store.ConfirmExternalUserID(ctx, extUser); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
