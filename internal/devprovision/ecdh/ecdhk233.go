@@ -7,22 +7,26 @@
 //
 // Port from C code (https://github.com/kokke/tiny-ECDH-c)
 
-package ecdhk223
+package ecdh
 
 import (
 	"fmt"
 )
 
+// K233 - Class for K-233 curve
+type K233 struct{}
+
+// Constants
 const (
-	curveDegree   = 233
-	eccPrvKeySize = 32
-	eccPubKeySize = (2 * eccPrvKeySize)
+	K233CurveDegree = 233
+	K233PrvKeySize  = 32
+	K233PubKeySize  = (2 * K233PrvKeySize)
 )
 
 // margin for overhead needed in intermediate calculations
 const (
 	bitVectorMargin   = 3
-	bitVectorNumBits  = (curveDegree + bitVectorMargin)
+	bitVectorNumBits  = (K233CurveDegree + bitVectorMargin)
 	bitVectorNumWords = ((bitVectorNumBits + 31) / 32)
 
 //	bitVectorNumBytes = (4 * bitVectorNumWords)
@@ -152,7 +156,7 @@ func bitVectorLeftShift(x *bitVector, y *bitVector, nbits int) {
 }
 
 //==========================================================================
-// Code that does arithmetic on bit-vectors in the Galois Field GF(2^curveDegree).
+// Code that does arithmetic on bit-vectors in the Galois Field GF(2^K233CurveDegree).
 //==========================================================================
 func gf2FieldSetOne(x *bitVector) {
 	/* Set first word to one */
@@ -211,12 +215,12 @@ func gf2FieldMul(z *bitVector, x *bitVector, y *bitVector) {
 	}
 
 	/* Then add 2^i * x for the rest */
-	for i = 1; i < curveDegree; i++ {
+	for i = 1; i < K233CurveDegree; i++ {
 		/* lshift 1 - doubling the value of tmp */
 		bitVectorLeftShift(&tmp, &tmp, 1)
 
-		/* Modulo reduction polynomial if degree(tmp) > curveDegree */
-		if bitVectorGetBit(&tmp, curveDegree) == 1 {
+		/* Modulo reduction polynomial if degree(tmp) > K233CurveDegree */
+		if bitVectorGetBit(&tmp, K233CurveDegree) == 1 {
 			gf2FieldIsAdd(&tmp, &tmp, &polynomial)
 		}
 
@@ -361,7 +365,7 @@ func gf2PointIsOnCurve(x *bitVector, y *bitVector) bool {
 }
 
 // Copy between uint32 and byte
-func bytesToBitVector(aDest *bitVector, aSrc *[eccPrvKeySize]byte) {
+func bytesToBitVector(aDest *bitVector, aSrc *[K233PrvKeySize]byte) {
 	for i := 0; i < bitVectorNumWords; i++ {
 		value := uint32(0)
 		offset := i * 4
@@ -370,7 +374,7 @@ func bytesToBitVector(aDest *bitVector, aSrc *[eccPrvKeySize]byte) {
 	}
 }
 
-func bitVectorToBytes(aDest *[eccPrvKeySize]byte, aSrc *bitVector) {
+func bitVectorToBytes(aDest *[K233PrvKeySize]byte, aSrc *bitVector) {
 	for i := 0; i < bitVectorNumWords; i++ {
 		value := aSrc[i]
 		offset := i * 4
@@ -395,10 +399,15 @@ func bitVectorToBytes(aDest *[eccPrvKeySize]byte, aSrc *bitVector) {
 //==========================================================================
 // Elliptic Curve Diffie-Hellman key exchange protocol.
 //==========================================================================
-// NOTE: private should contain random data a-priori!
-func ecdhGenerateKeysK223(publickey *[eccPubKeySize]byte, privatekey *[eccPrvKeySize]byte) int {
+
+// GenerateKeys - Mask out bits on private key and generate the public key.
+//func (k *K233) GenerateKeys(publickey *[K233PubKeySize]byte, privatekey []byte) bool {
+func (k *K233) GenerateKeys(privatekey []byte) ([]byte, []byte) {
 	var pub1, pub2, priv bitVector
-	bytesToBitVector(&priv, privatekey)
+	var tmpbytearray [K233PrvKeySize]byte
+
+	copy(tmpbytearray[:], privatekey[:])
+	bytesToBitVector(&priv, &tmpbytearray)
 
 	// dumpBitVector("priv:", &priv)
 
@@ -406,10 +415,10 @@ func ecdhGenerateKeysK223(publickey *[eccPubKeySize]byte, privatekey *[eccPrvKey
 	gf2PointCopy(&pub1, &pub2, &baseX, &baseY)
 
 	/* Abort key generation if random number is too small */
-	if bitVectorDegree(&priv) < (curveDegree / 2) {
-		return 0
+	if bitVectorDegree(&priv) < (K233CurveDegree / 2) {
+		return nil, nil
 	}
-	/* Clear bits > curveDegree in highest word to satisfy constraint 1 <= exp < n. */
+	/* Clear bits > K233CurveDegree in highest word to satisfy constraint 1 <= exp < n. */
 	nbits := bitVectorDegree(&baseOrder)
 
 	for i := (nbits - 1); i < (bitVectorNumWords * 32); i++ {
@@ -423,27 +432,32 @@ func ecdhGenerateKeysK223(publickey *[eccPubKeySize]byte, privatekey *[eccPrvKey
 	// dumpBitVector("pub2:", &pub2)
 
 	// Copy result
-	var tmp [eccPrvKeySize]byte
-	bitVectorToBytes(&tmp, &pub1)
-	copy(publickey[0:], tmp[:])
-	bitVectorToBytes(&tmp, &pub2)
-	copy(publickey[eccPrvKeySize:], tmp[0:eccPrvKeySize])
-	bitVectorToBytes(&tmp, &priv)
-	copy(privatekey[:], tmp[:])
+	publickey := make([]byte, K233PubKeySize)
+	privatekey = make([]byte, K233PrvKeySize)
 
-	return 1
+	bitVectorToBytes(&tmpbytearray, &pub1)
+	copy(publickey[0:], tmpbytearray[:])
+	bitVectorToBytes(&tmpbytearray, &pub2)
+	copy(publickey[K233PrvKeySize:], tmpbytearray[0:K233PrvKeySize])
+	bitVectorToBytes(&tmpbytearray, &priv)
+	copy(privatekey[:], tmpbytearray[:])
+
+	return privatekey, publickey
 }
 
-func ecdhSharedSecretK223(privatekey *[eccPrvKeySize]byte, otherspub *[eccPubKeySize]byte, output *[eccPubKeySize]byte) int {
+// SharedSecret - Generate Shared key
+func (k *K233) SharedSecret(privatekey []byte, otherspub []byte) []byte {
 	var otherPub1, otherPub2, priv bitVector
 	var output1, output2 bitVector
-	var tmp [eccPrvKeySize]byte
+	var tmpbytearray [K233PrvKeySize]byte
 
-	bytesToBitVector(&priv, privatekey)
-	copy(tmp[:], otherspub[0:])
-	bytesToBitVector(&otherPub1, &tmp)
-	copy(tmp[:], otherspub[eccPrvKeySize:])
-	bytesToBitVector(&otherPub2, &tmp)
+	copy(tmpbytearray[:], privatekey[:])
+	bytesToBitVector(&priv, &tmpbytearray)
+
+	copy(tmpbytearray[:], otherspub[0:])
+	bytesToBitVector(&otherPub1, &tmpbytearray)
+	copy(tmpbytearray[:], otherspub[K233PrvKeySize:])
+	bytesToBitVector(&otherPub2, &tmpbytearray)
 
 	/* Do some basic validation of other party's public key */
 	if !gf2PointIsZero(&otherPub1, &otherPub2) && gf2PointIsOnCurve(&otherPub1, &otherPub2) {
@@ -462,13 +476,14 @@ func ecdhSharedSecretK223(privatekey *[eccPrvKeySize]byte, otherspub *[eccPubKey
 		gf2PointMul(&output1, &output2, &priv)
 
 		//
-		bitVectorToBytes(&tmp, &output1)
-		copy(output[0:], tmp[:])
-		bitVectorToBytes(&tmp, &output2)
-		copy(output[eccPrvKeySize:], tmp[0:eccPrvKeySize])
+		outputkey := make([]byte, K233PubKeySize)
+		bitVectorToBytes(&tmpbytearray, &output1)
+		copy(outputkey[0:], tmpbytearray[:])
+		bitVectorToBytes(&tmpbytearray, &output2)
+		copy(outputkey[K233PrvKeySize:], tmpbytearray[0:K233PrvKeySize])
 
-		return 1
+		return outputkey
 	}
 
-	return 0
+	return nil
 }

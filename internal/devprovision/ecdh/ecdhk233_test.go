@@ -1,13 +1,15 @@
-package ecdhk223
+package ecdh
 
 import (
+	"bytes"
+	"fmt"
 	"testing"
 )
 
 type keyPair struct {
-	publicKey  [eccPubKeySize]byte
-	privateKey [eccPrvKeySize]byte
-	sharedKey  [eccPubKeySize]byte
+	publicKey  []byte
+	privateKey []byte
+	sharedKey  []byte
 }
 
 func TestBitManipulation(t *testing.T) {
@@ -140,61 +142,89 @@ func TestBitManipulation(t *testing.T) {
 
 }
 
-// func dumpPrivateKey(t *testing.T, prefix string, key *[eccPrvKeySize]byte) {
-// 	str := prefix
-// 	for i := range key {
-// 		str += fmt.Sprintf(" %02X", key[i])
-// 	}
-// 	t.Logf(str)
-// }
+func dumpPrivateKey(t *testing.T, prefix string, key []byte) {
+	str := prefix
+	for i := range key {
+		str += fmt.Sprintf(" 0x%02X,", key[i])
+	}
+	t.Logf(str)
+}
 
-// func dumpPublicKey(t *testing.T, prefix string, key *[eccPubKeySize]byte) {
-// 	str := prefix
-// 	for i := range key {
-// 		str += fmt.Sprintf(" %02X", key[i])
-// 	}
-// 	t.Logf(str)
-// }
+func dumpPublicKey(t *testing.T, prefix string, key []byte) {
+	str := prefix
+	for i := range key {
+		str += fmt.Sprintf(" 0x%02X,", key[i])
+	}
+	t.Logf(str)
+}
 
 func TestGenerateKey(t *testing.T) {
-	var genKey keyPair
-	expectedKey := keyPair{
-		privateKey: [eccPrvKeySize]byte{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+	var ecdh K233
+	genKey := keyPair{privateKey: make([]byte, K233PrvKeySize), publicKey: make([]byte, K233PubKeySize)}
+	expectedKey1 := keyPair{
+		privateKey: []byte{
+			0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 			0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00},
-		publicKey: [eccPubKeySize]byte{0xF5, 0xDD, 0xD2, 0xC7, 0x04, 0x92, 0xE0, 0xD6, 0xF2, 0x1F, 0x8D, 0xEC, 0xE0, 0x2D, 0x0A, 0xAF,
+		publicKey: []byte{
+			0xF5, 0xDD, 0xD2, 0xC7, 0x04, 0x92, 0xE0, 0xD6, 0xF2, 0x1F, 0x8D, 0xEC, 0xE0, 0x2D, 0x0A, 0xAF,
 			0x75, 0x64, 0x78, 0xE1, 0x02, 0x09, 0x72, 0x75, 0x19, 0x5A, 0xFB, 0x9B, 0xB8, 0x01, 0x00, 0x00,
 			0xB3, 0x29, 0x00, 0x02, 0x9A, 0xB4, 0xD6, 0x84, 0x1C, 0xC5, 0x2B, 0x51, 0x72, 0xEE, 0x2F, 0x3C,
 			0x5A, 0x66, 0xBC, 0x6F, 0x03, 0x25, 0x3A, 0x92, 0x43, 0x9E, 0x14, 0x2F, 0x82, 0x00, 0x00, 0x00},
+	}
+	expectedKey2 := keyPair{
+		privateKey: []byte{
+			0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+			0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x00, 0x00, 0x00},
+		publicKey: []byte{
+			0x0E, 0x4B, 0xDF, 0x93, 0x45, 0xCA, 0x7E, 0x6B, 0x4F, 0x68, 0x18, 0x81, 0x6E, 0x7E, 0x83, 0xD3,
+			0xE0, 0x72, 0x30, 0x2E, 0xAF, 0x01, 0x1D, 0xA3, 0xD8, 0xE9, 0x4F, 0xBC, 0x28, 0x01, 0x00, 0x00,
+			0x6A, 0x98, 0x6A, 0x39, 0xE6, 0xC9, 0x75, 0x4D, 0x35, 0xB0, 0x88, 0xF5, 0x4D, 0x8B, 0xE8, 0x02,
+			0x2F, 0xD1, 0xBD, 0xBD, 0x41, 0x47, 0x69, 0x32, 0x95, 0x81, 0x0D, 0x9A, 0xAD, 0x00, 0x00, 0x00},
 	}
 
 	// Init keys
 	for i := range genKey.privateKey {
 		genKey.privateKey[i] = 0x01
 	}
-	for i := range genKey.publicKey {
-		genKey.publicKey[i] = 0
-	}
-	ret := ecdhGenerateKeysK223(&genKey.publicKey, &genKey.privateKey)
-	if ret == 0 {
-		t.Error("ecdhGenerateKeysK223() failed.")
+	genKey.privateKey, genKey.publicKey = ecdh.GenerateKeys(genKey.privateKey)
+	if genKey.publicKey == nil {
+		t.Error("GenerateKeys() failed.")
 	}
 
-	// dumpPrivateKey(t, "privateKey:", &genKey.privateKey)
-	// dumpPublicKey(t, "publicKey:", &genKey.publicKey)
-	if genKey.privateKey != expectedKey.privateKey {
+	dumpPrivateKey(t, "privateKey:", genKey.privateKey)
+	dumpPublicKey(t, "publicKey:", genKey.publicKey)
+	if !bytes.Equal(genKey.privateKey, expectedKey1.privateKey) {
 		t.Error("Unexpected private key generated.")
 	}
-	if genKey.publicKey != expectedKey.publicKey {
+	if !bytes.Equal(genKey.publicKey, expectedKey1.publicKey) {
+		t.Error("Unexpected public key generated.")
+	}
+
+	// Init keys
+	for i := range genKey.privateKey {
+		genKey.privateKey[i] = 0x02
+	}
+	genKey.privateKey, genKey.publicKey = ecdh.GenerateKeys(genKey.privateKey)
+	if genKey.publicKey == nil {
+		t.Error("GenerateKeys() failed.")
+	}
+
+	dumpPrivateKey(t, "privateKey:", genKey.privateKey)
+	dumpPublicKey(t, "publicKey:", genKey.publicKey)
+	if !bytes.Equal(genKey.privateKey, expectedKey2.privateKey) {
+		t.Error("Unexpected private key generated.")
+	}
+	if !bytes.Equal(genKey.publicKey, expectedKey2.publicKey) {
 		t.Error("Unexpected public key generated.")
 	}
 }
 
 func TestSharedSecret(t *testing.T) {
-	var alice keyPair
-	var bob keyPair
-	var ret int
+	var ecdh K233
+	alice := keyPair{privateKey: make([]byte, K233PrvKeySize), publicKey: make([]byte, K233PubKeySize)}
+	bob := keyPair{privateKey: make([]byte, K233PrvKeySize), publicKey: make([]byte, K233PubKeySize)}
 
-	expectedSharedKey := [eccPubKeySize]byte{
+	expectedSharedKey := []byte{
 		0x57, 0x57, 0x3A, 0x81, 0xE2, 0x7E, 0x48, 0x26, 0xFA, 0x8E, 0x18, 0x70, 0xCD, 0x6B, 0x66, 0x40,
 		0xF3, 0x90, 0x5D, 0x98, 0x40, 0xF4, 0x12, 0xFA, 0xAE, 0x74, 0x0B, 0x12, 0xE0, 0x01, 0x00, 0x00,
 		0xC4, 0xD8, 0x27, 0xA9, 0x37, 0x49, 0xEE, 0x44, 0xEA, 0x1B, 0xAC, 0x1C, 0x18, 0x8C, 0x03, 0xAA,
@@ -204,42 +234,36 @@ func TestSharedSecret(t *testing.T) {
 	for i := range alice.privateKey {
 		alice.privateKey[i] = 0x01
 	}
-	for i := range alice.publicKey {
-		alice.publicKey[i] = 0
-	}
 	for i := range bob.privateKey {
 		bob.privateKey[i] = 0x02
 	}
-	for i := range bob.publicKey {
-		bob.publicKey[i] = 0
-	}
 
 	// Gen public key
-	ret = ecdhGenerateKeysK223(&alice.publicKey, &alice.privateKey)
-	if ret == 0 {
-		t.Error("ecdhGenerateKeysK223() failed.")
+	alice.privateKey, alice.publicKey = ecdh.GenerateKeys(alice.privateKey)
+	if alice.publicKey == nil {
+		t.Error("GenerateKeys() failed.")
 	}
-	ret = ecdhGenerateKeysK223(&bob.publicKey, &bob.privateKey)
-	if ret == 0 {
-		t.Error("ecdhGenerateKeysK223() failed.")
+	bob.privateKey, bob.publicKey = ecdh.GenerateKeys(bob.privateKey)
+	if bob.publicKey == nil {
+		t.Error("GenerateKeys() failed.")
 	}
 
 	// Gen shared key
-	ret = ecdhSharedSecretK223(&alice.privateKey, &bob.publicKey, &alice.sharedKey)
-	if ret == 0 {
-		t.Error("ecdhSharedSecretK223() failed.")
+	alice.sharedKey = ecdh.SharedSecret(alice.privateKey, bob.publicKey)
+	if alice.sharedKey == nil {
+		t.Error("SharedSecret() failed.")
 	}
-	ret = ecdhSharedSecretK223(&bob.privateKey, &alice.publicKey, &bob.sharedKey)
-	if ret == 0 {
-		t.Error("ecdhSharedSecretK223() failed.")
+	bob.sharedKey = ecdh.SharedSecret(bob.privateKey, alice.publicKey)
+	if bob.sharedKey == nil {
+		t.Error("SharedSecret() failed.")
 	}
 
-	// dumpPublicKey(t, "alice:", &alice.sharedKey)
-	// dumpPublicKey(t, "bob:", &bob.sharedKey)
-	if alice.sharedKey != bob.sharedKey {
+	dumpPublicKey(t, "alice:", alice.sharedKey)
+	dumpPublicKey(t, "bob:", bob.sharedKey)
+	if !bytes.Equal(alice.sharedKey, bob.sharedKey) {
 		t.Error("The output shared key are mismatch.")
 	}
-	if alice.sharedKey != expectedSharedKey {
+	if !bytes.Equal(alice.sharedKey, expectedSharedKey) {
 		t.Error("Unexpected shared key generated.")
 	}
 

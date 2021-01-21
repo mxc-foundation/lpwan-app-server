@@ -2,12 +2,12 @@ package devprovision
 
 import (
 	"context"
+	cryptorand "crypto/rand"
+	"encoding/binary"
 	"encoding/hex"
+	"sync"
 	"time"
 
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
-	"github.com/gofrs/uuid"
 	//	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -19,10 +19,11 @@ import (
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserverextra"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision/ecdh"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
 // LoRa Frame Message and Response Type
@@ -34,8 +35,15 @@ const (
 	DownRespAuthAccept = 0x91
 	DownRespAuthReject = 0x92
 )
+const (
+	sizeUpMessageHello = 74
+	sizeUpMessageAuth  = 61
+)
 
-// ProprietaryPayload - Proprietary Payload
+//
+const moduleName = "devprovision"
+
+// Proprietary Payload
 type proprietaryPayload struct {
 	MacPayload []byte
 	GatewayMAC lorawan.EUI64
@@ -43,18 +51,100 @@ type proprietaryPayload struct {
 	DR         int
 	Context    []byte
 	Delay      *duration.Duration
+	Mic        []byte
 }
 
+//
+var ecdhK223 ecdh.K233
+var deviceSessionList map[uint64]deviceSession
+var mutexDeviceSessionList sync.RWMutex
+var maxNumberOfDevSession = 5000
+var deviceSessionLifeTime = time.Minute * 5
+
+// Device session
+
+type deviceSession struct {
+	rDevEui          []byte
+	serverNonce      []byte
+	devNonce         []byte
+	devicePublicKey  []byte
+	serverPublicKey  []byte
+	serverPrivateKey []byte
+	sharedKey        []byte
+	appKey           []byte
+	nwkKey           []byte
+	provKey          []byte
+	expireTime       time.Time
+}
+
+// Func to get current now, it will override at test
+var funcGetNow = time.Now
+var funcGen128Rand = gen128Rand
+
+// Gen 128 bytes of random numbers
+func gen128Rand() []byte {
+	randbuf := make([]byte, 128)
+	_, err := cryptorand.Read(randbuf[:])
+	if err != nil {
+		log.Error("crypto.rand() failed. Fallback to Pseudorandom")
+		// Fallback to Pseudorandom
+		softrand := softRand{}
+		for i := range randbuf {
+			randbuf[i] = uint8(softrand.Get())
+		}
+	}
+	return randbuf
+}
+
+//
+func (d *deviceSession) genServerKeys() {
+	randbuf := funcGen128Rand()
+	privateKey, publickey := ecdhK223.GenerateKeys(randbuf)
+	if privateKey != nil {
+		copy(d.serverPrivateKey[:], privateKey[:])
+		copy(d.serverPublicKey[:], publickey[:])
+	}
+	copy(d.serverNonce[0:], randbuf[ecdh.K233PrvKeySize:])
+}
+
+func (d *deviceSession) genSharedKey() {
+	d.sharedKey = ecdhK223.SharedSecret(d.serverPrivateKey, d.devicePublicKey)
+}
+
+func (d *deviceSession) deriveKeys() {
+
+}
+
+//
+func makeDeviceSession() deviceSession {
+	session := deviceSession{}
+	session.rDevEui = make([]byte, 8)
+	session.serverNonce = make([]byte, 4)
+	session.devNonce = make([]byte, 4)
+	session.devicePublicKey = make([]byte, ecdh.K233PubKeySize)
+	session.serverPublicKey = make([]byte, ecdh.K233PubKeySize)
+	session.serverPrivateKey = make([]byte, ecdh.K233PrvKeySize)
+	session.sharedKey = make([]byte, ecdh.K233PubKeySize)
+	session.expireTime = funcGetNow().Add(deviceSessionLifeTime)
+	session.appKey = make([]byte, 16)
+	session.nwkKey = make([]byte, 16)
+	session.provKey = make([]byte, 16)
+
+	return session
+}
+
+//
 func init() {
 	mgr.RegisterModuleSetup(moduleName, Setup)
 }
 
-const moduleName = "devprovision"
+// Function pointer for send payload to ns
+type sendToNsFunc func(n nsd.NetworkServer, req *nsextra.SendDelayedProprietaryPayloadRequest) error
 
 var ctrl struct {
-	handler           *store.Handler
-	handlerMock       *handlerMock
-	networkServerMock *networkServerMock
+	handler      *store.Handler
+	handlerMock  *handlerMock
+	sendToNsFunc sendToNsFunc
 
 	moduleUp bool
 }
@@ -70,37 +160,28 @@ func Setup(name string, h *store.Handler) error {
 
 	ctrl.handler = h
 	ctrl.handlerMock = nil
-	ctrl.networkServerMock = nil
+	ctrl.sendToNsFunc = sendToNs
+	clearDeviceSessionList()
 
-	go SendPingLoop()
+	go CleanUpLoop()
 
 	return nil
 }
 
 // Setup for unit test
-func setupUnitTest(h *handlerMock, n *networkServerMock) error {
+func setupUnitTest(h *handlerMock) error {
 	ctrl.handler = nil
 	ctrl.handlerMock = h
-	ctrl.networkServerMock = n
+	ctrl.sendToNsFunc = sendToNsMock
+	clearDeviceSessionList()
 	return nil
 }
 
-// SendPingLoop is a never returning function sending the gateway pings.
-func SendPingLoop() {
+// CleanUpLoop is a never returning function, performing cleanup
+func CleanUpLoop() {
 	for {
-		ctxID, err := uuid.NewV4()
-		if err != nil {
-			log.WithError(err).Error("new uuid error")
-		}
-
-		ctx := context.Background()
-		// ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
-		context.WithValue(ctx, logging.ContextIDKey, ctxID)
-
-		// if err := sendGatewayPing(ctx, ctrl.handler); err != nil {
-		// 	log.Errorf("send gateway ping error: %s", err)
-		// }
-		time.Sleep(time.Second)
+		clearExpiredDevSession()
+		time.Sleep(time.Second * 10)
 	}
 }
 
@@ -110,7 +191,8 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 	var mic lorawan.MIC
 	copy(mic[:], req.Mic)
 
-	log.Infof("MacPayload:\n%s", hex.Dump(req.MacPayload))
+	log.Debugf("Rx MacPayload:\n%s", hex.Dump(req.MacPayload))
+	log.Debugf("          MIC: %s", hex.EncodeToString(req.Mic))
 
 	// Find max RSSI gw
 	var maxRssiRx *gwV3.UplinkRXInfo = nil
@@ -125,7 +207,7 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 		return processed, errors.Errorf("No gateway found.")
 	}
 
-	log.Infof("  MAC:%s, RSSI: %d, Context: %s", hex.EncodeToString(maxRssiRx.GatewayId), maxRssiRx.Rssi,
+	log.Debugf("  MAC:%s, RSSI: %d, Context: %s", hex.EncodeToString(maxRssiRx.GatewayId), maxRssiRx.Rssi,
 		hex.EncodeToString(maxRssiRx.Context))
 
 	// Get Gateway
@@ -152,75 +234,42 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 	if err != nil {
 		return processed, errors.Wrap(err, "get network-server error")
 	}
-	log.Infof("  NetworkServer: %s", n.Server)
+	log.Debugf("  NetworkServer: %s", n.Server)
 
 	//
 
 	// Check Message Type
-	var messageType byte = req.MacPayload[0]
-	if messageType == UpMessageHello {
-		log.Info("  HELLO Message.")
+	messageType := req.MacPayload[0]
+	messageSize := len(req.MacPayload)
 
+	if (messageType == UpMessageHello) && (messageSize == sizeUpMessageHello) {
 		processed, err = handleHello(n, req, maxRssiRx)
 		if err != nil {
 			return processed, errors.Wrap(err, "send proprietary error")
 		}
-	} else if messageType == UpMessageAuth {
-		log.Info("  AUTH Message.")
+	} else if (messageType == UpMessageAuth) && (messageSize == sizeUpMessageAuth) {
+		log.Debug("  AUTH Message.")
 		processed = true
 	}
-
-	//	err := ctrl.handler.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-	// for _, rx := range req.RxInfo {
-	// 	var mac lorawan.EUI64
-	// 	copy(mac[:], rx.GatewayId)
-
-	// 	// ignore pings received by the sending gateway
-	// 	if ping.GatewayMAC == mac {
-	// 		continue
-	// 	}
-
-	// 	var receivedAt *time.Time
-	// 	if rx.Time != nil {
-	// 		ts, err := ptypes.Timestamp(rx.Time)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		receivedAt = &ts
-	// 	}
-
-	// 	pingRX := gwd.GatewayPingRX{
-	// 		PingID:     id,
-	// 		GatewayMAC: mac,
-	// 		ReceivedAt: receivedAt,
-	// 		RSSI:       int(rx.Rssi),
-	// 		LoRaSNR:    rx.LoraSnr,
-	// 	}
-
-	// 	if rx.Location != nil {
-	// 		pingRX.Location = gwd.GPSPoint{
-	// 			Latitude:  rx.Location.Latitude,
-	// 			Longitude: rx.Location.Longitude,
-	// 		}
-	// 		pingRX.Altitude = rx.Location.Altitude
-	// 	}
-
-	// 	err := handler.CreateGatewayPingRX(ctx, &pingRX)
-	// 	if err != nil {
-	// 		return errors.Wrap(err, "create gateway ping rx error")
-	// 	}
-	// }
-	//return false, nil
-	//	})
-	//	if err != nil {
-	//		return processed, errors.Wrap(err, "transaction error")
-	//	}
 
 	return processed, nil
 }
 
+func sendToNs(n nsd.NetworkServer, req *nsextra.SendDelayedProprietaryPayloadRequest) error {
+	nsClient, err := networkserverextra.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	if err != nil {
+		return err
+	}
+	_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
-	request := nsextra.SendDelayedProprietaryPayloadRequest{
+	req := nsextra.SendDelayedProprietaryPayloadRequest{
 		MacPayload:            payload.MacPayload,
 		GatewayMacs:           [][]byte{payload.GatewayMAC[:]},
 		PolarizationInversion: true,
@@ -228,51 +277,88 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		Dr:                    uint32(payload.DR),
 		Context:               payload.Context,
 		Delay:                 payload.Delay,
+		Mic:                   payload.Mic,
 	}
 
-	if ctrl.networkServerMock != nil {
-		_, err := ctrl.networkServerMock.SendDelayedProprietaryPayload(context.Background(), &request)
+	if ctrl.sendToNsFunc != nil {
+		err := ctrl.sendToNsFunc(n, &req)
 		if err != nil {
 			return errors.Wrap(err, "send proprietary payload error")
 		}
+		log.WithFields(log.Fields{
+			"gateway_mac": payload.GatewayMAC,
+			"freq":        payload.Frequency,
+		}).Infof("gateway proprietary payload sent to network-server %s", n.Server)
 	} else {
-		nsClient, err := networkserverextra.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-		if err != nil {
-			return errors.Wrap(err, "get network-server client error")
-		}
-		_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), &request)
-		if err != nil {
-			return errors.Wrap(err, "send proprietary payload error")
-		}
+		return errors.Errorf("ctrl.sendToNsFunc() not set.")
 	}
-
-	log.WithFields(log.Fields{
-		"gateway_mac": payload.GatewayMAC,
-		"freq":        payload.Frequency,
-	}).Info("gateway proprietary payload sent to network-server")
 
 	return nil
 }
 
+func makeHelloResponse(session deviceSession) []byte {
+	payload := []byte{DownRespHello}
+	payload = append(payload, session.rDevEui...)
+	payload = append(payload, session.serverPublicKey...)
+	payload = append(payload, session.serverNonce...)
+	return payload
+}
+
 //
-func handleHello(nserver nsd.NetworkServer, reqest *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) (bool, error) {
-	log.Info("  HELLO Message.")
+func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) (bool, error) {
+	log.Debug("  HELLO Message.")
 
-	var upFreqChannel uint32 = (reqest.TxInfo.Frequency - 470300000) / 200000
+	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
 	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
-	var mac lorawan.EUI64
 	var err error
+	var frameversion byte
 
+	//
+	rdeveui := make([]byte, 8)
+	copy(rdeveui[0:], req.MacPayload[1:])
+	sessionid := binary.BigEndian.Uint64(rdeveui)
+	log.Debugf("  sessionid=%X", sessionid)
+	frameversion = req.MacPayload[73]
+
+	//
+	ok, currentsession := searchDeviceSession(sessionid)
+	if !ok {
+		rdeveui := make([]byte, 8)
+		devicepublickey := make([]byte, ecdh.K233PubKeySize)
+
+		log.Debugf("  Creating new session")
+		copy(rdeveui[0:], req.MacPayload[1:])
+		copy(devicepublickey[0:], req.MacPayload[9:])
+		ok, currentsession = createDeviceSession(sessionid, rdeveui, devicepublickey)
+		if !ok {
+			// Create session failed. drop this frame. return true to mark is processed.
+			return true, nil
+		}
+	}
+
+	log.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
+	log.Debugf("  devicePublicKey: %s", hex.EncodeToString(currentsession.devicePublicKey))
+	log.Debugf("  serverPrivateKey: %s", hex.EncodeToString(currentsession.serverPrivateKey))
+	log.Debugf("  serverPublicKey: %s", hex.EncodeToString(currentsession.serverPublicKey))
+	log.Debugf("  serverNonce: %s", hex.EncodeToString(currentsession.serverNonce))
+	log.Debugf("  sharedKey: %s", hex.EncodeToString(currentsession.sharedKey))
+	log.Debugf("  version: %d", frameversion)
+
+	//
+	var mac lorawan.EUI64
 	copy(mac[:], targetgateway.GatewayId)
 
 	payload := proprietaryPayload{
-		MacPayload: []byte("HELLO"),
+		MacPayload: makeHelloResponse(currentsession),
 		GatewayMAC: mac,
 		Frequency:  downFreq,
 		DR:         3,
 		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
 		Context:    targetgateway.Context,
+		Mic:        []byte{0x01, 0x02, 0x03, 0x04},
 	}
+	log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
+	log.Debugf("          MIC: %s", hex.EncodeToString(payload.Mic))
 
 	err = sendProprietary(nserver, payload)
 	if err != nil {
@@ -280,4 +366,54 @@ func handleHello(nserver nsd.NetworkServer, reqest *as.HandleProprietaryUplinkRe
 	}
 
 	return true, nil
+}
+
+// Device session handling
+func searchDeviceSession(sessionid uint64) (bool, deviceSession) {
+	mutexDeviceSessionList.Lock()
+	defer mutexDeviceSessionList.Unlock()
+	currentsession, sessionfound := deviceSessionList[sessionid]
+	if !sessionfound {
+		return false, deviceSession{}
+	}
+	return true, currentsession
+}
+
+func createDeviceSession(sessionid uint64, rdeveui []byte, devicepublickey []byte) (bool, deviceSession) {
+	mutexDeviceSessionList.Lock()
+	defer mutexDeviceSessionList.Unlock()
+
+	if len(deviceSessionList) >= maxNumberOfDevSession {
+		log.Warnf("Maximum number (%d) of device provisioning session reached. Request dropped.", maxNumberOfDevSession)
+		return false, deviceSession{}
+	}
+
+	// New session
+	currentsession := makeDeviceSession()
+	copy(currentsession.rDevEui[0:], rdeveui)
+	copy(currentsession.devicePublicKey[0:], devicepublickey)
+
+	currentsession.genServerKeys()
+	currentsession.genSharedKey()
+	deviceSessionList[sessionid] = currentsession
+
+	return true, currentsession
+}
+
+func clearExpiredDevSession() {
+	mutexDeviceSessionList.Lock()
+	defer mutexDeviceSessionList.Unlock()
+
+	now := funcGetNow()
+	for key, session := range deviceSessionList {
+		if now.After(session.expireTime) {
+			delete(deviceSessionList, key)
+		}
+	}
+}
+
+func clearDeviceSessionList() {
+	mutexDeviceSessionList.Lock()
+	defer mutexDeviceSessionList.Unlock()
+	deviceSessionList = make(map[uint64]deviceSession)
 }

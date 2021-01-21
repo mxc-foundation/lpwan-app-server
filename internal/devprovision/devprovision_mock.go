@@ -2,16 +2,16 @@ package devprovision
 
 import (
 	"context"
+	"time"
 
 	"github.com/brocaar/lorawan"
-	"github.com/golang/protobuf/ptypes/empty"
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 )
 
-//
+// Mock functions for ctrl.handler
 type handlerMock struct {
 }
 
@@ -23,15 +23,46 @@ func (h *handlerMock) GetNetworkServer(ctx context.Context, id int64) (nsd.Netwo
 	return nsd.NetworkServer{Name: "MockNetworkServer", Server: "0.0.0.0"}, nil
 }
 
-//
-type networkServerMock struct {
+// Mock for LoRa frame sending
+type mockDataType struct {
 	request *nsextra.SendDelayedProprietaryPayloadRequest
 }
 
-// GetPool returns the networkserver pool.
-func (n *networkServerMock) SendDelayedProprietaryPayload(ctx context.Context,
-	in *nsextra.SendDelayedProprietaryPayloadRequest) (*empty.Empty, error) {
-	n.request = in
+var mockData mockDataType
 
-	return nil, nil
+func sendToNsMock(n nsd.NetworkServer, req *nsextra.SendDelayedProprietaryPayloadRequest) error {
+	mockData.request = req
+
+	return nil
+}
+
+// Mock of get current time
+var mockNowQueue []time.Time
+
+func mockGetNow() time.Time {
+	if len(mockNowQueue) == 0 {
+		return time.Time{}
+	}
+	poptime := mockNowQueue[0]
+	if len(mockNowQueue) > 1 {
+		mockNowQueue = mockNowQueue[1:]
+	}
+	return poptime
+}
+
+// Mock of random buf generation. Set -1 to use pesudorandom
+var mockRandValue int
+
+func mockGen128Rand() []byte {
+	softrand := softRand{}
+	randbuf := make([]byte, 128)
+	for i := range randbuf {
+		if mockRandValue < 0 {
+			randbuf[i] = uint8(softrand.Get())
+		} else {
+			randbuf[i] = uint8(mockRandValue)
+		}
+	}
+
+	return randbuf
 }
