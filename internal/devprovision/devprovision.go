@@ -1,6 +1,7 @@
 package devprovision
 
 import (
+	"bytes"
 	"context"
 	cryptorand "crypto/rand"
 	"encoding/binary"
@@ -61,22 +62,6 @@ var mutexDeviceSessionList sync.RWMutex
 var maxNumberOfDevSession = 5000
 var deviceSessionLifeTime = time.Minute * 5
 
-// Device session
-
-type deviceSession struct {
-	rDevEui          []byte
-	serverNonce      []byte
-	devNonce         []byte
-	devicePublicKey  []byte
-	serverPublicKey  []byte
-	serverPrivateKey []byte
-	sharedKey        []byte
-	appKey           []byte
-	nwkKey           []byte
-	provKey          []byte
-	expireTime       time.Time
-}
-
 // Func to get current now, it will override at test
 var funcGetNow = time.Now
 var funcGen128Rand = gen128Rand
@@ -94,43 +79,6 @@ func gen128Rand() []byte {
 		}
 	}
 	return randbuf
-}
-
-//
-func (d *deviceSession) genServerKeys() {
-	randbuf := funcGen128Rand()
-	privateKey, publickey := ecdhK223.GenerateKeys(randbuf)
-	if privateKey != nil {
-		copy(d.serverPrivateKey[:], privateKey[:])
-		copy(d.serverPublicKey[:], publickey[:])
-	}
-	copy(d.serverNonce[0:], randbuf[ecdh.K233PrvKeySize:])
-}
-
-func (d *deviceSession) genSharedKey() {
-	d.sharedKey = ecdhK223.SharedSecret(d.serverPrivateKey, d.devicePublicKey)
-}
-
-func (d *deviceSession) deriveKeys() {
-
-}
-
-//
-func makeDeviceSession() deviceSession {
-	session := deviceSession{}
-	session.rDevEui = make([]byte, 8)
-	session.serverNonce = make([]byte, 4)
-	session.devNonce = make([]byte, 4)
-	session.devicePublicKey = make([]byte, ecdh.K233PubKeySize)
-	session.serverPublicKey = make([]byte, ecdh.K233PubKeySize)
-	session.serverPrivateKey = make([]byte, ecdh.K233PrvKeySize)
-	session.sharedKey = make([]byte, ecdh.K233PubKeySize)
-	session.expireTime = funcGetNow().Add(deviceSessionLifeTime)
-	session.appKey = make([]byte, 16)
-	session.nwkKey = make([]byte, 16)
-	session.provKey = make([]byte, 16)
-
-	return session
 }
 
 //
@@ -187,7 +135,6 @@ func CleanUpLoop() {
 
 // HandleReceivedFrame handles a ping received by one or multiple gateways.
 func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkRequest) (bool, error) {
-	var processed bool = false
 	var mic lorawan.MIC
 	copy(mic[:], req.Mic)
 
@@ -204,7 +151,7 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 		}
 	}
 	if maxRssiRx == nil {
-		return processed, errors.Errorf("No gateway found.")
+		return false, errors.Errorf("No gateway found.")
 	}
 
 	log.Debugf("  MAC:%s, RSSI: %d, Context: %s", hex.EncodeToString(maxRssiRx.GatewayId), maxRssiRx.Rssi,
@@ -223,7 +170,7 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 		gw, err = ctrl.handler.GetGateway(ctx, mac, false)
 	}
 	if err != nil {
-		return processed, errors.Wrap(err, "get gateway error")
+		return false, errors.Wrap(err, "get gateway error")
 	}
 
 	if ctrl.handlerMock != nil {
@@ -232,23 +179,28 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 		n, err = ctrl.handler.GetNetworkServer(ctx, gw.NetworkServerID)
 	}
 	if err != nil {
-		return processed, errors.Wrap(err, "get network-server error")
+		return false, errors.Wrap(err, "get network-server error")
 	}
 	log.Debugf("  NetworkServer: %s", n.Server)
 
 	//
 
 	// Check Message Type
+	processed := false
 	messageType := req.MacPayload[0]
 	messageSize := len(req.MacPayload)
 
 	if (messageType == UpMessageHello) && (messageSize == sizeUpMessageHello) {
-		processed, err = handleHello(n, req, maxRssiRx)
+		err := handleHello(n, req, maxRssiRx)
 		if err != nil {
-			return processed, errors.Wrap(err, "send proprietary error")
+			return false, errors.Wrap(err, "send proprietary error")
 		}
+		processed = true
 	} else if (messageType == UpMessageAuth) && (messageSize == sizeUpMessageAuth) {
-		log.Debug("  AUTH Message.")
+		err := handleAuth(n, req, maxRssiRx)
+		if err != nil {
+			return false, errors.Wrap(err, "send proprietary error")
+		}
 		processed = true
 	}
 
@@ -305,7 +257,7 @@ func makeHelloResponse(session deviceSession) []byte {
 }
 
 //
-func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) (bool, error) {
+func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) error {
 	log.Debug("  HELLO Message.")
 
 	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
@@ -332,7 +284,7 @@ func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReque
 		ok, currentsession = createDeviceSession(sessionid, rdeveui, devicepublickey)
 		if !ok {
 			// Create session failed. drop this frame. return true to mark is processed.
-			return true, nil
+			return nil
 		}
 	}
 
@@ -362,10 +314,93 @@ func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReque
 
 	err = sendProprietary(nserver, payload)
 	if err != nil {
-		return false, errors.Wrap(err, "send proprietary error")
+		return err
 	}
 
-	return true, nil
+	return nil
+}
+
+func makeAuthAccept(session deviceSession) []byte {
+	authpayload := make([]byte, 32)
+
+	encpayload := session.encryptAuthPayload(authpayload, true)
+
+	payload := []byte{DownRespAuthAccept}
+	payload = append(payload, session.rDevEui...)
+	payload = append(payload, encpayload...)
+
+	return payload
+}
+
+func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) error {
+	log.Debug("  AUTH Message.")
+
+	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
+	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
+
+	//
+	rdeveui := make([]byte, 8)
+	copy(rdeveui[0:], req.MacPayload[1:])
+	sessionid := binary.BigEndian.Uint64(rdeveui)
+	log.Debugf("  sessionid=%X", sessionid)
+
+	//
+	ok, currentsession := searchDeviceSession(sessionid)
+	if !ok {
+		log.Debugf("  Auth message without active session. Frame dropped.")
+		return nil
+	}
+
+	authpayload := make([]byte, 52)
+	copy(authpayload[:], req.MacPayload[9:])
+	authpayload = currentsession.encryptAuthPayload(authpayload, true)
+
+	serialnumberhash := make([]byte, 32)
+	verifycode := make([]byte, 16)
+	copy(serialnumberhash[:], authpayload[0:])
+	copy(verifycode[:], authpayload[32:])
+	copy(currentsession.devNonce[:], authpayload[48:])
+
+	log.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
+	log.Debugf("  devNonce: %s", hex.EncodeToString(currentsession.devNonce))
+	log.Debugf("  serialNumberHash: %s", hex.EncodeToString(serialnumberhash))
+	log.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
+
+	found, deviceinfo := findDeviceBySnHash(serialnumberhash)
+	if !found {
+		return errors.Errorf("Device %s not found.", hex.EncodeToString(serialnumberhash))
+	}
+	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.serialNumber, deviceinfo.manufacturerID, deviceinfo.server)
+	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s", deviceinfo.devEUI, deviceinfo.appEUI, deviceinfo.appKey, deviceinfo.nwkKey)
+	log.Debugf("  status=%d, model=%s, fixedDevEUI=%v, created=%v", deviceinfo.status, deviceinfo.model, deviceinfo.fixedDevEUI, deviceinfo.timeCreated)
+
+	calverifycode := currentsession.calVerifyCode(deviceinfo.serialNumber, true)
+	if !bytes.Equal(verifycode, calverifycode) {
+		return errors.Errorf("Incorrect verify code at Auth message")
+	}
+
+	//
+	var mac lorawan.EUI64
+	copy(mac[:], targetgateway.GatewayId)
+
+	payload := proprietaryPayload{
+		MacPayload: makeAuthAccept(currentsession),
+		GatewayMAC: mac,
+		Frequency:  downFreq,
+		DR:         3,
+		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
+		Context:    targetgateway.Context,
+		Mic:        []byte{0x01, 0x02, 0x03, 0x04},
+	}
+	log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
+	log.Debugf("          MIC: %s", hex.EncodeToString(payload.Mic))
+
+	err := sendProprietary(nserver, payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Device session handling
@@ -416,4 +451,22 @@ func clearDeviceSessionList() {
 	mutexDeviceSessionList.Lock()
 	defer mutexDeviceSessionList.Unlock()
 	deviceSessionList = make(map[uint64]deviceSession)
+}
+
+//
+func fillByteArray(input []byte, value uint8) {
+	for i := range input {
+		input[i] = value
+	}
+}
+
+func findDeviceBySnHash(serialnumberhash []byte) (bool, deviceInfo) {
+	strhash := hex.EncodeToString(serialnumberhash)
+
+	for i := range fakeDeviceList {
+		if fakeDeviceList[i].serialNumberHash == strhash {
+			return true, fakeDeviceList[i]
+		}
+	}
+	return false, deviceInfo{}
 }
