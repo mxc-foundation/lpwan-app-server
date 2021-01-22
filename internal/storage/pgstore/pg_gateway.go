@@ -756,7 +756,7 @@ func (ps *PgStore) GetGatewaysLoc(ctx context.Context) ([]GatewayLocation, error
 	err := sqlx.SelectContext(ctx, ps.db, &gwsLoc, `
 		SELECT latitude, longitude, altitude
 		FROM gateway
-		WHERE latitude > 0 AND longitude > 0`,
+		WHERE latitude != 0 OR longitude != 0`,
 	)
 	return gwsLoc, err
 }
