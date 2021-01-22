@@ -750,23 +750,15 @@ func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) 
 }
 
 // GetGatewaysLoc returns a slice of gateways locations.
-func (ps *PgStore) GetGatewaysLoc(ctx context.Context, limit int) ([]GatewayLocation, error) {
+func (ps *PgStore) GetGatewaysLoc(ctx context.Context) ([]GatewayLocation, error) {
 	var gwsLoc []GatewayLocation
 
 	err := sqlx.SelectContext(ctx, ps.db, &gwsLoc, `
-		select
-			latitude,
-			longitude,
-			altitude
-		from gateway
-		where latitude > 0 and longitude > 0
-		limit $1`,
-		limit,
+		SELECT latitude, longitude, altitude
+		FROM gateway
+		WHERE latitude > 0 AND longitude > 0`,
 	)
-	if err != nil {
-		return nil, errors.Wrap(err, "select error")
-	}
-	return gwsLoc, nil
+	return gwsLoc, err
 }
 
 // GetGatewaysForMACs returns a map of gateways given a slice of MACs.

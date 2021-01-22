@@ -3,12 +3,9 @@ package external
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/spf13/viper"
 
 	"github.com/lib/pq/hstore"
 
@@ -33,7 +30,6 @@ import (
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
@@ -806,11 +802,8 @@ func (a *GatewayAPI) ListNewGateways(ctx context.Context, req *api.ListGatewayRe
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLocationsRequest) (*api.ListGatewayLocationsResponse, error) {
 	var result []*api.GatewayLocationListItem
-	var gatewayLocationsRedisKey = "gateway_locations"
 
-	redisConn := redis.RedisClient()
-
-	gwsLoc, err := a.st.GetGatewaysLoc(ctx, viper.GetInt("application_server.gateways_locations_limit"))
+	gwsLoc, err := a.st.GetGatewaysLoc(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -823,13 +816,6 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLoca
 				Altitude:  loc.Altitude,
 			},
 		})
-	}
-
-	bytes, err := json.Marshal(&result)
-	if err == nil {
-		if err := redisConn.Set(gatewayLocationsRedisKey, bytes, redis.MicLookupExpire).Err(); err != nil {
-			log.WithError(err).Warn("Set gateway location to redis error")
-		}
 	}
 
 	resp := api.ListGatewayLocationsResponse{
