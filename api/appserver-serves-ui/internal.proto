@@ -7,6 +7,8 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
+import "user.proto";
+
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {
     // Log the user in, returns JWT
@@ -193,28 +195,15 @@ message ExternalUserAccount {
 }
 
 message ProfileResponse {
-    // User ID.
-    // Will be set automatically on create.
-    int64 id = 1;
-
-    // Username of the user.
-    string username = 2;
-
-    // Set to true to make the user a global administrator.
-    bool is_admin = 4;
-
-    // Set to false to disable the user.
-    bool is_active = 5;
-
-    // E-mail of the user.
-    string email = 6;
-
-    string last_login_service = 8;
+    // User object.
+    User user = 1;
 
     // Organizations to which the user is associated.
-    repeated OrganizationLink organizations = 9;
+    repeated OrganizationLink organizations = 3;
     // ExternalUserAccount to which the user is associated.
-    repeated ExternalUserAccount external_user_accounts = 10;
+    repeated ExternalUserAccount external_user_accounts = 4;
+
+    string last_login_service = 8;
 }
 
 message GlobalSearchRequest {
