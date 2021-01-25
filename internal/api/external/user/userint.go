@@ -190,11 +190,13 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 	}
 
 	resp := inpb.ProfileResponse{
-		Id:               user.ID,
-		Username:         user.DisplayName,
-		Email:            user.Email,
-		IsAdmin:          user.IsAdmin,
-		IsActive:         user.IsActive,
+		User: &inpb.User{
+			Id:       user.ID,
+			Username: user.DisplayName,
+			IsAdmin:  user.IsAdmin,
+			IsActive: user.IsActive,
+			Email:    user.Email,
+		},
 		LastLoginService: cred.Service,
 	}
 
