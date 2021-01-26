@@ -2,9 +2,14 @@ package devprovision
 
 import (
 	"context"
+	"encoding/hex"
+	"encoding/json"
+	"io/ioutil"
+	"os/user"
 	"time"
 
 	"github.com/brocaar/lorawan"
+	log "github.com/sirupsen/logrus"
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
@@ -65,4 +70,42 @@ func mockGen128Rand() []byte {
 	}
 
 	return randbuf
+}
+
+// Mock device list
+var mockDeviceList = []deviceInfo{
+	{SerialNumber: "SERIALNUMBEROOOOOOOO", SerialNumberHash: "34dfcb3dde1a09fd340fafada1e431e84028fc53c328d359a8824613b86d568e",
+		ManufacturerID: 1, Model: "LoRaWatch", FixedDevEUI: true, DevEUI: "2462abfffeddc710", TimeCreated: time.Now()},
+}
+
+func mockFindDeviceBySnHash(serialnumberhash []byte) (bool, deviceInfo) {
+	strhash := hex.EncodeToString(serialnumberhash)
+
+	for i := range mockDeviceList {
+		if mockDeviceList[i].SerialNumberHash == strhash {
+			return true, mockDeviceList[i]
+		}
+	}
+	return false, deviceInfo{}
+}
+
+func mockSaveDevice(deviceinfo deviceInfo) error {
+	for i := range mockDeviceList {
+		if mockDeviceList[i].SerialNumberHash == deviceinfo.SerialNumberHash {
+			mockDeviceList[i] = deviceinfo
+			break
+		}
+	}
+
+	targetfile := "devicelist.json"
+	user, err := user.Current()
+	if err != nil {
+		log.Errorf("Error to get current user. %s", err.Error())
+	} else {
+		targetfile = user.HomeDir + "/devicelist.json"
+	}
+	log.Debugf("Save device list to %s", targetfile)
+	outputbuf, _ := json.MarshalIndent(mockDeviceList, "", "  ")
+	_ = ioutil.WriteFile(targetfile, outputbuf, 0600)
+	return nil
 }

@@ -72,13 +72,17 @@ func prepareAuthMessage(session *deviceSession, serialNumberHash []byte, verifyC
 	return payload
 }
 
-func isByteArrayAllZero(input []byte) bool {
-	for i := range input {
-		if input[i] != 0 {
-			return false
-		}
+func extractAuthAccepted(macpayload []byte) (bool, []byte, []byte) {
+	retok := false
+	rdeveui := make([]byte, 8)
+	encpayload := make([]byte, 32)
+
+	if len(macpayload) == 41 {
+		copy(rdeveui[:], macpayload[1:])
+		copy(encpayload[:], macpayload[9:])
+		retok = true
 	}
-	return true
+	return retok, rdeveui, encpayload
 }
 
 //
@@ -89,6 +93,8 @@ func TestMain(m *testing.M) {
 	// Setup mock funcs
 	funcGetNow = mockGetNow
 	funcGen128Rand = mockGen128Rand
+	funcFindDeviceBySnHash = mockFindDeviceBySnHash
+	funcSaveDevice = mockSaveDevice
 
 	//reduce max number of session
 	maxNumberOfDevSession = 10
@@ -114,7 +120,7 @@ func TestSetup(t *testing.T) {
 	}
 }
 
-func TestDeviceSession(t *testing.T) {
+func TestDeviceSessionHandling(t *testing.T) {
 	ctx := context.Background()
 	if setupUnitTest(&handlerMock{}) != nil {
 		t.Error("Uint test setup failed.")
@@ -131,43 +137,46 @@ func TestDeviceSession(t *testing.T) {
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     mockRxInfo,
 	}
+	request.Mic = calProprietaryMic(request.MacPayload)
 
 	// Send 1st frame
 	processed, err := HandleReceivedFrame(ctx, &request)
 	if err != nil {
-		t.Errorf("HandleReceivedFrame failed. %s", err)
+		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
 	if !processed {
-		t.Error("Request not processed.")
+		t.Fatalf("Request not processed.")
 	}
 	if len(deviceSessionList) != 1 {
-		t.Errorf("Number of active device session is wrong, expected 1, got %d", len(deviceSessionList))
+		t.Fatalf("Number of active device session is wrong, expected 1, got %d", len(deviceSessionList))
 	}
 
 	// Send 2nd frame, same rDevEui
 	processed, err = HandleReceivedFrame(ctx, &request)
 	if err != nil {
-		t.Errorf("HandleReceivedFrame failed. %s", err)
+		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
 	if !processed {
-		t.Error("Request not processed.")
+		t.Fatalf("Request not processed.")
 	}
 	if len(deviceSessionList) != 1 {
-		t.Errorf("Expected only 1 device session, got %d", len(deviceSessionList))
+		t.Fatalf("Expected only 1 device session, got %d", len(deviceSessionList))
 	}
 
 	// Send 3nd frame, different rDevEui
 	otherdeveui := []byte{0x81, 0x82, 0x83, 0xff, 0xfe, 0x84, 0x85, 0x80}
 	request.MacPayload = prepareHelloMessage(otherdeveui, devicepublickey)
+	request.Mic = calProprietaryMic(request.MacPayload)
+
 	processed, err = HandleReceivedFrame(ctx, &request)
 	if err != nil {
-		t.Errorf("HandleReceivedFrame failed. %s", err)
+		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
 	if !processed {
-		t.Error("Request not processed.")
+		t.Fatalf("Request not processed.")
 	}
 	if len(deviceSessionList) != 2 {
-		t.Errorf("Expected there is 2 device session, got %d", len(deviceSessionList))
+		t.Fatalf("Expected there is 2 device session, got %d", len(deviceSessionList))
 	}
 }
 
@@ -199,54 +208,56 @@ func TestDeviceSessionExpire(t *testing.T) {
 		seqdeveui[0] = uint8(i >> 8)
 		seqdeveui[1] = uint8(i)
 		request.MacPayload = prepareHelloMessage(seqdeveui, devicepublickey)
+		request.Mic = calProprietaryMic(request.MacPayload)
 		_, err := HandleReceivedFrame(ctx, &request)
 		if err != nil {
-			t.Errorf("HandleReceivedFrame failed. %s", err)
+			t.Fatalf("HandleReceivedFrame failed. %s", err)
 		}
 
 		timestamp := mockNowQueue[0]
 		mockNowQueue = []time.Time{timestamp.Add(time.Second)}
 	}
 	if len(deviceSessionList) != maxNumberOfDevSession {
-		t.Errorf("Expected number device session is %d, got %d", maxNumberOfDevSession, len(deviceSessionList))
+		t.Fatalf("Expected number device session is %d, got %d", maxNumberOfDevSession, len(deviceSessionList))
 	}
 
 	// Queue one more
 	request.MacPayload = prepareHelloMessage(rDevEui, devicepublickey)
+	request.Mic = calProprietaryMic(request.MacPayload)
 	_, err := HandleReceivedFrame(ctx, &request)
 	if err != nil {
-		t.Errorf("HandleReceivedFrame failed. %s", err)
+		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
 	if len(deviceSessionList) != maxNumberOfDevSession {
-		t.Errorf("Expected number device session is %d, got %d", maxNumberOfDevSession, len(deviceSessionList))
+		t.Fatalf("Expected number device session is %d, got %d", maxNumberOfDevSession, len(deviceSessionList))
 	}
 
 	// Just before expire
 	mockNowQueue = []time.Time{timestart.Add(deviceSessionLifeTime)}
 	clearExpiredDevSession()
 	if len(deviceSessionList) != 10 {
-		t.Errorf("Expected number device session is %d, got %d", 10, len(deviceSessionList))
+		t.Fatalf("Expected number device session is %d, got %d", 10, len(deviceSessionList))
 	}
 
 	// 1st expired
 	mockNowQueue[0] = mockNowQueue[0].Add(time.Second)
 	clearExpiredDevSession()
 	if len(deviceSessionList) != 9 {
-		t.Errorf("Expected number device session is %d, got %d", 9, len(deviceSessionList))
+		t.Fatalf("Expected number device session is %d, got %d", 9, len(deviceSessionList))
 	}
 
 	// 4 more
 	mockNowQueue[0] = mockNowQueue[0].Add(time.Second * 4)
 	clearExpiredDevSession()
 	if len(deviceSessionList) != 5 {
-		t.Errorf("Expected number device session is %d, got %d", 5, len(deviceSessionList))
+		t.Fatalf("Expected number device session is %d, got %d", 5, len(deviceSessionList))
 	}
 
 	// All expired
 	mockNowQueue[0] = timestart.Add(deviceSessionLifeTime * 2)
 	clearExpiredDevSession()
 	if len(deviceSessionList) != 0 {
-		t.Errorf("Expected number device session is %d, got %d", 0, len(deviceSessionList))
+		t.Fatalf("Expected number device session is %d, got %d", 0, len(deviceSessionList))
 	}
 }
 
@@ -275,6 +286,7 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     mockRxInfo,
 	}
+	request.Mic = calProprietaryMic(request.MacPayload)
 
 	mockRandValue = -1
 	downserverpubkey := make([][]uint8, 2)
@@ -341,6 +353,42 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 	if !bytes.Equal(downservernonce[0], downservernonce[1]) {
 		t.Error("Server nonce changed.")
 	}
+}
+
+func TestHandleReceivedFrameWrongHello(t *testing.T) {
+	ctx := context.Background()
+
+	if setupUnitTest(&handlerMock{}) != nil {
+		t.Error("Uint test setup failed.")
+	}
+
+	// Wrong MIC
+	devicepublickey := make([]byte, 64)
+	request := as.HandleProprietaryUplinkRequest{
+		MacPayload: prepareHelloMessage(rDevEui, devicepublickey),
+		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
+		TxInfo:     &gwV3.UplinkTXInfo{},
+		RxInfo:     mockRxInfo,
+	}
+	processed, err := HandleReceivedFrame(ctx, &request)
+	if err != nil {
+		t.Errorf("HandleReceivedFrame failed. %s", err)
+	}
+	if processed {
+		t.Error("Wrong MIC HELLO message should not processed, but it did.")
+	}
+
+	// Wrong size
+	request.MacPayload = append(request.MacPayload, []byte{0}...)
+	request.Mic = calProprietaryMic(request.MacPayload)
+
+	processed, err = HandleReceivedFrame(ctx, &request)
+	if err != nil {
+		t.Errorf("HandleReceivedFrame failed. %s", err)
+	}
+	if processed {
+		t.Error("Wrong size HELLO should not processed, but it did.")
+	}
 
 }
 
@@ -354,6 +402,15 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 		0x34, 0x0f, 0xaf, 0xad, 0xa1, 0xe4, 0x31, 0xe8,
 		0x40, 0x28, 0xfc, 0x53, 0xc3, 0x28, 0xd3, 0x59,
 		0xa8, 0x82, 0x46, 0x13, 0xb8, 0x6d, 0x56, 0x8e}
+	sharedkey := []byte{0x57, 0x57, 0x3A, 0x81, 0xE2, 0x7E, 0x48, 0x26, 0xFA, 0x8E, 0x18, 0x70, 0xCD,
+		0x6B, 0x66, 0x40, 0xF3, 0x90, 0x5D, 0x98, 0x40, 0xF4, 0x12, 0xFA, 0xAE, 0x74,
+		0x0B, 0x12, 0xE0, 0x01, 0x00, 0x00, 0xC4, 0xD8, 0x27, 0xA9, 0x37, 0x49, 0xEE,
+		0x44, 0xEA, 0x1B, 0xAC, 0x1C, 0x18, 0x8C, 0x03, 0xAA, 0x6B, 0x02, 0xDA, 0x1C,
+		0x68, 0xE9, 0xE8, 0xE6, 0xCA, 0xB9, 0xD1, 0xED, 0x91, 0x01, 0x00, 0x00}
+	expectedpayload := []byte{
+		0xf0, 0x54, 0xef, 0xcb, 0xad, 0x62, 0xbf, 0x87, 0xd8, 0x57, 0x52, 0x93, 0xf8,
+		0x13, 0x5b, 0xfa, 0x2c, 0x7c, 0xa6, 0xa3, 0xcf, 0xe9, 0x31, 0x94, 0x6c, 0xa9,
+		0x28, 0x00, 0x09, 0xc5, 0xa3, 0xdc}
 
 	ctx := context.Background()
 
@@ -365,8 +422,10 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	session := makeDeviceSession()
 	copy(session.rDevEui[:], rDevEui[:])
 	copy(session.provKey[:], provkey[:])
+	copy(session.sharedKey[:], sharedkey[:])
 	copy(session.serverNonce[:], servernonce[:])
 	copy(session.devNonce[:], devicenonce[:])
+	session.deriveKeys()
 	sessionid := binary.BigEndian.Uint64(rDevEui)
 	deviceSessionList[sessionid] = session
 
@@ -378,6 +437,7 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     mockRxInfo,
 	}
+	request.Mic = calProprietaryMic(request.MacPayload)
 
 	//
 	processed, err := HandleReceivedFrame(ctx, &request)
@@ -405,7 +465,85 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 		t.Errorf("Delay should be 5, but got %d", mockData.request.Delay.Seconds)
 	}
 
-	//	macpayload := mockData.request.MacPayload
+	macpayload := mockData.request.MacPayload
+	if len(macpayload) != 41 {
+		t.Errorf("Auth Accept response should be 41 bytes, but got %d", len(macpayload))
+	}
+	if macpayload[0] != DownRespAuthAccept {
+		t.Errorf("Wrong type value in Auth Accept response, expected %X but got %X", DownRespHello, macpayload[0])
+	}
+
+	_, downdeveui, encpayload := extractAuthAccepted(macpayload)
+	if !bytes.Equal(rDevEui, downdeveui) {
+		t.Error("Mismatch rDevEui at Hello response.")
+	}
+	if !bytes.Equal(encpayload, expectedpayload) {
+		t.Error("Wrong encrypted payload.")
+	}
+}
+
+func TestHandleReceivedFrameWrongAuth(t *testing.T) {
+	provkey := []byte{0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03}
+	servernonce := []byte{0x01, 0x02, 0x03, 0x04}
+	devicenonce := []byte{0x55, 0xaa, 0x55, 0xaa}
+	serialnumber := "SERIALNUMBEROOOOOOOO"
+	serialnumberhash := []byte{
+		0x34, 0xdf, 0xcb, 0x3d, 0xde, 0x1a, 0x09, 0xfd,
+		0x34, 0x0f, 0xaf, 0xad, 0xa1, 0xe4, 0x31, 0xe8,
+		0x40, 0x28, 0xfc, 0x53, 0xc3, 0x28, 0xd3, 0x59,
+		0xa8, 0x82, 0x46, 0x13, 0xb8, 0x6d, 0x56, 0x8e}
+	sharedkey := []byte{0x57, 0x57, 0x3A, 0x81, 0xE2, 0x7E, 0x48, 0x26, 0xFA, 0x8E, 0x18, 0x70, 0xCD,
+		0x6B, 0x66, 0x40, 0xF3, 0x90, 0x5D, 0x98, 0x40, 0xF4, 0x12, 0xFA, 0xAE, 0x74,
+		0x0B, 0x12, 0xE0, 0x01, 0x00, 0x00, 0xC4, 0xD8, 0x27, 0xA9, 0x37, 0x49, 0xEE,
+		0x44, 0xEA, 0x1B, 0xAC, 0x1C, 0x18, 0x8C, 0x03, 0xAA, 0x6B, 0x02, 0xDA, 0x1C,
+		0x68, 0xE9, 0xE8, 0xE6, 0xCA, 0xB9, 0xD1, 0xED, 0x91, 0x01, 0x00, 0x00}
+
+	ctx := context.Background()
+
+	if setupUnitTest(&handlerMock{}) != nil {
+		t.Error("Uint test setup failed.")
+	}
+
+	// Create a device sssion
+	session := makeDeviceSession()
+	copy(session.rDevEui[:], rDevEui[:])
+	copy(session.provKey[:], provkey[:])
+	copy(session.sharedKey[:], sharedkey[:])
+	copy(session.serverNonce[:], servernonce[:])
+	copy(session.devNonce[:], devicenonce[:])
+	session.deriveKeys()
+	sessionid := binary.BigEndian.Uint64(rDevEui)
+	deviceSessionList[sessionid] = session
+
+	verifycode := session.calVerifyCode(serialnumber, true)
+
+	request := as.HandleProprietaryUplinkRequest{
+		MacPayload: prepareAuthMessage(&session, serialnumberhash, verifycode, devicenonce),
+		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
+		TxInfo:     &gwV3.UplinkTXInfo{},
+		RxInfo:     mockRxInfo,
+	}
+
+	// Wrong MIC
+	request.Mic = []byte{0x01, 0x02, 0x03, 0x04}
+	processed, err := HandleReceivedFrame(ctx, &request)
+	if err != nil {
+		t.Errorf("HandleReceivedFrame failed. %s", err)
+	}
+	if processed {
+		t.Error("Wrong size AUTH should not processed, but it did.")
+	}
+
+	// Wrong Size
+	request.MacPayload = append(request.MacPayload, []byte{0}...)
+	request.Mic = calProprietaryMic(request.MacPayload)
+	processed, err = HandleReceivedFrame(ctx, &request)
+	if err != nil {
+		t.Errorf("HandleReceivedFrame failed. %s", err)
+	}
+	if processed {
+		t.Error("Wrong size AUTH should not processed, but it did.")
+	}
 
 }
 
@@ -422,6 +560,7 @@ func TestHandleReceivedFrameUnknownMsg(t *testing.T) {
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     mockRxInfo,
 	}
+	request.Mic = calProprietaryMic(request.MacPayload)
 
 	//
 	processed, err := HandleReceivedFrame(ctx, &request)
@@ -448,6 +587,7 @@ func TestHandleReceivedFrameNoRxInfo(t *testing.T) {
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     rxInfo,
 	}
+	request.Mic = calProprietaryMic(request.MacPayload)
 
 	//
 	processed, err := HandleReceivedFrame(ctx, &request)
@@ -553,5 +693,20 @@ func TestCalVerifyCode(t *testing.T) {
 	output = session.calVerifyCode(serialnumber, false)
 	if !bytes.Equal(output, expecteddeviceoutput) {
 		t.Error("Wrong verify code for device")
+	}
+}
+
+func TestCalProprietaryMic(t *testing.T) {
+	macpayload := []byte{
+		0x01, 0xD9, 0x7A, 0xC7, 0x25, 0xF1, 0xDC, 0x99, 0x31, 0x09, 0x8E, 0x34, 0x9B, 0x2B, 0x06, 0xE8,
+		0x6A, 0x5D, 0x41, 0x21, 0xDA, 0xA5, 0xC2, 0x18, 0xEC, 0x77, 0xCA, 0x21, 0x9A, 0x4C, 0x94, 0x7F,
+		0x33, 0x60, 0xA7, 0x00, 0xA7, 0x2B, 0x00, 0x00, 0x00, 0x9E, 0xD7, 0x18, 0x84, 0x12, 0xF0, 0xE4,
+		0x33, 0x18, 0x18, 0x02, 0x26, 0x51, 0x89, 0xDD, 0x17, 0x98, 0x13, 0xF2, 0xAB, 0x4E, 0x92, 0x2A,
+		0xF2, 0x69, 0x28, 0x2F, 0xB9, 0x2D, 0x00, 0x00, 0x00, 0x01}
+	expectedmic := []byte{0xB7, 0xC2, 0xCB, 0xB9}
+
+	calmic := calProprietaryMic(macpayload[:])
+	if !bytes.Equal(calmic, expectedmic) {
+		t.Error("Wrong MIC code")
 	}
 }

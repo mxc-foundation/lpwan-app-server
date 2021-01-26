@@ -10,7 +10,10 @@ import (
 	"time"
 
 	//	"github.com/golang/protobuf/ptypes"
+
+	"github.com/jacobsa/crypto/cmac"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/brocaar/chirpstack-api/go/v3/as"
@@ -65,6 +68,8 @@ var deviceSessionLifeTime = time.Minute * 5
 // Func to get current now, it will override at test
 var funcGetNow = time.Now
 var funcGen128Rand = gen128Rand
+var funcFindDeviceBySnHash = mockFindDeviceBySnHash
+var funcSaveDevice = mockSaveDevice
 
 // Gen 128 bytes of random numbers
 func gen128Rand() []byte {
@@ -113,6 +118,8 @@ func Setup(name string, h *store.Handler) error {
 
 	go CleanUpLoop()
 
+	log.SetLevel(logrus.DebugLevel)
+
 	return nil
 }
 
@@ -133,13 +140,37 @@ func CleanUpLoop() {
 	}
 }
 
+func processMessage(n nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) (bool, error) {
+	processed := false
+	messageType := req.MacPayload[0]
+	messageSize := len(req.MacPayload)
+
+	if (messageType == UpMessageHello) && (messageSize == sizeUpMessageHello) {
+		err := handleHello(n, req, targetgateway)
+		if err != nil {
+			return false, errors.Wrap(err, "send proprietary error")
+		}
+		processed = true
+	} else if (messageType == UpMessageAuth) && (messageSize == sizeUpMessageAuth) {
+		err := handleAuth(n, req, targetgateway)
+		if err != nil {
+			return false, errors.Wrap(err, "send proprietary error")
+		}
+		processed = true
+	} else {
+		log.Debug("Unknown Message.")
+	}
+
+	return processed, nil
+}
+
 // HandleReceivedFrame handles a ping received by one or multiple gateways.
 func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkRequest) (bool, error) {
 	var mic lorawan.MIC
 	copy(mic[:], req.Mic)
 
-	log.Debugf("Rx MacPayload:\n%s", hex.Dump(req.MacPayload))
-	log.Debugf("          MIC: %s", hex.EncodeToString(req.Mic))
+	// log.Debugf("Rx MacPayload:\n%s", hex.Dump(req.MacPayload))
+	// log.Debugf("          MIC: %s", hex.EncodeToString(req.Mic))
 
 	// Find max RSSI gw
 	var maxRssiRx *gwV3.UplinkRXInfo = nil
@@ -183,28 +214,14 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 	}
 	log.Debugf("  NetworkServer: %s", n.Server)
 
-	//
-
-	// Check Message Type
-	processed := false
-	messageType := req.MacPayload[0]
-	messageSize := len(req.MacPayload)
-
-	if (messageType == UpMessageHello) && (messageSize == sizeUpMessageHello) {
-		err := handleHello(n, req, maxRssiRx)
-		if err != nil {
-			return false, errors.Wrap(err, "send proprietary error")
-		}
-		processed = true
-	} else if (messageType == UpMessageAuth) && (messageSize == sizeUpMessageAuth) {
-		err := handleAuth(n, req, maxRssiRx)
-		if err != nil {
-			return false, errors.Wrap(err, "send proprietary error")
-		}
-		processed = true
+	// Check MIC
+	calmic := calProprietaryMic(req.MacPayload)
+	if !bytes.Equal(calmic, req.Mic) {
+		// log.Debugf("MacPayload:\n%s", hex.Dump(req.MacPayload))
+		log.Debugf("Wrong MIC calmic=%s, rxed mic=%s", hex.EncodeToString(calmic), hex.EncodeToString(req.Mic))
+		return false, errors.Wrap(err, "Wrong MIC for MacPayload")
 	}
-
-	return processed, nil
+	return processMessage(n, req, maxRssiRx)
 }
 
 func sendToNs(n nsd.NetworkServer, req *nsextra.SendDelayedProprietaryPayloadRequest) error {
@@ -220,6 +237,27 @@ func sendToNs(n nsd.NetworkServer, req *nsextra.SendDelayedProprietaryPayloadReq
 	return nil
 }
 
+func calProprietaryMic(macpayload []byte) []byte {
+	micbuf := make([]byte, 4)
+	hash, err := cmac.New(getFixedKey())
+	if err != nil {
+		return micbuf
+	}
+
+	if _, err = hash.Write([]byte{0xe0}); err != nil {
+		return micbuf
+	}
+	if _, err = hash.Write(macpayload); err != nil {
+		return micbuf
+	}
+
+	hb := hash.Sum([]byte{})
+
+	copy(micbuf[0:], hb[:])
+
+	return micbuf
+}
+
 func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 	req := nsextra.SendDelayedProprietaryPayloadRequest{
 		MacPayload:            payload.MacPayload,
@@ -229,8 +267,9 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		Dr:                    uint32(payload.DR),
 		Context:               payload.Context,
 		Delay:                 payload.Delay,
-		Mic:                   payload.Mic,
+		Mic:                   calProprietaryMic(payload.MacPayload),
 	}
+	log.Debugf("  sendProprietary() MIC: %s", hex.EncodeToString(req.Mic))
 
 	if ctrl.sendToNsFunc != nil {
 		err := ctrl.sendToNsFunc(n, &req)
@@ -307,10 +346,9 @@ func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReque
 		DR:         3,
 		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
 		Context:    targetgateway.Context,
-		Mic:        []byte{0x01, 0x02, 0x03, 0x04},
+		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
 	}
-	log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
-	log.Debugf("          MIC: %s", hex.EncodeToString(payload.Mic))
+	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
 	err = sendProprietary(nserver, payload)
 	if err != nil {
@@ -320,10 +358,12 @@ func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReque
 	return nil
 }
 
-func makeAuthAccept(session deviceSession) []byte {
+func makeAuthAccept(session deviceSession, verifycode []byte) []byte {
 	authpayload := make([]byte, 32)
-
-	encpayload := session.encryptAuthPayload(authpayload, true)
+	copy(authpayload[0:], session.assignedDevEui[:])
+	copy(authpayload[8:], session.assignedAppEui[:])
+	copy(authpayload[16:], verifycode[:])
+	encpayload := session.encryptAuthPayload(authpayload, false)
 
 	payload := []byte{DownRespAuthAccept}
 	payload = append(payload, session.rDevEui...)
@@ -366,36 +406,46 @@ func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReques
 	log.Debugf("  serialNumberHash: %s", hex.EncodeToString(serialnumberhash))
 	log.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
 
-	found, deviceinfo := findDeviceBySnHash(serialnumberhash)
+	found, deviceinfo := funcFindDeviceBySnHash(serialnumberhash)
 	if !found {
 		return errors.Errorf("Device %s not found.", hex.EncodeToString(serialnumberhash))
 	}
-	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.serialNumber, deviceinfo.manufacturerID, deviceinfo.server)
-	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s", deviceinfo.devEUI, deviceinfo.appEUI, deviceinfo.appKey, deviceinfo.nwkKey)
-	log.Debugf("  status=%d, model=%s, fixedDevEUI=%v, created=%v", deviceinfo.status, deviceinfo.model, deviceinfo.fixedDevEUI, deviceinfo.timeCreated)
+	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.SerialNumber, deviceinfo.ManufacturerID, deviceinfo.Server)
+	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s", deviceinfo.DevEUI, deviceinfo.AppEUI, deviceinfo.AppKey, deviceinfo.NwkKey)
+	log.Debugf("  status=%d, model=%s, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI, deviceinfo.TimeCreated)
 
-	calverifycode := currentsession.calVerifyCode(deviceinfo.serialNumber, true)
+	calverifycode := currentsession.calVerifyCode(deviceinfo.SerialNumber, true)
 	if !bytes.Equal(verifycode, calverifycode) {
 		return errors.Errorf("Incorrect verify code at Auth message")
+	}
+
+	currentsession, deviceinfo, err := updateDevice(currentsession, deviceinfo)
+	if err != nil {
+		return errors.Wrap(err, "updateDevice error")
+	}
+
+	err = funcSaveDevice(deviceinfo)
+	if err != nil {
+		return errors.Wrap(err, "saveDevice error")
 	}
 
 	//
 	var mac lorawan.EUI64
 	copy(mac[:], targetgateway.GatewayId)
+	verifycode = currentsession.calVerifyCode(deviceinfo.SerialNumber, false)
 
 	payload := proprietaryPayload{
-		MacPayload: makeAuthAccept(currentsession),
+		MacPayload: makeAuthAccept(currentsession, verifycode),
 		GatewayMAC: mac,
 		Frequency:  downFreq,
 		DR:         3,
 		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
 		Context:    targetgateway.Context,
-		Mic:        []byte{0x01, 0x02, 0x03, 0x04},
+		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
 	}
-	log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
-	log.Debugf("          MIC: %s", hex.EncodeToString(payload.Mic))
+	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
-	err := sendProprietary(nserver, payload)
+	err = sendProprietary(nserver, payload)
 	if err != nil {
 		return err
 	}
@@ -430,6 +480,7 @@ func createDeviceSession(sessionid uint64, rdeveui []byte, devicepublickey []byt
 
 	currentsession.genServerKeys()
 	currentsession.genSharedKey()
+	currentsession.deriveKeys()
 	deviceSessionList[sessionid] = currentsession
 
 	return true, currentsession
@@ -453,6 +504,46 @@ func clearDeviceSessionList() {
 	deviceSessionList = make(map[uint64]deviceSession)
 }
 
+func updateDevice(session deviceSession, deviceinfo deviceInfo) (deviceSession, deviceInfo, error) {
+	var err error
+	deveui := make([]byte, 8)
+	appeui := make([]byte, 8)
+	if deviceinfo.FixedDevEUI {
+		decodebuf, err := hex.DecodeString(deviceinfo.DevEUI)
+		if err != nil {
+			return session, deviceinfo, err
+		}
+		copy(deveui[:], decodebuf)
+	}
+	decodebuf, err := hex.DecodeString(deviceinfo.AppEUI)
+	if err != nil {
+		return session, deviceinfo, err
+	}
+	copy(appeui[:], decodebuf)
+
+	if isByteArrayAllZero(deveui) {
+		// Generate devEUI
+		randbuf := funcGen128Rand()
+		copy(deveui[:], randbuf[:])
+		deveui[3] = 0xff
+		deveui[4] = 0xfe
+
+		deviceinfo.DevEUI = hex.EncodeToString(deveui)
+	}
+
+	if !bytes.Equal(session.assignedDevEui, deveui) {
+		// Session is new
+		copy(session.assignedDevEui[:], deveui[:])
+		copy(session.assignedAppEui[:], appeui[:])
+
+		deviceinfo.AppKey = hex.EncodeToString(session.appKey)
+		deviceinfo.NwkKey = hex.EncodeToString(session.nwkKey)
+		deviceinfo.AppEUI = hex.EncodeToString(appeui)
+	}
+
+	return session, deviceinfo, nil
+}
+
 //
 func fillByteArray(input []byte, value uint8) {
 	for i := range input {
@@ -460,13 +551,11 @@ func fillByteArray(input []byte, value uint8) {
 	}
 }
 
-func findDeviceBySnHash(serialnumberhash []byte) (bool, deviceInfo) {
-	strhash := hex.EncodeToString(serialnumberhash)
-
-	for i := range fakeDeviceList {
-		if fakeDeviceList[i].serialNumberHash == strhash {
-			return true, fakeDeviceList[i]
+func isByteArrayAllZero(input []byte) bool {
+	for i := range input {
+		if input[i] != 0 {
+			return false
 		}
 	}
-	return false, deviceInfo{}
+	return true
 }

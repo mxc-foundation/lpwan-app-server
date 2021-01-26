@@ -10,9 +10,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision/ecdh"
 )
 
-var fixedKey = []byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-	0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}
-
 // Device session
 
 type deviceSession struct {
@@ -23,6 +20,8 @@ type deviceSession struct {
 	serverPublicKey  []byte
 	serverPrivateKey []byte
 	sharedKey        []byte
+	assignedDevEui   []byte
+	assignedAppEui   []byte
 	appKey           []byte
 	nwkKey           []byte
 	provKey          []byte
@@ -40,6 +39,8 @@ func makeDeviceSession() deviceSession {
 	session.serverPrivateKey = make([]byte, ecdh.K233PrvKeySize)
 	session.sharedKey = make([]byte, ecdh.K233PubKeySize)
 	session.expireTime = funcGetNow().Add(deviceSessionLifeTime)
+	session.assignedDevEui = make([]byte, 8)
+	session.assignedAppEui = make([]byte, 8)
 	session.appKey = make([]byte, 16)
 	session.nwkKey = make([]byte, 16)
 	session.provKey = make([]byte, 16)
@@ -59,7 +60,8 @@ func (d *deviceSession) genServerKeys() {
 }
 
 func (d *deviceSession) genSharedKey() {
-	d.sharedKey = ecdhK223.SharedSecret(d.serverPrivateKey, d.devicePublicKey)
+	newsharedkey := ecdhK223.SharedSecret(d.serverPrivateKey, d.devicePublicKey)
+	copy(d.sharedKey[:], newsharedkey[:])
 }
 
 func (d *deviceSession) deriveKeys() {
@@ -155,7 +157,7 @@ func (d *deviceSession) calVerifyCode(serialnumber string, useservernonce bool) 
 		calbuf = append(calbuf, d.devNonce...)
 	}
 
-	hash, err := cmac.New(fixedKey)
+	hash, err := cmac.New(getFixedKey())
 	if err != nil {
 		return cmacbuf
 	}
