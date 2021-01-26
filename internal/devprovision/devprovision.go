@@ -49,13 +49,14 @@ const moduleName = "devprovision"
 
 // Proprietary Payload
 type proprietaryPayload struct {
-	MacPayload []byte
-	GatewayMAC lorawan.EUI64
-	Frequency  uint32
-	DR         int
-	Context    []byte
-	Delay      *duration.Duration
-	Mic        []byte
+	MacPayload   []byte
+	GatewayMAC   lorawan.EUI64
+	DownlinkFreq uint32
+	UplinkFreq   uint32
+	DR           int
+	Context      []byte
+	Delay        *duration.Duration
+	Mic          []byte
 }
 
 //
@@ -263,7 +264,8 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		MacPayload:            payload.MacPayload,
 		GatewayMacs:           [][]byte{payload.GatewayMAC[:]},
 		PolarizationInversion: true,
-		Frequency:             uint32(payload.Frequency),
+		UplinkFreq:            payload.UplinkFreq,
+		DownlinkFreq:          payload.DownlinkFreq,
 		Dr:                    uint32(payload.DR),
 		Context:               payload.Context,
 		Delay:                 payload.Delay,
@@ -278,7 +280,8 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		}
 		log.WithFields(log.Fields{
 			"gateway_mac": payload.GatewayMAC,
-			"freq":        payload.Frequency,
+			"up_freq":     payload.UplinkFreq,
+			"down_freq":   payload.DownlinkFreq,
 		}).Infof("gateway proprietary payload sent to network-server %s", n.Server)
 	} else {
 		return errors.Errorf("ctrl.sendToNsFunc() not set.")
@@ -299,8 +302,6 @@ func makeHelloResponse(session deviceSession) []byte {
 func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) error {
 	log.Debug("  HELLO Message.")
 
-	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
-	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
 	var err error
 	var frameversion byte
 
@@ -340,13 +341,14 @@ func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReque
 	copy(mac[:], targetgateway.GatewayId)
 
 	payload := proprietaryPayload{
-		MacPayload: makeHelloResponse(currentsession),
-		GatewayMAC: mac,
-		Frequency:  downFreq,
-		DR:         3,
-		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
-		Context:    targetgateway.Context,
-		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
+		MacPayload:   makeHelloResponse(currentsession),
+		GatewayMAC:   mac,
+		UplinkFreq:   req.TxInfo.Frequency,
+		DownlinkFreq: 0,
+		DR:           3,
+		Delay:        &duration.Duration{Seconds: 5, Nanos: 0},
+		Context:      targetgateway.Context,
+		Mic:          []byte{0x00, 0x00, 0x00, 0x00},
 	}
 	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
@@ -374,9 +376,6 @@ func makeAuthAccept(session deviceSession, verifycode []byte) []byte {
 
 func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) error {
 	log.Debug("  AUTH Message.")
-
-	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
-	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
 
 	//
 	rdeveui := make([]byte, 8)
@@ -435,13 +434,14 @@ func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReques
 	verifycode = currentsession.calVerifyCode(deviceinfo.SerialNumber, false)
 
 	payload := proprietaryPayload{
-		MacPayload: makeAuthAccept(currentsession, verifycode),
-		GatewayMAC: mac,
-		Frequency:  downFreq,
-		DR:         3,
-		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
-		Context:    targetgateway.Context,
-		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
+		MacPayload:   makeAuthAccept(currentsession, verifycode),
+		GatewayMAC:   mac,
+		UplinkFreq:   req.TxInfo.Frequency,
+		DownlinkFreq: 0,
+		DR:           3,
+		Delay:        &duration.Duration{Seconds: 5, Nanos: 0},
+		Context:      targetgateway.Context,
+		Mic:          []byte{0x00, 0x00, 0x00, 0x00},
 	}
 	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 

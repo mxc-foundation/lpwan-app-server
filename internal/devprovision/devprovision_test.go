@@ -20,6 +20,7 @@ import (
 
 // Mock data
 const expectedRxInfoIdx = 1
+const mockTxFreq = 471100000
 
 var mockRxInfo = []*gwV3.UplinkRXInfo{
 	&gwV3.UplinkRXInfo{
@@ -283,7 +284,7 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareHelloMessage(rDevEui, devicepublickey),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq},
 		RxInfo:     mockRxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)
@@ -318,6 +319,12 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 		}
 		if mockData.request.Delay.Seconds != 5 {
 			t.Errorf("Delay should be 5, but got %d", mockData.request.Delay.Seconds)
+		}
+		if mockData.request.UplinkFreq != mockTxFreq {
+			t.Errorf("UplinkFreq not set.")
+		}
+		if mockData.request.DownlinkFreq != 0 {
+			t.Errorf("DownlinkFreq should not set.")
 		}
 
 		macpayload := mockData.request.MacPayload
@@ -434,7 +441,7 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareAuthMessage(&session, serialnumberhash, verifycode, devicenonce),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq},
 		RxInfo:     mockRxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)
@@ -463,6 +470,12 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	}
 	if mockData.request.Delay.Seconds != 5 {
 		t.Errorf("Delay should be 5, but got %d", mockData.request.Delay.Seconds)
+	}
+	if mockData.request.UplinkFreq != mockTxFreq {
+		t.Errorf("UplinkFreq not set.")
+	}
+	if mockData.request.DownlinkFreq != 0 {
+		t.Errorf("DownlinkFreq should not set.")
 	}
 
 	macpayload := mockData.request.MacPayload
