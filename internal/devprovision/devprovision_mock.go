@@ -74,15 +74,15 @@ func mockGen128Rand() []byte {
 
 // Mock device list
 var mockDeviceList = []deviceInfo{
-	{SerialNumber: "SERIALNUMBEROOOOOOOO", SerialNumberHash: "34dfcb3dde1a09fd340fafada1e431e84028fc53c328d359a8824613b86d568e",
+	{ProvisionID: "SERIALNUMBEROOOOOOOO", ProvisionIDHash: "34dfcb3dde1a09fd340fafada1e431e84028fc53c328d359a8824613b86d568e",
 		ManufacturerID: 1, Model: "LoRaWatch", FixedDevEUI: true, DevEUI: "2462abfffeddc710", TimeCreated: time.Now()},
 }
 
-func mockFindDeviceBySnHash(serialnumberhash []byte) (bool, deviceInfo) {
-	strhash := hex.EncodeToString(serialnumberhash)
+func mockFindDeviceBySnHash(provisionIdhash []byte) (bool, deviceInfo) {
+	strhash := hex.EncodeToString(provisionIdhash)
 
 	for i := range mockDeviceList {
-		if mockDeviceList[i].SerialNumberHash == strhash {
+		if mockDeviceList[i].ProvisionIDHash == strhash {
 			return true, mockDeviceList[i]
 		}
 	}
@@ -91,7 +91,7 @@ func mockFindDeviceBySnHash(serialnumberhash []byte) (bool, deviceInfo) {
 
 func mockSaveDevice(deviceinfo deviceInfo) error {
 	for i := range mockDeviceList {
-		if mockDeviceList[i].SerialNumberHash == deviceinfo.SerialNumberHash {
+		if mockDeviceList[i].ProvisionIDHash == deviceinfo.ProvisionIDHash {
 			mockDeviceList[i] = deviceinfo
 			break
 		}

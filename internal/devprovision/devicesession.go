@@ -147,9 +147,9 @@ func (d *deviceSession) encryptAuthPayload(payload []byte, isUplink bool) []byte
 	return output
 }
 
-func (d *deviceSession) calVerifyCode(serialnumber string, useservernonce bool) []byte {
+func (d *deviceSession) calVerifyCode(provisionid string, useservernonce bool) []byte {
 	cmacbuf := make([]byte, 16)
-	calbuf := []byte(serialnumber)
+	calbuf := []byte(provisionid)
 
 	if useservernonce {
 		calbuf = append(calbuf, d.serverNonce...)

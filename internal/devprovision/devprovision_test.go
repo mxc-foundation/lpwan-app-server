@@ -60,9 +60,9 @@ func extractHelloResponse(macpayload []byte) (bool, []byte, []byte, []byte) {
 	return retok, rdeveui, serverpubkey, servernonce
 }
 
-func prepareAuthMessage(session *deviceSession, serialNumberHash []byte, verifyCode []byte, devNonce []byte) []byte {
+func prepareAuthMessage(session *deviceSession, provisionIDHash []byte, verifyCode []byte, devNonce []byte) []byte {
 	authpayload := make([]byte, 52)
-	copy(authpayload[0:], serialNumberHash[:])
+	copy(authpayload[0:], provisionIDHash[:])
 	copy(authpayload[32:], verifyCode[:])
 	copy(authpayload[48:], devNonce[:])
 
@@ -403,8 +403,8 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	provkey := []byte{0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03}
 	servernonce := []byte{0x01, 0x02, 0x03, 0x04}
 	devicenonce := []byte{0x55, 0xaa, 0x55, 0xaa}
-	serialnumber := "SERIALNUMBEROOOOOOOO"
-	serialnumberhash := []byte{
+	privisionid := "SERIALNUMBEROOOOOOOO"
+	privisionidhash := []byte{
 		0x34, 0xdf, 0xcb, 0x3d, 0xde, 0x1a, 0x09, 0xfd,
 		0x34, 0x0f, 0xaf, 0xad, 0xa1, 0xe4, 0x31, 0xe8,
 		0x40, 0x28, 0xfc, 0x53, 0xc3, 0x28, 0xd3, 0x59,
@@ -436,10 +436,10 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	sessionid := binary.BigEndian.Uint64(rDevEui)
 	deviceSessionList[sessionid] = session
 
-	verifycode := session.calVerifyCode(serialnumber, true)
+	verifycode := session.calVerifyCode(privisionid, true)
 
 	request := as.HandleProprietaryUplinkRequest{
-		MacPayload: prepareAuthMessage(&session, serialnumberhash, verifycode, devicenonce),
+		MacPayload: prepareAuthMessage(&session, privisionidhash, verifycode, devicenonce),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
 		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq},
 		RxInfo:     mockRxInfo,
@@ -499,8 +499,8 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 	provkey := []byte{0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03}
 	servernonce := []byte{0x01, 0x02, 0x03, 0x04}
 	devicenonce := []byte{0x55, 0xaa, 0x55, 0xaa}
-	serialnumber := "SERIALNUMBEROOOOOOOO"
-	serialnumberhash := []byte{
+	privisionid := "SERIALNUMBEROOOOOOOO"
+	privisionidhash := []byte{
 		0x34, 0xdf, 0xcb, 0x3d, 0xde, 0x1a, 0x09, 0xfd,
 		0x34, 0x0f, 0xaf, 0xad, 0xa1, 0xe4, 0x31, 0xe8,
 		0x40, 0x28, 0xfc, 0x53, 0xc3, 0x28, 0xd3, 0x59,
@@ -528,10 +528,10 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 	sessionid := binary.BigEndian.Uint64(rDevEui)
 	deviceSessionList[sessionid] = session
 
-	verifycode := session.calVerifyCode(serialnumber, true)
+	verifycode := session.calVerifyCode(privisionid, true)
 
 	request := as.HandleProprietaryUplinkRequest{
-		MacPayload: prepareAuthMessage(&session, serialnumberhash, verifycode, devicenonce),
+		MacPayload: prepareAuthMessage(&session, privisionidhash, verifycode, devicenonce),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     mockRxInfo,
@@ -686,7 +686,7 @@ func TestEncryptAuthPayload(t *testing.T) {
 }
 
 func TestCalVerifyCode(t *testing.T) {
-	serialnumber := "SERIALNUMBEROOOOOOOO"
+	privisionid := "SERIALNUMBEROOOOOOOO"
 	servernonce := []byte{0x01, 0x02, 0x03, 0x04}
 	devicenonce := []byte{0x55, 0xaa, 0x55, 0xaa}
 	expectedserveroutput := []byte{0x2E, 0x69, 0xBB, 0x5E, 0xD7, 0x8B, 0x5E, 0xE8, 0x0C, 0x6A, 0x8A, 0xDC, 0x81, 0x91, 0xDD, 0xF8}
@@ -697,13 +697,13 @@ func TestCalVerifyCode(t *testing.T) {
 	copy(session.devNonce[:], devicenonce[:])
 
 	// Use serverNonce
-	output := session.calVerifyCode(serialnumber, true)
+	output := session.calVerifyCode(privisionid, true)
 	if !bytes.Equal(output, expectedserveroutput) {
 		t.Error("Wrong verify code for server")
 	}
 
 	// Use deviceNonce
-	output = session.calVerifyCode(serialnumber, false)
+	output = session.calVerifyCode(privisionid, false)
 	if !bytes.Equal(output, expecteddeviceoutput) {
 		t.Error("Wrong verify code for device")
 	}

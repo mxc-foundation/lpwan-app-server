@@ -394,26 +394,26 @@ func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReques
 	copy(authpayload[:], req.MacPayload[9:])
 	authpayload = currentsession.encryptAuthPayload(authpayload, true)
 
-	serialnumberhash := make([]byte, 32)
+	privisionidhash := make([]byte, 32)
 	verifycode := make([]byte, 16)
-	copy(serialnumberhash[:], authpayload[0:])
+	copy(privisionidhash[:], authpayload[0:])
 	copy(verifycode[:], authpayload[32:])
 	copy(currentsession.devNonce[:], authpayload[48:])
 
 	log.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
 	log.Debugf("  devNonce: %s", hex.EncodeToString(currentsession.devNonce))
-	log.Debugf("  serialNumberHash: %s", hex.EncodeToString(serialnumberhash))
+	log.Debugf("  privisionidhash: %s", hex.EncodeToString(privisionidhash))
 	log.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
 
-	found, deviceinfo := funcFindDeviceBySnHash(serialnumberhash)
+	found, deviceinfo := funcFindDeviceBySnHash(privisionidhash)
 	if !found {
-		return errors.Errorf("Device %s not found.", hex.EncodeToString(serialnumberhash))
+		return errors.Errorf("Device %s not found.", hex.EncodeToString(privisionidhash))
 	}
-	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.SerialNumber, deviceinfo.ManufacturerID, deviceinfo.Server)
+	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.ProvisionID, deviceinfo.ManufacturerID, deviceinfo.Server)
 	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s", deviceinfo.DevEUI, deviceinfo.AppEUI, deviceinfo.AppKey, deviceinfo.NwkKey)
 	log.Debugf("  status=%d, model=%s, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI, deviceinfo.TimeCreated)
 
-	calverifycode := currentsession.calVerifyCode(deviceinfo.SerialNumber, true)
+	calverifycode := currentsession.calVerifyCode(deviceinfo.ProvisionID, true)
 	if !bytes.Equal(verifycode, calverifycode) {
 		return errors.Errorf("Incorrect verify code at Auth message")
 	}
@@ -431,7 +431,7 @@ func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReques
 	//
 	var mac lorawan.EUI64
 	copy(mac[:], targetgateway.GatewayId)
-	verifycode = currentsession.calVerifyCode(deviceinfo.SerialNumber, false)
+	verifycode = currentsession.calVerifyCode(deviceinfo.ProvisionID, false)
 
 	payload := proprietaryPayload{
 		MacPayload:   makeAuthAccept(currentsession, verifycode),
