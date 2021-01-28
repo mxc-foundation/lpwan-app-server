@@ -226,6 +226,10 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 	}
 
 	for _, eu := range externalUsers {
+		if eu.ExternalUserID == "" {
+			continue
+		}
+
 		item := inpb.ExternalUserAccount{
 			ExternalUserId:   eu.ExternalUserID,
 			ExternalUsername: eu.ExternalUsername,
