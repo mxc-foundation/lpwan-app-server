@@ -9,10 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
-
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
-
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -31,6 +27,7 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -38,6 +35,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
+
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
@@ -273,6 +272,12 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 
 	api.RegisterDHXServcieServer(grpcServer, dhx.NewServer(
 		m2mcli.GetDHXServiceClient(),
+		grpcAuth,
+		pgs,
+	))
+
+	api.RegisterShopifyIntegrationServer(grpcServer, user.NewShopifyServiceServer(
+		m2mcli.GetDistributeBonusServiceClient(),
 		grpcAuth,
 		pgs,
 	))

@@ -4,6 +4,11 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 )
 
+// GetDistributeBonusServiceClient returns a new DistributeBonusServiceClient of mxprotocol-server
+func GetDistributeBonusServiceClient() pb.DistributeBonusServiceClient {
+	return pb.NewDistributeBonusServiceClient(ctrl.m2mconn)
+}
+
 // GetDHXServiceClient returns a new GetDHXServiceClient of mxprotocol-server
 func GetDHXServiceClient() pb.DHXServiceClient {
 	return pb.NewDHXServiceClient(ctrl.m2mconn)

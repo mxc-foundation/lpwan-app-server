@@ -395,5 +395,7 @@ func (a *Server) ConfirmBindingEmail(ctx context.Context, req *pb.ConfirmBinding
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
+	go monitoring(ctx, extUser.UserID, a.config.ShopifyConfig, a.store)
+
 	return &pb.ConfirmBindingEmailResponse{}, nil
 }

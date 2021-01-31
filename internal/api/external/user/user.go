@@ -131,6 +131,9 @@ type Store interface {
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
 	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
+
+	// ShopifyStore defines db apis for shopify service
+	ShopifyStore
 }
 
 // Mailer is an interface responsible for sending emails to the user
