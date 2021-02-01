@@ -865,6 +865,9 @@
             "$ref": "#/definitions/appserver_serves_uiExternalUserAccount"
           },
           "description": "ExternalUserAccount to which the user is associated."
+        },
+        "lastLoginService": {
+          "type": "string"
         }
       }
     },
@@ -923,9 +926,6 @@
         "note": {
           "type": "string",
           "description": "Optional note to store with the user."
-        },
-        "lastLoginService": {
-          "type": "string"
         }
       }
     },

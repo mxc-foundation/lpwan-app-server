@@ -111,16 +111,22 @@ type Store interface {
 
 	// GetUserIDByExternalUserID gets user id from service name and external user id
 	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
-	// GetExternalUserByUserID gets external user id from service name and user id
+	// GetExternalUserByUserIDAndService gets external user id from service name and user id
 	GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (ExternalUser, error)
 	// GetExternalUsersByUserID gets all external users bound with userID
 	GetExternalUsersByUserID(ctx context.Context, userID int64) ([]ExternalUser, error)
 	// AddExternalUserLogin inserts new external id and user id relation
-	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
+	AddExternalUserLogin(ctx context.Context, extUser ExternalUser) error
 	// DeleteExternalUserLogin removes binding relation between external account and supernode account
 	DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error
 	// SetExternalUsername updates external user's username
 	SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error
+	// GetExternalUserByToken returns external user with given security token
+	GetExternalUserByToken(ctx context.Context, service, token string) (ExternalUser, error)
+	// GetExternalUserByUsername returns external user with given external username
+	GetExternalUserByUsername(ctx context.Context, service, externalUsername string) (ExternalUser, error)
+	// ConfirmExternalUserID updates external id of an external user and set verification to empty string
+	ConfirmExternalUserID(ctx context.Context, extUser ExternalUser) error
 
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
@@ -131,6 +137,8 @@ type Store interface {
 type Mailer interface {
 	// SendRegistrationConfirmation sends email to the user confirming registration
 	SendRegistrationConfirmation(email, lang, securityToken string) error
+	// SendVerifyEmailConfirmation sends email with confirmation message to given address
+	SendVerifyEmailConfirmation(email, lang, securityToken string) error
 	// SendPasswordResetUnknown sends an email that password reset was requested,
 	// but the user is unknown
 	SendPasswordResetUnknown(email, lang string) error
@@ -155,6 +163,8 @@ type Config struct {
 	WeChatLogin auth.WeChatAuthentication
 	// external user wechat login config, debug mode
 	DebugWeChatLogin auth.WeChatAuthentication
+	// shopify private app configuration
+	ShopifyConfig ShopifyAdminAPI
 }
 
 // Server implements Internal User Service

@@ -46,6 +46,43 @@ service ExternalUserService {
             body: "*"
         };
     }
+
+    // VerifyEmail sends email with confirmation message to given address
+    rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse) {
+        option (google.api.http) = {
+            post: "/api/verify-external-email"
+            body: "*"
+        };
+    }
+
+    // ConfirmBindingEmail checks given token and bind
+    rpc ConfirmBindingEmail (ConfirmBindingEmailRequest) returns (ConfirmBindingEmailResponse) {
+        option (google.api.http) = {
+            post: "/api/confirm-external-email"
+            body: "*"
+        };
+    }
+}
+
+message VerifyEmailRequest {
+    // user will receive confirmation message on given email address
+    string email = 1;
+    string language = 2;
+    int64 organization_id = 3;
+}
+
+message VerifyEmailResponse {
+    string status = 1;
+}
+
+message ConfirmBindingEmailRequest {
+    // token sent to user in VerifyEmail
+    string token = 1;
+    int64 organization_id = 3;
+}
+
+message ConfirmBindingEmailResponse {
+
 }
 
 message AuthenticateWeChatUserRequest {

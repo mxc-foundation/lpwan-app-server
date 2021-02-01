@@ -6,6 +6,7 @@ option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-se
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+
 import "user.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
@@ -201,6 +202,8 @@ message ProfileResponse {
     repeated OrganizationLink organizations = 3;
     // ExternalUserAccount to which the user is associated.
     repeated ExternalUserAccount external_user_accounts = 4;
+
+    string last_login_service = 8;
 }
 
 message GlobalSearchRequest {

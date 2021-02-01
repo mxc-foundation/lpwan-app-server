@@ -191,13 +191,13 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 
 	resp := inpb.ProfileResponse{
 		User: &inpb.User{
-			Id:               user.ID,
-			Username:         user.DisplayName,
-			Email:            user.Email,
-			IsAdmin:          user.IsAdmin,
-			IsActive:         user.IsActive,
-			LastLoginService: cred.Service,
+			Id:       user.ID,
+			Username: user.DisplayName,
+			IsAdmin:  user.IsAdmin,
+			IsActive: user.IsActive,
+			Email:    user.Email,
 		},
+		LastLoginService: cred.Service,
 	}
 
 	orgs, err := a.store.GetUserOrganizations(ctx, cred.UserID)
@@ -226,6 +226,10 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 	}
 
 	for _, eu := range externalUsers {
+		if eu.ExternalUserID == "" {
+			continue
+		}
+
 		item := inpb.ExternalUserAccount{
 			ExternalUserId:   eu.ExternalUserID,
 			ExternalUsername: eu.ExternalUsername,

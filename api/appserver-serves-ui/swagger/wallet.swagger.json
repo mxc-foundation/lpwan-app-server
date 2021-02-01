@@ -365,29 +365,12 @@
     }
   },
   "definitions": {
-    "appserver_serves_uiExternalUserAccount": {
-      "type": "object",
-      "properties": {
-        "externalUserId": {
-          "type": "string"
-        },
-        "externalUsername": {
-          "type": "string"
-        },
-        "service": {
-          "type": "string"
-        }
-      }
-    },
     "appserver_serves_uiGetDownLinkPriceResponse": {
       "type": "object",
       "properties": {
         "downLinkPrice": {
           "type": "number",
           "format": "double"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
         }
       }
     },
@@ -438,9 +421,6 @@
             "$ref": "#/definitions/appserver_serves_uiNetworkUsage"
           }
         },
-        "userProfile": {
-          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
-        },
         "count": {
           "type": "string",
           "format": "int64"
@@ -459,9 +439,6 @@
           "items": {
             "$ref": "#/definitions/appserver_serves_uiVmxcTxHistory"
           }
-        },
-        "userProfile": {
-          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
         }
       }
     },
@@ -470,9 +447,6 @@
       "properties": {
         "balance": {
           "type": "string"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
         }
       }
     },
@@ -481,9 +455,6 @@
       "properties": {
         "miningIncome": {
           "type": "string"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
         }
       }
     },
@@ -554,104 +525,6 @@
         "ulCntGwFree": {
           "type": "string",
           "format": "int64"
-        }
-      }
-    },
-    "appserver_serves_uiOrganizationLink": {
-      "type": "object",
-      "properties": {
-        "organizationID": {
-          "type": "string",
-          "format": "int64",
-          "description": "Organization ID."
-        },
-        "organizationName": {
-          "type": "string",
-          "description": "Organization name."
-        },
-        "isAdmin": {
-          "type": "boolean",
-          "description": "User is admin within the context of this organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
-        },
-        "isDeviceAdmin": {
-          "type": "boolean",
-          "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
-        },
-        "isGatewayAdmin": {
-          "type": "boolean",
-          "description": "User is able to modify gateways."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Created at timestamp."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Last update timestamp."
-        }
-      },
-      "description": "Defines an organization to which an user is associated."
-    },
-    "appserver_serves_uiProfileResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/appserver_serves_uiUser",
-          "description": "User object."
-        },
-        "organizations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/appserver_serves_uiOrganizationLink"
-          },
-          "description": "Organizations to which the user is associated."
-        },
-        "externalUserAccounts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/appserver_serves_uiExternalUserAccount"
-          },
-          "description": "ExternalUserAccount to which the user is associated."
-        }
-      }
-    },
-    "appserver_serves_uiUser": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64",
-          "description": "User ID.\nWill be set automatically on create."
-        },
-        "username": {
-          "type": "string",
-          "description": "Username of the user."
-        },
-        "sessionTTL": {
-          "type": "integer",
-          "format": "int32",
-          "description": "The session timeout, in minutes."
-        },
-        "isAdmin": {
-          "type": "boolean",
-          "description": "Set to true to make the user a global administrator."
-        },
-        "isActive": {
-          "type": "boolean",
-          "description": "Set to false to disable the user."
-        },
-        "email": {
-          "type": "string",
-          "description": "E-mail of the user."
-        },
-        "note": {
-          "type": "string",
-          "description": "Optional note to store with the user."
-        },
-        "lastLoginService": {
-          "type": "string"
         }
       }
     },

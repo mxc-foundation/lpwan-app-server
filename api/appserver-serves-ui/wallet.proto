@@ -5,7 +5,6 @@ option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-se
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "internal.proto";
 
 service WalletService {
     rpc GetWalletBalance (GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
@@ -66,7 +65,6 @@ message GetWalletBalanceRequest {
 
 message GetWalletBalanceResponse {
     string balance = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message GetWalletMiningIncomeRequest {
@@ -78,7 +76,6 @@ message GetWalletMiningIncomeRequest {
 
 message GetWalletMiningIncomeResponse {
     string mining_income = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message GetGatewayMiningIncomeRequest {
@@ -138,7 +135,6 @@ message VmxcTxHistory {
 message GetVmxcTxHistoryResponse {
     int64 count = 1;
     repeated VmxcTxHistory tx_history = 2;
-    ProfileResponse user_profile = 3;
 }
 
 message GetNetworkUsageHistRequest {
@@ -164,8 +160,7 @@ message NetworkUsage {
 
 message GetNetworkUsageHistResponse {
     repeated NetworkUsage network_usage = 1;
-    ProfileResponse user_profile = 2;
-    int64 count = 3;
+    int64 count = 2;
 }
 
 message GetDownLinkPriceRequest {
@@ -174,7 +169,6 @@ message GetDownLinkPriceRequest {
 
 message GetDownLinkPriceResponse {
     double down_link_price = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message GetMXCpriceRequest {

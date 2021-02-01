@@ -31,7 +31,7 @@ func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string
 func (ps *PgStore) GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
 	var externalUser user.ExternalUser
 	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
-		select user_id, service, external_id, external_username from external_login where service=$1 and user_id=$2`,
+		select * from external_login where service=$1 and user_id=$2`,
 		service,
 		userID,
 	)
@@ -45,7 +45,7 @@ func (ps *PgStore) GetExternalUserByUserIDAndService(ctx context.Context, servic
 func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) ([]user.ExternalUser, error) {
 	var externalUsers []user.ExternalUser
 	err := sqlx.SelectContext(ctx, ps.db, &externalUsers, `
-		select user_id, service, external_id, external_username from external_login where user_id=$1`,
+		select * from external_login where user_id=$1`,
 		userID)
 	if err != nil {
 		return externalUsers, handlePSQLError(Select, err, "select error")
@@ -54,10 +54,10 @@ func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) (
 }
 
 // AddExternalUserLogin adds new external user binding relation
-func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error {
+func (ps *PgStore) AddExternalUserLogin(ctx context.Context, extUser user.ExternalUser) error {
 	res, err := ps.db.ExecContext(ctx, `
-		insert into external_login (user_id , service, external_id, external_username) values ($1, $2, $3, $4)`,
-		userID, service, externalUserID, externalUsername,
+		insert into external_login (user_id , service, external_id, external_username, verification) values ($1, $2, $3, $4, $5)`,
+		extUser.UserID, extUser.ServiceName, extUser.ExternalUserID, extUser.ExternalUsername, extUser.Verification,
 	)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
@@ -111,6 +111,62 @@ func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, se
 	if c == 0 {
 		return fmt.Errorf("no record affected")
 	}
+	return err
+}
+
+// GetExternalUserByUsername returns external user with given external username
+func (ps *PgStore) GetExternalUserByUsername(ctx context.Context, service, externalUsername string) (user.ExternalUser, error) {
+	var externalUser user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
+		select * from external_login where service=$1 and external_username=$2
+	`, service, externalUsername)
+	if err != nil {
+		return externalUser, handlePSQLError(Select, err, "select error")
+	}
+
+	return externalUser, nil
+}
+
+// GetExternalUserByToken returns external user with given security token
+func (ps *PgStore) GetExternalUserByToken(ctx context.Context, service, token string) (user.ExternalUser, error) {
+	var externalUser user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
+		select * from external_login where service=$1 and verification=$2
+	`, service, token)
+	if err != nil {
+		return externalUser, handlePSQLError(Select, err, "select error")
+	}
+
+	return externalUser, nil
+}
+
+// ConfirmExternalUserID updates external id of an external user
+func (ps *PgStore) ConfirmExternalUserID(ctx context.Context, extUser user.ExternalUser) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			external_login
+		set 
+			external_id=$1, 
+			verification=''
+		where 
+			user_id=$2 
+		and 
+			service=$3 
+		and 
+			external_username=$4
+	`, extUser.ExternalUserID, extUser.UserID, extUser.ServiceName, extUser.ExternalUsername)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+
 	return err
 }
 

@@ -18,6 +18,7 @@ const (
 	EmailTemplateHead string = "htmlBodyPartOne"
 	BodyTemplateName  string = "bodyTemplate"
 
+	VerifyEmail              EmailOptions = "verify-email"
 	RegistrationConfirmation EmailOptions = "registration-confirm"
 	PasswordReset            EmailOptions = "password-reset"
 	PasswordResetUnknown     EmailOptions = "password-reset-unknown"
@@ -51,28 +52,17 @@ type emailInterface interface {
 }
 
 var emailOptionsList = map[EmailOptions]emailInterface{
-	RegistrationConfirmation: registrationInterface,
-	TwoFALogin:               twofaLogin,
-	TwoFAWithdraw:            twoFAWithdraw,
-	PasswordReset:            passwordResetInterface,
-	PasswordResetUnknown:     passwordResetUnknownInterface,
-	StakingIncome:            stakingIncome,
-	/*		TopupConfirmation:        topupConfirmation,
-			WithdrawDenied:           withdrawDenied,
-			WithdrawSuccess:          withdrawSuccess,*/
+	VerifyEmail:              emailInterface(&verifyEmail),
+	RegistrationConfirmation: emailInterface(&registrationEmail),
+	TwoFALogin:               emailInterface(&twoFALoginEmail),
+	TwoFAWithdraw:            emailInterface(&twoFAWithdrawEmail),
+	PasswordReset:            emailInterface(&passwordResetEmail),
+	PasswordResetUnknown:     emailInterface(&passwordResetUnknownEmail),
+	StakingIncome:            emailInterface(&stakingIncomeEmail),
+	/*		TopupConfirmation:        emailInterface(&topupConfirmEmail),
+			WithdrawDenied:           emailInterface(&withdrawDeniedEmail),
+			WithdrawSuccess:          emailInterface(&withdrawSuccessEmail),*/
 }
-
-var (
-	registrationInterface         = emailInterface(&registrationEmail)
-	twofaLogin                    = emailInterface(&twoFALoginEmail)
-	twoFAWithdraw                 = emailInterface(&twoFAWithdrawEmail)
-	passwordResetInterface        = emailInterface(&passwordResetEmail)
-	passwordResetUnknownInterface = emailInterface(&passwordResetUnknownEmail)
-	stakingIncome                 = emailInterface(&stakingIncomeEmail)
-	/*	topupConfirmation             = emailInterface(&topupConfirmEmail)
-		withdrawDenied                = emailInterface(&withdrawDeniedEmail)
-		withdrawSuccess               = emailInterface(&withdrawSuccessEmail)*/
-)
 
 func loadEmailTemplates() error {
 	email.mailTemplates = make(map[EmailOptions]*template.Template)
