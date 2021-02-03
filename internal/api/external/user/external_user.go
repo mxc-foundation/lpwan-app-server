@@ -346,8 +346,8 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 
 func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, email string) (string, error) {
 	url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/search.json?query=email:%s",
-		a.config.ShopifyConfig.APIKey, a.config.ShopifyConfig.Secret, a.config.ShopifyConfig.Hostname,
-		a.config.ShopifyConfig.APIVersion, email)
+		a.config.ShopifyConfig.AdminAPI.APIKey, a.config.ShopifyConfig.AdminAPI.Secret, a.config.ShopifyConfig.AdminAPI.Hostname,
+		a.config.ShopifyConfig.AdminAPI.APIVersion, email)
 
 	var customers ShopifyCustomerList
 	if err := auth.GetHTTPResponse(url, &customers, false); err != nil {
@@ -355,7 +355,7 @@ func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, email string
 	}
 
 	if len(customers.Customers) == 0 {
-		return "", status.Errorf(codes.NotFound, "customer %s not found on store %s", email, a.config.ShopifyConfig.StoreName)
+		return "", status.Errorf(codes.NotFound, "customer %s not found on store %s", email, a.config.ShopifyConfig.AdminAPI.StoreName)
 	}
 
 	return fmt.Sprintf("%d", customers.Customers[0].ID), nil
@@ -395,7 +395,7 @@ func (a *Server) ConfirmBindingEmail(ctx context.Context, req *pb.ConfirmBinding
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	go monitoring(ctx, extUser.UserID, a.config.ShopifyConfig, a.store)
+	go monitoring(ctx, cred.OrgID, extUser.UserID, a.config.ShopifyConfig, a.store)
 
 	return &pb.ConfirmBindingEmailResponse{}, nil
 }

@@ -11,15 +11,15 @@
     "application/json"
   ],
   "paths": {
-    "/api/shopify-integration/orders/get/{userId}": {
+    "/api/shopify-integration/orders": {
       "get": {
-        "summary": "GetOrdersByUserID returns a list of shopify orders filtered by given user id",
-        "operationId": "GetOrdersByUserID",
+        "summary": "GetOrdersByUser returns a list of shopify orders filtered by given email, this API is only open for global admin user",
+        "operationId": "GetOrdersByUser",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetOrdersByUserIDResponse"
+              "$ref": "#/definitions/appserver_serves_uiGetOrdersByUserResponse"
             }
           },
           "default": {
@@ -31,11 +31,11 @@
         },
         "parameters": [
           {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
+            "name": "email",
+            "description": "user's email address for supernode account.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -45,39 +45,48 @@
     }
   },
   "definitions": {
-    "appserver_serves_uiGetOrdersByUserIDResponse": {
+    "appserver_serves_uiGetOrdersByUserResponse": {
       "type": "object",
       "properties": {
-        "successfulOrders": {
+        "orders": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiShopifySuccessfulOrder"
+            "$ref": "#/definitions/appserver_serves_uiOrder"
           }
         }
       }
     },
-    "appserver_serves_uiShopifySuccessfulOrder": {
+    "appserver_serves_uiOrder": {
       "type": "object",
       "properties": {
         "shopifyAccount": {
-          "type": "string"
+          "type": "string",
+          "title": "email address user used for shopify account,"
         },
         "orderId": {
-          "type": "string"
+          "type": "string",
+          "title": "order id is generated and maintained on shopify service side, appserver saves this as a reference"
         },
         "createdAt": {
           "type": "string",
           "format": "date-time"
         },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
         "productId": {
-          "type": "string"
+          "type": "string",
+          "title": "used to identify a specific product created in shopify"
+        },
+        "amountProduct": {
+          "type": "string",
+          "format": "int64",
+          "title": "amount of product with given product_id from an order with given order_id"
         },
         "bonusStatus": {
-          "type": "string"
+          "type": "string",
+          "title": "when bonus_status is 'done'\n users who request refund will get ( number of returned good * bonus_per_piece_usd ) less\nwhen bonus_status is 'pending'\n users will get refund with full amount"
+        },
+        "bonusPerPieceUsd": {
+          "type": "string",
+          "title": "amount of USD rewarded to user for purchasing one product with given product id"
         }
       }
     },

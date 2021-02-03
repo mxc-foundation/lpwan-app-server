@@ -68,7 +68,7 @@ type controller struct {
 	passwordHashIterations int
 	enableSTC              bool
 	externalAuth           user.ExternalAuthentication
-	shopifyConfig          user.ShopifyAdminAPI
+	shopifyConfig          user.Shopify
 }
 
 var ctrl *controller
@@ -277,7 +277,6 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	))
 
 	api.RegisterShopifyIntegrationServer(grpcServer, user.NewShopifyServiceServer(
-		m2mcli.GetDistributeBonusServiceClient(),
 		grpcAuth,
 		pgs,
 	))

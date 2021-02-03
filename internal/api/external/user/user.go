@@ -167,7 +167,7 @@ type Config struct {
 	// external user wechat login config, debug mode
 	DebugWeChatLogin auth.WeChatAuthentication
 	// shopify private app configuration
-	ShopifyConfig ShopifyAdminAPI
+	ShopifyConfig Shopify
 }
 
 // Server implements Internal User Service

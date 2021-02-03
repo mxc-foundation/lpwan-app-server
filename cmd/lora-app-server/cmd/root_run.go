@@ -6,6 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/shopify"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -48,6 +52,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		SupernodeID: config.C.General.ServerAddr,
 		DHXServer:   config.C.DHXCenter.DHXServer,
 	}); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := shopify.Start(config.C.ShopifyConfig, pgstore.New(), mxprotocolconn.GetDistributeBonusServiceClient()); err != nil {
 		log.Fatal(err)
 	}
 
