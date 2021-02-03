@@ -87,3 +87,6 @@ dev-requirements:
 serve: build
 	@echo "Starting LPWAN App Server"
 	./build/lora-app-server
+
+dep-graph:
+	goda graph -short 'github.com/mxc-foundation/lpwan-app-server/...:root' | dot -Tpdf -o dep-graph.pdf
