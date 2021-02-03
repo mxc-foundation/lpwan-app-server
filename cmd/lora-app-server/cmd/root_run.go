@@ -6,15 +6,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	servermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	"github.com/mxc-foundation/lpwan-app-server/internal/app"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
 func run(cmd *cobra.Command, args []string) (err error) {
@@ -28,7 +26,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	// set up log level
-	log.SetLevel(log.Level(uint8(servermod.GetSettings().LogLevel)))
+	log.SetLevel(log.Level(uint8(serverinfo.GetSettings().LogLevel)))
 	// set up syslog
 	if err = setSyslog(); err != nil {
 		log.Fatal(err)
@@ -43,13 +41,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		log.Fatal(err)
 	}
 
-	if err := dhx.Setup(dhx.Config{
-		Enable:      config.C.DHXCenter.Enable,
-		SupernodeID: config.C.General.ServerAddr,
-		DHXServer:   config.C.DHXCenter.DHXServer,
-	}); err != nil {
-		log.Fatal(err)
+	a, err := app.Start(ctx, config.C)
+	if err != nil {
+		log.Errorf("failed to start: %v", err)
+		return err
 	}
+	defer a.Close()
 
 	sigChan := make(chan os.Signal)
 	exitChan := make(chan struct{})

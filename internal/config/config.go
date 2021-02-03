@@ -7,6 +7,7 @@ import (
 	multicastsetup "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
 	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
 	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
 	email "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
@@ -41,10 +42,7 @@ type Config struct {
 
 	M2MServer grpccli.ConnectionOpts `mapstructure:"m2m_server"`
 
-	DHXCenter struct {
-		Enable    bool                   `mapstructure:"enable"`
-		DHXServer grpccli.ConnectionOpts `mapstructure:"dhx_server"`
-	} `mapstructure:"dhx_center"`
+	DHXCenter dhx.Config `mapstructure:"dhx_center"`
 
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 
