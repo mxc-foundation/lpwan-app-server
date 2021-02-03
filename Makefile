@@ -29,12 +29,12 @@ lint:
 	@golint -set_exit_status $(PKGS)
 
 golangci-lint-new:
-	docker pull golangci/golangci-lint
-	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.26.0 golangci-lint run --new-from-rev master ./...
+	docker pull golangci/golangci-lint:v1.36.0
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.36.0 golangci-lint run --new-from-rev master ./...
 
 golangci-lint:
-	docker pull golangci/golangci-lint
-	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.26.0 golangci-lint run ./...
+	docker pull golangci/golangci-lint:v1.36.0
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.36.0 golangci-lint run ./...
 
 sec:
 	@echo "Running code security check"
