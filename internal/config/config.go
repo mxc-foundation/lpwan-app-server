@@ -8,7 +8,7 @@ import (
 	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
 	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
-	email "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/data"
@@ -20,10 +20,10 @@ import (
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis/data"
 	serverinfo "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo/data"
 	monitoring "github.com/mxc-foundation/lpwan-app-server/internal/monitoring/data"
-	mxpm "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	oidc "github.com/mxc-foundation/lpwan-app-server/internal/oidc/data"
 	pprof "github.com/mxc-foundation/lpwan-app-server/internal/pprof/data"
-	pgstore "github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
 var AppserverVersion string
@@ -32,13 +32,13 @@ var AppserverVersion string
 type Config struct {
 	General serverinfo.GeneralSettingsStruct `mapstructure:"general"`
 
-	PostgreSQL pgstore.PostgreSQLStruct `mapstructure:"postgresql"`
+	PostgreSQL pgstore.Config `mapstructure:"postgresql"`
 
 	Redis rs.RedisStruct `mapstructure:"redis"`
 
-	Operator email.OperatorStruct `mapstructure:"operator"`
+	Operator email.Operator `mapstructure:"operator"`
 
-	SMTP map[string]email.SMTPStruct `mapstructure:"smtp"`
+	SMTP map[string]email.SMTPConfig `mapstructure:"smtp"`
 
 	M2MServer grpccli.ConnectionOpts `mapstructure:"m2m_server"`
 
@@ -63,7 +63,7 @@ type Config struct {
 
 		API as.AppserverStruct `mapstructure:"api"`
 
-		APIForM2M mxpm.MxprotocolClientStruct `mapstructure:"api_for_m2m"`
+		APIForM2M mxpapisrv.Config `mapstructure:"api_for_m2m"`
 
 		APIForGateway gws.GatewayBindStruct `mapstructure:"api_for_gateway"`
 

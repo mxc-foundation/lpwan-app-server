@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 
@@ -36,7 +37,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
@@ -70,6 +70,7 @@ type controller struct {
 	enableSTC              bool
 	externalAuth           user.ExternalAuthentication
 	shopifyConfig          user.ShopifyAdminAPI
+	operatorLogo           string
 }
 
 var ctrl *controller
@@ -87,6 +88,7 @@ func SettingsSetup(name string, conf config.Config) (err error) {
 		enableSTC:              conf.General.EnableSTC,
 		externalAuth:           conf.ExternalAuth,
 		shopifyConfig:          conf.ShopifyConfig,
+		operatorLogo:           conf.Operator.OperatorLogo,
 	}
 	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -244,7 +246,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 		user.Config{
 			Recaptcha:        ctrl.recaptcha,
 			Enable2FALogin:   ctrl.enable2FA,
-			OperatorLogoPath: email.GetOperatorInfo().OperatorLogo,
+			OperatorLogoPath: ctrl.operatorLogo,
 			WeChatLogin:      ctrl.externalAuth.WechatAuth,
 			DebugWeChatLogin: ctrl.externalAuth.DebugWechatAuth,
 			ShopifyConfig:    ctrl.shopifyConfig,
@@ -267,12 +269,12 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI())
 
 	api.RegisterStakingServiceServer(grpcServer, staking.NewServer(
-		m2mcli.GetStakingServiceClient(),
+		mxpcli.Global.GetStakingServiceClient(),
 		grpcAuth,
 	))
 
 	api.RegisterDHXServcieServer(grpcServer, dhx.NewServer(
-		m2mcli.GetDHXServiceClient(),
+		mxpcli.Global.GetDHXServiceClient(),
 		grpcAuth,
 		pgs,
 	))

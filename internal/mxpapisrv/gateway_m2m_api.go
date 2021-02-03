@@ -1,4 +1,4 @@
-package mxp_portal
+package mxpapisrv
 
 import (
 	"context"
@@ -11,16 +11,16 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
 // GatewayM2MAPI exports the API for mxprotocol-server
 type GatewayM2MAPI struct {
-	st *store.Handler
+	st *pgstore.PgStore
 }
 
 // NewGatewayM2MAPI creates new GatewayM2MAPI
-func NewGatewayM2MAPI(h *store.Handler) *GatewayM2MAPI {
+func NewGatewayM2MAPI(h *pgstore.PgStore) *GatewayM2MAPI {
 	return &GatewayM2MAPI{
 		st: h,
 	}

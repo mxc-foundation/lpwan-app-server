@@ -8,51 +8,32 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore/data"
 )
+
+// Config contains postgres configuration
+type Config struct {
+	DSN                string `mapstructure:"dsn"`
+	Automigrate        bool
+	MaxOpenConnections int `mapstructure:"max_open_connections"`
+	MaxIdleConnections int `mapstructure:"max_idle_connections"`
+}
 
 type controller struct {
 	db *sqlx.DB
-	s  PostgreSQLStruct
-	c  Config
 }
 
 var ctrl *controller
 
-func SettingsSetup(conf config.Config) error {
-	var err error
-
-	// set up pgstore settings
-	pgStoreConfig := Config{}
-	pgStoreConfig.PWH, err = pwhash.New(16, conf.General.PasswordHashIterations)
-	if err != nil {
-		return err
-	}
-	if err = pgStoreConfig.ApplicationServerID.UnmarshalText([]byte(conf.ApplicationServer.ID)); err != nil {
-		return errors.Wrap(err, "decode application_server.id error")
-	}
-	pgStoreConfig.JWTSecret = conf.ApplicationServer.ExternalAPI.JWTSecret
-	pgStoreConfig.ApplicationServerPublicHost = conf.ApplicationServer.API.PublicHost
-
-	ctrl = &controller{
-		s: conf.PostgreSQL,
-		c: pgStoreConfig,
-	}
-
-	return nil
-}
-
-func Setup() error {
+// Setup establishes connection with postgresql server and returns PgStore
+// object.
+func Setup(cfg Config) (*PgStore, error) {
 	log.Info("storage: connecting to PostgreSQL database")
-	d, err := sqlx.Open("postgres", ctrl.s.DSN)
+	d, err := sqlx.Open("postgres", cfg.DSN)
 	if err != nil {
-		return errors.Wrap(err, "storage: PostgreSQL connection error")
+		return nil, errors.Wrap(err, "storage: PostgreSQL connection error")
 	}
-	d.SetMaxOpenConns(ctrl.s.MaxOpenConnections)
-	d.SetMaxIdleConns(ctrl.s.MaxIdleConnections)
+	d.SetMaxOpenConns(cfg.MaxOpenConnections)
+	d.SetMaxIdleConns(cfg.MaxIdleConnections)
 	for {
 		if err = d.Ping(); err != nil {
 			log.WithError(err).Warning("storage: ping PostgreSQL database error, will retry in 2s")
@@ -62,7 +43,7 @@ func Setup() error {
 		}
 	}
 
-	ctrl.db = d
+	ctrl = &controller{db: d}
 
-	return nil
+	return &PgStore{db: d}, nil
 }

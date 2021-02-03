@@ -1,4 +1,4 @@
-package mxp_portal
+package mxpapisrv
 
 import (
 	"context"
@@ -11,17 +11,16 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
 // DeviceM2MAPI exports the API to mxprotocol client
 type DeviceM2MAPI struct {
-	st *store.Handler
+	st *pgstore.PgStore
 }
 
 // NewDeviceM2MAPI creates new DeviceM2MAPI
-func NewDeviceM2MAPI(h *store.Handler) *DeviceM2MAPI {
+func NewDeviceM2MAPI(h *pgstore.PgStore) *DeviceM2MAPI {
 	return &DeviceM2MAPI{
 		st: h,
 	}
@@ -53,7 +52,7 @@ func (a *DeviceM2MAPI) GetDeviceByDevEui(ctx context.Context, req *pb.GetDeviceB
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	app, err := application.GetApplication(ctx, device.ApplicationID)
+	app, err := a.st.GetApplication(ctx, device.ApplicationID)
 	if err != nil {
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}

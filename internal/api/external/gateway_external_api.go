@@ -25,13 +25,13 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mannr"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
@@ -1398,11 +1398,7 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.GetGatewayList(ctx, &pb.GetGatewayListRequest{
 		OrgId:  req.OrgId,
@@ -1447,11 +1443,7 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.GetGatewayProfile(ctx, &pb.GetGSGatewayProfileRequest{
 		OrgId:  req.OrgId,
@@ -1489,11 +1481,7 @@ func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.GetGatewayHistory(ctx, &pb.GetGatewayHistoryRequest{
 		OrgId:  req.OrgId,
@@ -1522,11 +1510,7 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.SetGatewayMode(ctx, &pb.SetGatewayModeRequest{
 		OrgId:  req.OrgId,

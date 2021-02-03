@@ -11,35 +11,12 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/app"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
 func run(cmd *cobra.Command, args []string) (err error) {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	// init config in all modules
-	if err := mgr.SetupSystemSettings(config.C); err != nil {
-		log.WithError(err).Fatal("set up configuration error")
-	}
-
-	// set up log level
-	log.SetLevel(log.Level(uint8(serverinfo.GetSettings().LogLevel)))
-	// set up syslog
-	if err = setSyslog(); err != nil {
-		log.Fatal(err)
-	}
-	// print start message
-	log.WithFields(log.Fields{
-		"version": version,
-		"docs":    "https://mxc.wiki/",
-	}).Info("starting Lpwan Application Server")
-
-	if err := mgr.SetupSystemModules(); err != nil {
-		log.Fatal(err)
-	}
 
 	a, err := app.Start(ctx, config.C)
 	if err != nil {

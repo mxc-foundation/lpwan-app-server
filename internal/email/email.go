@@ -14,20 +14,42 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email/tlssmtp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
+// SMTPConfig defines smtp service settings
+type SMTPConfig struct {
+	Email       string `mapstructure:"email"`
+	Username    string `mapstructure:"username"`
+	Password    string `mapstructure:"password"`
+	AuthType    string `mapstructure:"auth_type"`
+	Host        string `mapstructure:"host"`
+	Port        string `mapstructure:"port"`
+	TLSRequired bool   `mapstructure:"tls_required"`
 }
 
-const moduleName = "email"
+// Operator defines basic settings of operator of this supernode
+type Operator struct {
+	Operator           string `mapstructure:"name"`
+	PrimaryColor       string `mapstructure:"primary_color"`
+	SecondaryColor     string `mapstructure:"secondary_color"`
+	DownloadAppStore   string `mapstructure:"download_appstore"`
+	DownloadGoogle     string `mapstructure:"download_google"`
+	DownloadTestFlight string `mapstructure:"download_testflight"`
+	DownloadAPK        string `mapstructure:"download_apk"`
+	OperatorAddress    string `mapstructure:"operator_address"`
+	OperatorLegal      string `mapstructure:"operator_legal_name"`
+	OperatorLogo       string `mapstructure:"operator_logo"`
+	OperatorContact    string `mapstructure:"operator_contact"`
+	OperatorSupport    string `mapstructure:"operator_support"`
+}
+
+// ServerInfo defines general settings of the server
+type ServerInfo struct {
+	ServerAddr      string
+	DefaultLanguage string
+}
 
 type client struct {
 	senderID    string
@@ -61,50 +83,32 @@ var email struct {
 }
 
 type controller struct {
-	s        ServerInfoStruct
-	operator OperatorStruct
-	smtp     map[string]SMTPStruct
+	s        ServerInfo
+	operator Operator
+	smtp     map[string]SMTPConfig
 	cli      map[string]*client
-
-	moduleUp bool
 }
 
 var ctrl *controller
 
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, conf config.Config) error {
-
-	ctrl = &controller{
-		operator: conf.Operator,
-		smtp:     conf.SMTP,
-		s: ServerInfoStruct{
-			ServerAddr:      conf.General.ServerAddr,
-			DefaultLanguage: conf.General.DefaultLanguage,
-		},
-		cli: make(map[string]*client),
-	}
-
-	return nil
-}
-
 // GetSettings returns ServerInfoStruct
-func GetSettings() ServerInfoStruct {
+func GetSettings() ServerInfo {
 	return ctrl.s
 }
 
 // GetOperatorInfo returns OperatorStruct
-func GetOperatorInfo() OperatorStruct {
+func GetOperatorInfo() Operator {
 	return ctrl.operator
 }
 
 // Setup configures the package.
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
-		return nil
+func Setup(operator Operator, smtp map[string]SMTPConfig, srvInfo ServerInfo) error {
+	ctrl = &controller{
+		operator: operator,
+		smtp:     smtp,
+		s:        srvInfo,
+		cli:      make(map[string]*client),
 	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
 
 	for key, value := range ctrl.smtp {
 		port := value.Port

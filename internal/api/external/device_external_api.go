@@ -31,7 +31,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -1087,11 +1087,7 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListReq
 		}
 	}
 
-	devClient, err := m2mcli.GetM2MDeviceServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	devClient := mxpcli.Global.GetM2MDeviceServiceClient()
 
 	resp, err := devClient.GetDeviceList(ctx, &pb.GetDeviceListRequest{
 		OrgId:  req.OrgId,
@@ -1142,11 +1138,7 @@ func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDevicePr
 		}
 	}
 
-	devClient, err := m2mcli.GetM2MDeviceServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	devClient := mxpcli.Global.GetM2MDeviceServiceClient()
 
 	resp, err := devClient.GetDeviceProfile(ctx, &pb.GetDSDeviceProfileRequest{
 		OrgId: req.OrgId,
@@ -1188,11 +1180,7 @@ func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHist
 		}
 	}
 
-	devClient, err := m2mcli.GetM2MDeviceServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	devClient := mxpcli.Global.GetM2MDeviceServiceClient()
 
 	resp, err := devClient.GetDeviceHistory(ctx, &pb.GetDeviceHistoryRequest{
 		OrgId:  req.OrgId,
@@ -1227,11 +1215,7 @@ func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeReq
 		}
 	}
 
-	devClient, err := m2mcli.GetM2MDeviceServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	devClient := mxpcli.Global.GetM2MDeviceServiceClient()
 
 	resp, err := devClient.SetDeviceMode(ctx, &pb.SetDeviceModeRequest{
 		OrgId:   req.OrgId,

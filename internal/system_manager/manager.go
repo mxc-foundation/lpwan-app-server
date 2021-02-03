@@ -53,7 +53,7 @@ func SetupSystemModules() error {
 		return err
 	}
 
-	criticalStartUpList := []string{"migrations", "mxp_portal", "network_server", "provisioning_server_portal", "integration"}
+	criticalStartUpList := []string{"migrations", "network_server", "provisioning_server_portal", "integration"}
 	for _, v := range criticalStartUpList {
 		if _, ok := moduleSetupCallbackFunc[v]; !ok {
 			return fmt.Errorf("setup function is not found for %s", v)
