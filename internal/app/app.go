@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
@@ -20,9 +21,14 @@ import (
 
 // App represents the running appserver
 type App struct {
-	mxpCli  *mxpcli.Client
+	// postgres server client
 	pgstore *pgstore.PgStore
-	mxpSrv  *mxpapisrv.MXPAPIServer
+	// bonus distribution service
+	bonus *bonus.Service
+	// mxprotocol server client
+	mxpCli *mxpcli.Client
+	// mxprotocol server API
+	mxpSrv *mxpapisrv.MXPAPIServer
 }
 
 // Start starts all the routines required for appserver and returns the App
@@ -63,6 +69,9 @@ func (app *App) Close() error {
 			logrus.Warnf("error shutting down MXP server connection: %v", err)
 		}
 	}
+	if app.bonus != nil {
+		app.bonus.Stop()
+	}
 	return nil
 }
 
@@ -80,6 +89,9 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	mxpcli.Global = app.mxpCli
+	// bonus distribution service
+	app.bonus = bonus.Start(ctx, cfg.ApplicationServer.Airdrop,
+		app.pgstore, app.mxpCli.GetDistributeBonusServiceClient())
 	return nil
 }
 
@@ -111,15 +123,18 @@ func (app *App) systemManager(ctx context.Context, cfg config.Config) error {
 // services that can be initialized in parallel, put here the ones that don't
 // depend on other services
 func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
+	// register on dhx-center server
 	if err := dhx.Register(cfg.General.ServerAddr, cfg.DHXCenter); err != nil {
 		return fmt.Errorf("couldn't register on DHX server: %v", err)
 	}
+	// set up the email system
 	if err := email.Setup(cfg.Operator, cfg.SMTP, email.ServerInfo{
 		ServerAddr:      cfg.General.ServerAddr,
 		DefaultLanguage: cfg.General.DefaultLanguage,
 	}); err != nil {
 		return err
 	}
+	// start bonus distribution service
 	return nil
 }
 

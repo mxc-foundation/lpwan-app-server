@@ -5,6 +5,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
 	multicastsetup "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
 	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
@@ -62,6 +63,8 @@ type Config struct {
 		Integration integration.IntegrationStruct `mapstructure:"integration"`
 
 		API as.AppserverStruct `mapstructure:"api"`
+
+		Airdrop bonus.Config `mapstructure:"airdrop"`
 
 		APIForM2M mxpapisrv.Config `mapstructure:"api_for_m2m"`
 

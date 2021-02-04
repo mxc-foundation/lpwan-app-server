@@ -41,6 +41,11 @@ func (c *Client) GetDHXServiceClient() pb.DHXServiceClient {
 	return pb.NewDHXServiceClient(c.mxpConn)
 }
 
+// GetDistributeBonusServiceClient returns a new DistributeBonusServiceClient instance
+func (c *Client) GetDistributeBonusServiceClient() pb.DistributeBonusServiceClient {
+	return pb.NewDistributeBonusServiceClient(c.mxpConn)
+}
+
 // GetM2MDeviceServiceClient returns a new DSDeviceServiceClient of mxprotocol-server
 func (c *Client) GetM2MDeviceServiceClient() pb.DSDeviceServiceClient {
 	return pb.NewDSDeviceServiceClient(c.mxpConn)
