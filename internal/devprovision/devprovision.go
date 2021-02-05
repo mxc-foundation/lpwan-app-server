@@ -13,7 +13,6 @@ import (
 
 	"github.com/jacobsa/crypto/cmac"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/brocaar/chirpstack-api/go/v3/as"
@@ -69,8 +68,8 @@ var deviceSessionLifeTime = time.Minute * 5
 // Func to get current now, it will override at test
 var funcGetNow = time.Now
 var funcGen128Rand = gen128Rand
-var funcFindDeviceBySnHash = mockFindDeviceBySnHash
-var funcSaveDevice = mockSaveDevice
+var funcFindDeviceBySnHash = findDeviceBySnHash
+var funcSaveDevice = saveDevice
 
 // Gen 128 bytes of random numbers
 func gen128Rand() []byte {
@@ -119,8 +118,6 @@ func Setup(name string, h *store.Handler) error {
 
 	go CleanUpLoop()
 
-	log.SetLevel(logrus.DebugLevel)
-
 	return nil
 }
 
@@ -141,21 +138,22 @@ func CleanUpLoop() {
 	}
 }
 
-func processMessage(n nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) (bool, error) {
+func processMessage(ctx context.Context, n nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest,
+	targetgateway *gwV3.UplinkRXInfo) (bool, error) {
 	processed := false
 	messageType := req.MacPayload[0]
 	messageSize := len(req.MacPayload)
 
 	if (messageType == UpMessageHello) && (messageSize == sizeUpMessageHello) {
-		err := handleHello(n, req, targetgateway)
+		err := handleHello(ctx, n, req, targetgateway)
 		if err != nil {
-			return false, errors.Wrap(err, "send proprietary error")
+			return false, errors.Wrap(err, "process HELLO msg error")
 		}
 		processed = true
 	} else if (messageType == UpMessageAuth) && (messageSize == sizeUpMessageAuth) {
-		err := handleAuth(n, req, targetgateway)
+		err := handleAuth(ctx, n, req, targetgateway)
 		if err != nil {
-			return false, errors.Wrap(err, "send proprietary error")
+			return false, errors.Wrap(err, "process AUTH msg error")
 		}
 		processed = true
 	} else {
@@ -222,7 +220,7 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 		log.Debugf("Wrong MIC calmic=%s, rxed mic=%s", hex.EncodeToString(calmic), hex.EncodeToString(req.Mic))
 		return false, errors.Wrap(err, "Wrong MIC for MacPayload")
 	}
-	return processMessage(n, req, maxRssiRx)
+	return processMessage(ctx, n, req, maxRssiRx)
 }
 
 func sendToNs(n nsd.NetworkServer, req *nsextra.SendDelayedProprietaryPayloadRequest) error {
@@ -299,7 +297,8 @@ func makeHelloResponse(session deviceSession) []byte {
 }
 
 //
-func handleHello(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) error {
+func handleHello(ctx context.Context, nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest,
+	targetgateway *gwV3.UplinkRXInfo) error {
 	log.Debug("  HELLO Message.")
 
 	var err error
@@ -374,7 +373,8 @@ func makeAuthAccept(session deviceSession, verifycode []byte) []byte {
 	return payload
 }
 
-func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) error {
+func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest,
+	targetgateway *gwV3.UplinkRXInfo) error {
 	log.Debug("  AUTH Message.")
 
 	//
@@ -405,13 +405,18 @@ func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReques
 	log.Debugf("  privisionidhash: %s", hex.EncodeToString(privisionidhash))
 	log.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
 
-	found, deviceinfo := funcFindDeviceBySnHash(privisionidhash)
+	found, deviceinfo := funcFindDeviceBySnHash(ctx, privisionidhash)
 	if !found {
 		return errors.Errorf("Device %s not found.", hex.EncodeToString(privisionidhash))
+	} else if deviceinfo.Status == "DISABLED" {
+		return errors.Errorf("Device %s disabled.", deviceinfo.ProvisionID)
 	}
 	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.ProvisionID, deviceinfo.ManufacturerID, deviceinfo.Server)
-	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s", deviceinfo.DevEUI, deviceinfo.AppEUI, deviceinfo.AppKey, deviceinfo.NwkKey)
-	log.Debugf("  status=%d, model=%s, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI, deviceinfo.TimeCreated)
+	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s",
+		hex.EncodeToString(deviceinfo.DevEUI), hex.EncodeToString(deviceinfo.AppEUI),
+		hex.EncodeToString(deviceinfo.AppKey), hex.EncodeToString(deviceinfo.NwkKey))
+	log.Debugf("  status=%v, model=%v, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI,
+		deviceinfo.TimeCreated.Time)
 
 	calverifycode := currentsession.calVerifyCode(deviceinfo.ProvisionID, true)
 	if !bytes.Equal(verifycode, calverifycode) {
@@ -423,7 +428,7 @@ func handleAuth(nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkReques
 		return errors.Wrap(err, "updateDevice error")
 	}
 
-	err = funcSaveDevice(deviceinfo)
+	err = funcSaveDevice(ctx, deviceinfo)
 	if err != nil {
 		return errors.Wrap(err, "saveDevice error")
 	}
@@ -505,40 +510,35 @@ func clearDeviceSessionList() {
 }
 
 func updateDevice(session deviceSession, deviceinfo deviceInfo) (deviceSession, deviceInfo, error) {
-	var err error
-	deveui := make([]byte, 8)
-	appeui := make([]byte, 8)
-	if deviceinfo.FixedDevEUI {
-		decodebuf, err := hex.DecodeString(deviceinfo.DevEUI)
-		if err != nil {
-			return session, deviceinfo, err
-		}
-		copy(deveui[:], decodebuf)
-	}
-	decodebuf, err := hex.DecodeString(deviceinfo.AppEUI)
-	if err != nil {
-		return session, deviceinfo, err
-	}
-	copy(appeui[:], decodebuf)
 
-	if isByteArrayAllZero(deveui) {
-		// Generate devEUI
-		randbuf := funcGen128Rand()
-		copy(deveui[:], randbuf[:])
-		deveui[3] = 0xff
-		deveui[4] = 0xfe
-
-		deviceinfo.DevEUI = hex.EncodeToString(deveui)
-	}
-
-	if !bytes.Equal(session.assignedDevEui, deveui) {
+	if isByteArrayAllZero(session.assignedDevEui) || !bytes.Equal(session.assignedDevEui, deviceinfo.DevEUI) {
 		// Session is new
+		deveui := make([]byte, 8)
+		appeui := make([]byte, 8)
+		copy(deveui[:], deviceinfo.DevEUI)
+		copy(appeui[:], deviceinfo.AppEUI)
+
+		if !deviceinfo.FixedDevEUI || isByteArrayAllZero(deveui) {
+			// Generate devEUI
+			randbuf := funcGen128Rand()
+			copy(deveui[:], randbuf[:])
+			deveui[3] = 0xff
+			deveui[4] = 0xfe
+			copy(deviceinfo.DevEUI[:], deveui[:])
+		}
+		if isByteArrayAllZero(appeui) {
+			// Generate appEUI
+			randbuf := funcGen128Rand()
+			copy(appeui[:], randbuf[:])
+			copy(deviceinfo.AppEUI[:], appeui[:])
+		}
+
 		copy(session.assignedDevEui[:], deveui[:])
 		copy(session.assignedAppEui[:], appeui[:])
 
-		deviceinfo.AppKey = hex.EncodeToString(session.appKey)
-		deviceinfo.NwkKey = hex.EncodeToString(session.nwkKey)
-		deviceinfo.AppEUI = hex.EncodeToString(appeui)
+		copy(deviceinfo.AppKey[:], session.appKey)
+		copy(deviceinfo.NwkKey[:], session.nwkKey)
+		copy(deviceinfo.AppEUI[:], appeui)
 	}
 
 	return session, deviceinfo, nil

@@ -180,3 +180,15 @@ func GetPServerClient() (api.ProvisionClient, error) {
 
 	return client, nil
 }
+
+// GetDevProClient returns a new DeviceProvisionClient for device provisioning
+func GetDevProClient() (api.DeviceProvisionClient, error) {
+	grpcClient, err := ctrl.p.get()
+	if err != nil {
+		return nil, err
+	}
+
+	client := api.NewDeviceProvisionClient(grpcClient)
+
+	return client, nil
+}
