@@ -90,7 +90,7 @@ type Store interface {
 	// GetUserCount returns the total number of users
 	GetUserCount(ctx context.Context) (int64, error)
 	// GetUsers returns list of users
-	GetUsers(ctx context.Context, limit, offset int) ([]User, error)
+	GetUsers(ctx context.Context, limit, offset int64) ([]User, error)
 	// GetOrSetPasswordResetOTP if the password reset OTP has been generated
 	// already then returns it, otherwise sets the new OTP and returns it
 	GetOrSetPasswordResetOTP(ctx context.Context, userID int64, otp string) (string, error)
@@ -301,7 +301,7 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	users, err := a.store.GetUsers(ctx, int(req.Limit), int(req.Offset))
+	users, err := a.store.GetUsers(ctx, req.Limit, req.Offset)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

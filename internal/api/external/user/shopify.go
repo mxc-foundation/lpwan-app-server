@@ -189,19 +189,17 @@ type Client struct {
 	UserID         int64
 	config         Shopify
 	Store          Store
-
-	done chan struct{}
+	done           chan struct{}
 }
 
-// monitoring starts go rountine for a specific user who has bound shopify account
-func monitoring(ctx context.Context, organizationID, userID int64, conf Shopify, store Store) {
+// CheckNewOrders starts go rountine for a specific user who has bound shopify account
+func CheckNewOrders(ctx context.Context, organizationID, userID int64, conf Shopify, store Store) {
 	cli := &Client{
 		OrganizationID: organizationID,
 		UserID:         userID,
 		config:         conf,
 		Store:          store,
 	}
-
 	go cli.run(ctx)
 }
 
@@ -315,19 +313,16 @@ func (cli *Client) nextRun(ctx context.Context) (time.Time, error) {
 			// user no longer binding to shopify account, stop this go routine
 			return time.Now(), nil
 		}
-		// try again in 1 min
+		// try again in 10 min
 		log.Errorf("failed to get external user from user id: %v", err)
+		return time.Now().Add(10 * time.Minute), err
+	}
+	if err := cli.getNewOrdersFromShopify(ctx, extUser); err != nil {
 		return time.Now().Add(10 * time.Minute), err
 	}
 
 	// check order every 24 hours
 	next := time.Now().Add(24 * time.Hour)
-	if time.Now().After(next) {
-		if err := cli.getNewOrdersFromShopify(ctx, extUser); err != nil {
-			return time.Now().Add(10 * time.Minute), err
-		}
-		return next, nil
-	}
 	return next, nil
 }
 

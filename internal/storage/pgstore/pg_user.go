@@ -334,7 +334,7 @@ func (ps *PgStore) GetUserCount(ctx context.Context) (int64, error) {
 }
 
 // GetUsers returns a slice of users, respecting the given limit and offset.
-func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User, error) {
+func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int64) ([]user.User, error) {
 	query := `SELECT id, created_at, updated_at, email, password_hash,
 			    is_active, is_admin, security_token, email_verified, display_name
 		 	  FROM "user"
