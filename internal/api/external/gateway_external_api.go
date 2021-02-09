@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -799,6 +800,33 @@ func (a *GatewayAPI) ListNewGateways(ctx context.Context, req *api.ListGatewayRe
 	return &resp, nil
 }
 
+// we don't want to reveal precise locations of the gateways, so we round them
+// to reveal the location just within the radius of 500m
+func roundCoordinates(lat, lon float64) (float64, float64) {
+	// a degree of latitude is approximately 110km
+	newLat := math.Round(lat*110) / 110
+	// the length of a degree of longitude depends on latitude
+	// (we just want a ballpark figure here)
+	lonLength := (math.Pi / 180) * 6378.137 * math.Cos(math.Pi*lat/180)
+	newLon := math.Round(lon*lonLength) / lonLength
+	// if the approximated location is too close to the original we move it
+	// 500m up or down
+	if math.Abs(lat-newLat)*110 < 0.03 && math.Abs(lon-newLon)*lonLength < 0.03 {
+		if newLat < lat {
+			newLat = math.Round(lat+0.5/110) / 110
+		} else {
+			newLat = math.Round(lat-0.5/110) / 110
+		}
+		if newLat > 90 {
+			newLat = 90
+		}
+		if newLat < -90 {
+			newLat = -90
+		}
+	}
+	return newLat, newLon
+}
+
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLocationsRequest) (*api.ListGatewayLocationsResponse, error) {
 	var result []*api.GatewayLocationListItem
@@ -809,10 +837,11 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLoca
 	}
 
 	for _, loc := range gwsLoc {
+		latitude, longitude := roundCoordinates(loc.Latitude, loc.Longitude)
 		result = append(result, &api.GatewayLocationListItem{
 			Location: &api.GatewayLocation{
-				Latitude:  loc.Latitude,
-				Longitude: loc.Longitude,
+				Latitude:  latitude,
+				Longitude: longitude,
 				Altitude:  loc.Altitude,
 			},
 		})
