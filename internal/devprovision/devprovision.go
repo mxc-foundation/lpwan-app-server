@@ -21,7 +21,9 @@ import (
 	duration "github.com/golang/protobuf/ptypes/duration"
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserverextra"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision/ecdh"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
@@ -327,6 +329,12 @@ func handleHello(ctx context.Context, nserver nsd.NetworkServer, req *as.HandleP
 		}
 	}
 
+	// Drop if already sent to the same Gateway context
+	ok, currentsession = checkDeviceSession(sessionid, targetgateway.Context)
+	if !ok {
+		return nil
+	}
+
 	log.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
 	log.Debugf("  devicePublicKey: %s", hex.EncodeToString(currentsession.devicePublicKey))
 	log.Debugf("  serverPrivateKey: %s", hex.EncodeToString(currentsession.serverPrivateKey))
@@ -390,6 +398,13 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 		return nil
 	}
 
+	// Drop if already sent to the same Gateway context
+	ok, currentsession = checkDeviceSession(sessionid, targetgateway.Context)
+	if !ok {
+		return nil
+	}
+
+	//
 	authpayload := make([]byte, 52)
 	copy(authpayload[:], req.MacPayload[9:])
 	authpayload = currentsession.encryptAuthPayload(authpayload, true)
@@ -423,10 +438,11 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 		return errors.Errorf("Incorrect verify code at Auth message")
 	}
 
-	currentsession, deviceinfo, err := updateDevice(currentsession, deviceinfo)
+	currentsession, deviceinfo, err := updateDevice(ctx, currentsession, deviceinfo)
 	if err != nil {
 		return errors.Wrap(err, "updateDevice error")
 	}
+	updateDeviceSession(sessionid, currentsession)
 
 	err = funcSaveDevice(ctx, deviceinfo)
 	if err != nil {
@@ -466,6 +482,38 @@ func searchDeviceSession(sessionid uint64) (bool, deviceSession) {
 	if !sessionfound {
 		return false, deviceSession{}
 	}
+	return true, currentsession
+}
+
+func updateDeviceSession(sessionid uint64, newsession deviceSession) {
+	mutexDeviceSessionList.Lock()
+	defer mutexDeviceSessionList.Unlock()
+	_, sessionfound := deviceSessionList[sessionid]
+	if sessionfound {
+		deviceSessionList[sessionid] = newsession
+	}
+
+}
+
+func checkDeviceSession(sessionid uint64, gwcontext []byte) (bool, deviceSession) {
+	mutexDeviceSessionList.Lock()
+	defer mutexDeviceSessionList.Unlock()
+
+	currentsession, sessionfound := deviceSessionList[sessionid]
+	if !sessionfound {
+		return false, deviceSession{}
+	}
+
+	if bytes.Equal(currentsession.lastGwContext, gwcontext) {
+		// Same gateway context already handled, retrun false to cause the frame being drop
+		return false, deviceSession{}
+	}
+
+	// Save gateway context
+	currentsession.lastGwContext = make([]byte, len(gwcontext))
+	copy(currentsession.lastGwContext[:], gwcontext)
+	deviceSessionList[sessionid] = currentsession
+
 	return true, currentsession
 }
 
@@ -509,7 +557,7 @@ func clearDeviceSessionList() {
 	deviceSessionList = make(map[uint64]deviceSession)
 }
 
-func updateDevice(session deviceSession, deviceinfo deviceInfo) (deviceSession, deviceInfo, error) {
+func updateDevice(ctx context.Context, session deviceSession, deviceinfo deviceInfo) (deviceSession, deviceInfo, error) {
 
 	if isByteArrayAllZero(session.assignedDevEui) || !bytes.Equal(session.assignedDevEui, deviceinfo.DevEUI) {
 		// Session is new
@@ -520,11 +568,21 @@ func updateDevice(session deviceSession, deviceinfo deviceInfo) (deviceSession, 
 
 		if !deviceinfo.FixedDevEUI || isByteArrayAllZero(deveui) {
 			// Generate devEUI
-			randbuf := funcGen128Rand()
-			copy(deveui[:], randbuf[:])
-			deveui[3] = 0xff
-			deveui[4] = 0xfe
-			copy(deviceinfo.DevEUI[:], deveui[:])
+			// randbuf := funcGen128Rand()
+			// copy(deveui[:], randbuf[:])
+			// copy(deviceinfo.DevEUI[:], deveui[:])
+
+			psClient, err := pscli.GetDevProClient()
+			if err != nil {
+				return session, deviceinfo, err
+			}
+
+			resp, err := psClient.GenDevEUI(ctx, &psPb.GenDevEuiRequest{})
+			if err != nil {
+				return session, deviceinfo, err
+			}
+			copy(deveui[:], resp.DevEUI[:])
+			copy(deviceinfo.DevEUI[:], resp.DevEUI[:])
 		}
 		if isByteArrayAllZero(appeui) {
 			// Generate appEUI

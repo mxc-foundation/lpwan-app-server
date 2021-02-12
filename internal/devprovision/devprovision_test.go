@@ -3,6 +3,7 @@ package devprovision
 import (
 	"bytes"
 	"context"
+	cryptorand "crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
 	"os"
@@ -84,6 +85,17 @@ func extractAuthAccepted(macpayload []byte) (bool, []byte, []byte) {
 		retok = true
 	}
 	return retok, rdeveui, encpayload
+}
+
+func changeGwContext(req *as.HandleProprietaryUplinkRequest) {
+	for _, rx := range req.RxInfo {
+		randbuf := make([]byte, 4)
+		_, err := cryptorand.Read(randbuf[:])
+		if err != nil {
+			log.Error("crypto.rand() failed. Fallback to Pseudorandom")
+		}
+		copy(rx.Context[:], randbuf)
+	}
 }
 
 //
@@ -295,6 +307,7 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		// Handle uplink request
 		mockData.request = nil
+		changeGwContext(&request)
 		processed, err := HandleReceivedFrame(ctx, &request)
 		if err != nil {
 			t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -377,6 +390,7 @@ func TestHandleReceivedFrameWrongHello(t *testing.T) {
 		TxInfo:     &gwV3.UplinkTXInfo{},
 		RxInfo:     mockRxInfo,
 	}
+	changeGwContext(&request)
 	processed, err := HandleReceivedFrame(ctx, &request)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -389,6 +403,7 @@ func TestHandleReceivedFrameWrongHello(t *testing.T) {
 	request.MacPayload = append(request.MacPayload, []byte{0}...)
 	request.Mic = calProprietaryMic(request.MacPayload)
 
+	changeGwContext(&request)
 	processed, err = HandleReceivedFrame(ctx, &request)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -447,6 +462,7 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	request.Mic = calProprietaryMic(request.MacPayload)
 
 	//
+	changeGwContext(&request)
 	processed, err := HandleReceivedFrame(ctx, &request)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -539,6 +555,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 
 	// Wrong MIC
 	request.Mic = []byte{0x01, 0x02, 0x03, 0x04}
+	changeGwContext(&request)
 	processed, err := HandleReceivedFrame(ctx, &request)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -550,6 +567,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 	// Wrong Size
 	request.MacPayload = append(request.MacPayload, []byte{0}...)
 	request.Mic = calProprietaryMic(request.MacPayload)
+	changeGwContext(&request)
 	processed, err = HandleReceivedFrame(ctx, &request)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -576,6 +594,7 @@ func TestHandleReceivedFrameUnknownMsg(t *testing.T) {
 	request.Mic = calProprietaryMic(request.MacPayload)
 
 	//
+	changeGwContext(&request)
 	processed, err := HandleReceivedFrame(ctx, &request)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
@@ -603,6 +622,7 @@ func TestHandleReceivedFrameNoRxInfo(t *testing.T) {
 	request.Mic = calProprietaryMic(request.MacPayload)
 
 	//
+	changeGwContext(&request)
 	processed, err := HandleReceivedFrame(ctx, &request)
 	if err == nil {
 		t.Error("Expected fail but it passed.")

@@ -26,6 +26,7 @@ type deviceSession struct {
 	nwkKey           []byte
 	provKey          []byte
 	expireTime       time.Time
+	lastGwContext    []byte
 }
 
 //
