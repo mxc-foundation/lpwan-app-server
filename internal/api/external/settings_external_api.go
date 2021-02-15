@@ -10,9 +10,9 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 )
 
 // SettingsServerAPI defines the settings of the Server API structure
@@ -31,11 +31,7 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	settingClient, err := m2mcli.GetSettingsServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	settingClient := mxpcli.Global.GetSettingsServiceClient()
 
 	resp, err := settingClient.GetSettings(ctx, &pb.GetSettingsRequest{})
 	if err != nil {
@@ -65,11 +61,7 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	settingClient, err := m2mcli.GetSettingsServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	settingClient := mxpcli.Global.GetSettingsServiceClient()
 
 	resp, err := settingClient.ModifySettings(ctx, &pb.ModifySettingsRequest{
 		LowBalanceWarning:          req.LowBalanceWarning,

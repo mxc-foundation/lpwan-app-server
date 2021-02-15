@@ -10,6 +10,7 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
@@ -23,7 +24,6 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
@@ -262,10 +262,7 @@ func AddGateway(ctx context.Context, gw *Gateway, createReq ns.CreateGatewayRequ
 
 		timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
 		// add this gateway to m2m server
-		gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-		if err != nil {
-			return status.Errorf(codes.Unavailable, err.Error())
-		}
+		gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 		_, err = gwClient.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
 			OrgId: gw.OrganizationID,
@@ -328,10 +325,7 @@ func DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 		}
 
 		// delete this gateway from m2m-server
-		gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-		if err != nil {
-			return err
-		}
+		gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 		_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &pb.DeleteGatewayInM2MServerRequest{
 			MacAddress: mac.String(),

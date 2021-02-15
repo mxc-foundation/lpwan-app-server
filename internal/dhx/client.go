@@ -1,3 +1,4 @@
+// Package dhx registers the appserver with dhx-center server
 package dhx
 
 import (
@@ -13,9 +14,8 @@ import (
 
 // Config defines configuration struct for dhx service module
 type Config struct {
-	Enable      bool
-	SupernodeID string
-	DHXServer   grpccli.ConnectionOpts
+	Enable    bool                   `mapstructure:"enable"`
+	DHXServer grpccli.ConnectionOpts `mapstructure:"dhx_server"`
 }
 
 type controller struct {
@@ -24,8 +24,8 @@ type controller struct {
 
 var ctrl *controller
 
-// Setup prepares dhx service module
-func Setup(config Config) (err error) {
+// Register registers appserver on dhx-center server
+func Register(supernodeID string, config Config) (err error) {
 	if !config.Enable {
 		log.Info("dhx center service disabled")
 		return nil
@@ -38,7 +38,7 @@ func Setup(config Config) (err error) {
 	}
 
 	log.WithFields(log.Fields{
-		"supernodeID": config.SupernodeID,
+		"supernodeID": supernodeID,
 		"server":      config.DHXServer.Server,
 		"caCert":      config.DHXServer.CACert,
 		"tlsCert":     config.DHXServer.TLSCert,
@@ -46,22 +46,18 @@ func Setup(config Config) (err error) {
 	}).Infof("register supernode id in dhx-center")
 
 	go func() {
-		_, err = GetDHXCenterServerClient().UpdateSupernode(context.Background(),
-			&api.UpdateSupernodeRequest{DomainName: config.SupernodeID})
+		cli := api.NewDHXSettingsServiceClient(ctrl.dhxcconn)
 
-		for err != nil {
+		for {
+			_, err = cli.UpdateSupernode(context.Background(),
+				&api.UpdateSupernodeRequest{DomainName: supernodeID})
+			if err == nil {
+				return
+			}
 			log.Warnf("failed to update supernode in dhx center: %s", err.Error())
 			time.Sleep(10 * time.Second)
-
-			_, err = GetDHXCenterServerClient().UpdateSupernode(context.Background(),
-				&api.UpdateSupernodeRequest{DomainName: config.SupernodeID})
 		}
 	}()
 
 	return nil
-}
-
-// GetDHXCenterServerClient returns API client for DHXSettingsService
-func GetDHXCenterServerClient() api.DHXSettingsServiceClient {
-	return api.NewDHXSettingsServiceClient(ctrl.dhxcconn)
 }

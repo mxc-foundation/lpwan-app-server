@@ -1,4 +1,4 @@
-package mxp_portal
+package mxpapisrv
 
 import (
 	"context"
@@ -9,11 +9,15 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
-type NotificationAPI struct{}
+// NotificationAPI keeps variables required for NotificationAPI service
+type NotificationAPI struct {
+	st *pgstore.PgStore
+}
 
+// NewNotificationAPI creates a new notification API service
 func NewNotificationAPI() *NotificationAPI {
 	return &NotificationAPI{}
 }
@@ -22,7 +26,7 @@ func NewNotificationAPI() *NotificationAPI {
 func (a *NotificationAPI) SendStakeIncomeNotification(ctx context.Context, req *pb.SendStakeIncomeNotificationRequest) (*pb.SendStakeIncomeNotificationResponse, error) {
 	resp := pb.SendStakeIncomeNotificationResponse{}
 	// get user id from organization id
-	users, err := organization.GetOrganizationUsers(ctx, req.OrganizationId, 999, 0)
+	users, err := a.st.GetOrganizationUsers(ctx, req.OrganizationId, 999, 0)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to get users for organization")
 	}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
 func init() {
@@ -44,9 +43,6 @@ func SettingsSetup(name string, conf config.Config) error {
 		return errors.Wrap(err, "decode application_server.id error")
 	}
 
-	if err := pgstore.SettingsSetup(conf); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -61,10 +57,6 @@ func Setup(name string, h *store.Handler) error {
 
 	// redis client is set up in metrics setup function
 	if err := metrics.Setup(); err != nil {
-		return err
-	}
-
-	if err := pgstore.Setup(); err != nil {
 		return err
 	}
 

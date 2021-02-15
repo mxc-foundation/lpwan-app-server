@@ -7,6 +7,7 @@ import (
 	"github.com/brocaar/lorawan"
 
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
@@ -19,7 +20,6 @@ import (
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
 )
@@ -55,11 +55,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	walletClient, err := m2mcli.GetWalletServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetWalletServiceClient()
 
 	resp, err := walletClient.GetWalletBalance(ctx, &pb.GetWalletBalanceRequest{
 		OrgId:    req.OrgId,
@@ -111,11 +107,7 @@ func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.G
 	}
 
 	logInfo := "api/appserver_serves_ui/GetGatewayMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
-	walletClient, err := m2mcli.GetMiningServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetMiningServiceClient()
 
 	resp, err := walletClient.MiningStats(ctx, &pb.MiningStatsRequest{
 		GatewayMac:     req.GatewayMac,
@@ -146,11 +138,7 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	walletClient, err := m2mcli.GetWalletServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetWalletServiceClient()
 
 	resp, err := walletClient.GetWalletMiningIncome(ctx, &pb.GetWalletMiningIncomeRequest{
 		OrgId:    req.OrgId,
@@ -175,11 +163,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	walletClient, err := m2mcli.GetWalletServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetWalletServiceClient()
 
 	resp, err := walletClient.GetMiningInfo(ctx, &pb.GetMiningInfoRequest{
 		OrgId: req.OrgId,
@@ -218,11 +202,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	walletClient, err := m2mcli.GetWalletServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetWalletServiceClient()
 
 	resp, err := walletClient.GetVmxcTxHistory(ctx, &pb.GetVmxcTxHistoryRequest{
 		OrgId:  req.OrgId,
@@ -261,11 +241,7 @@ func (s *WalletServerAPI) GetNetworkUsageHist(ctx context.Context, req *api.GetN
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	walletClient, err := m2mcli.GetWalletServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetNetworkUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetWalletServiceClient()
 
 	resp, err := walletClient.GetNetworkUsageHist(ctx, &pb.GetNetworkUsageHistRequest{
 		OrgId:    req.OrgId,
@@ -309,11 +285,7 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	walletClient, err := m2mcli.GetWalletServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	walletClient := mxpcli.Global.GetWalletServiceClient()
 
 	resp, err := walletClient.GetDlPrice(ctx, &pb.GetDownLinkPriceRequest{
 		OrgId: req.OrgId,
