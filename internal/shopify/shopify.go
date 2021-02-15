@@ -2,9 +2,10 @@ package shopify
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	"strconv"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 
@@ -14,7 +15,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 )
 
-type controller struct {
+// Service represents an running instance of the serivce
+type Service struct {
 	config   user.Shopify
 	store    user.Store
 	bonusCli api.DistributeBonusServiceClient
@@ -23,29 +25,27 @@ type controller struct {
 }
 
 // Start initiate goroutine to process shopify order records in the background
-func Start(config user.Shopify, store user.Store, cli api.DistributeBonusServiceClient) error {
+func Start(ctx context.Context, config user.Shopify, store user.Store, cli api.DistributeBonusServiceClient) (*Service, error) {
 	if config.Bonus.Enable == false {
-		return nil
+		return nil, nil
 	}
 
-	ctrl := &controller{
+	service := &Service{
 		config:   config,
 		store:    store,
 		bonusCli: cli,
 	}
-	ctx := context.Background()
-	if err := ctrl.startCheckingOrdersForShopifyAccounts(ctx); err != nil {
-		return err
-	}
-	go ctrl.processOrders(ctx)
 
-	return nil
+	go service.startCheckingOrdersForShopifyAccounts(ctx)
+	go service.processOrders(ctx)
+
+	return service, nil
 }
 
-func (c *controller) startCheckingOrdersForShopifyAccounts(ctx context.Context) error {
+func (c *Service) startCheckingOrdersForShopifyAccounts(ctx context.Context) {
 	userAmount, err := c.store.GetUserCount(ctx)
 	if err != nil {
-		return err
+		log.Errorf("[shopify service] failed to get user amount: %v", err)
 	}
 
 	offset := int64(0)
@@ -54,7 +54,7 @@ func (c *controller) startCheckingOrdersForShopifyAccounts(ctx context.Context) 
 	for i := int64(0); i <= userAmount/limit; i++ {
 		users, err := c.store.GetUsers(ctx, limit, offset)
 		if err != nil {
-			return err
+			log.Errorf("[shopify service] failed to get users: %v", err)
 		}
 
 		for _, v := range users {
@@ -63,12 +63,12 @@ func (c *controller) startCheckingOrdersForShopifyAccounts(ctx context.Context) 
 				if err == errHandler.ErrDoesNotExist {
 					continue
 				}
-				return err
+				log.Errorf("[shopify service] failed to get external user: %v", err)
 			}
 
 			orgList, err := c.store.GetUserOrganizations(ctx, v.ID)
 			if err != nil {
-				return err
+				log.Errorf("[shopify service] failed to get organization list: %v", err)
 			}
 
 			for _, org := range orgList {
@@ -79,11 +79,9 @@ func (c *controller) startCheckingOrdersForShopifyAccounts(ctx context.Context) 
 			}
 		}
 	}
-
-	return nil
 }
 
-func (c *controller) distributeBonus(ctx context.Context) error {
+func (c *Service) distributeBonus(ctx context.Context) error {
 	count, err := c.store.GetOrdersCountWithPendingBonusStatus(ctx)
 	if err != nil {
 		return err
@@ -149,7 +147,7 @@ func (c *controller) distributeBonus(ctx context.Context) error {
 	return nil
 }
 
-func (c *controller) nextRun(ctx context.Context) (time.Time, error) {
+func (c *Service) nextRun(ctx context.Context) (time.Time, error) {
 	// check order every 24 hours
 	next := time.Now().Add(24 * time.Hour)
 	if time.Now().After(next) {
@@ -161,7 +159,7 @@ func (c *controller) nextRun(ctx context.Context) (time.Time, error) {
 	return next, nil
 }
 
-func (c *controller) processOrders(ctx context.Context) {
+func (c *Service) processOrders(ctx context.Context) {
 	for {
 		next, err := c.nextRun(ctx)
 		if err != nil {
@@ -176,9 +174,10 @@ func (c *controller) processOrders(ctx context.Context) {
 	}
 }
 
-// Close terminates this goroutine
-func (c *controller) Close() error {
-	c.done <- struct{}{}
-	close(c.done)
-	return nil
+// Stop stops the service. The service object is not usable after this call
+func (c *Service) Stop() {
+	if c != nil {
+		c.done <- struct{}{}
+		close(c.done)
+	}
 }

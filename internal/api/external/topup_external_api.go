@@ -10,9 +10,9 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/topup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 )
 
 // TopUpServerAPI defines the topup server api structure
@@ -31,11 +31,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	topupClient, err := m2mcli.GetTopupServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	topupClient := mxpcli.Global.GetTopupServiceClient()
 
 	resp, err := topupClient.GetTopUpHistory(ctx, &pb.GetTopUpHistoryRequest{
 		OrgId:    req.OrgId,
@@ -72,11 +68,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	topupClient, err := m2mcli.GetTopupServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	topupClient := mxpcli.Global.GetTopupServiceClient()
 
 	resp, err := topupClient.GetTopUpDestination(ctx, &pb.GetTopUpDestinationRequest{
 		OrgId: req.OrgId,

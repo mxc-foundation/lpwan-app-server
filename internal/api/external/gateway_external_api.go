@@ -3,12 +3,10 @@ package external
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
-
-	"github.com/spf13/viper"
 
 	"github.com/lib/pq/hstore"
 
@@ -27,14 +25,13 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mannr"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
@@ -803,33 +800,51 @@ func (a *GatewayAPI) ListNewGateways(ctx context.Context, req *api.ListGatewayRe
 	return &resp, nil
 }
 
+// we don't want to reveal precise locations of the gateways, so we round them
+// to reveal the location just within the radius of 500m
+func roundCoordinates(lat, lon float64) (float64, float64) {
+	// a degree of latitude is approximately 110km
+	newLat := math.Round(lat*110) / 110
+	// the length of a degree of longitude depends on latitude
+	// (we just want a ballpark figure here)
+	lonLength := (math.Pi / 180) * 6378.137 * math.Cos(math.Pi*lat/180)
+	newLon := math.Round(lon*lonLength) / lonLength
+	// if the approximated location is too close to the original we move it
+	// 500m up or down
+	if math.Abs(lat-newLat)*110 < 0.03 && math.Abs(lon-newLon)*lonLength < 0.03 {
+		if newLat < lat {
+			newLat = math.Round(lat+0.5/110) / 110
+		} else {
+			newLat = math.Round(lat-0.5/110) / 110
+		}
+		if newLat > 90 {
+			newLat = 90
+		}
+		if newLat < -90 {
+			newLat = -90
+		}
+	}
+	return newLat, newLon
+}
+
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLocationsRequest) (*api.ListGatewayLocationsResponse, error) {
 	var result []*api.GatewayLocationListItem
-	var gatewayLocationsRedisKey = "gateway_locations"
 
-	redisConn := redis.RedisClient()
-
-	gwsLoc, err := a.st.GetGatewaysLoc(ctx, viper.GetInt("application_server.gateways_locations_limit"))
+	gwsLoc, err := a.st.GetGatewaysLoc(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	for _, loc := range gwsLoc {
+		latitude, longitude := roundCoordinates(loc.Latitude, loc.Longitude)
 		result = append(result, &api.GatewayLocationListItem{
 			Location: &api.GatewayLocation{
-				Latitude:  loc.Latitude,
-				Longitude: loc.Longitude,
+				Latitude:  latitude,
+				Longitude: longitude,
 				Altitude:  loc.Altitude,
 			},
 		})
-	}
-
-	bytes, err := json.Marshal(&result)
-	if err == nil {
-		if err := redisConn.Set(gatewayLocationsRedisKey, bytes, redis.MicLookupExpire).Err(); err != nil {
-			log.WithError(err).Warn("Set gateway location to redis error")
-		}
 	}
 
 	resp := api.ListGatewayLocationsResponse{
@@ -1383,11 +1398,7 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.GetGatewayList(ctx, &pb.GetGatewayListRequest{
 		OrgId:  req.OrgId,
@@ -1432,11 +1443,7 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.GetGatewayProfile(ctx, &pb.GetGSGatewayProfileRequest{
 		OrgId:  req.OrgId,
@@ -1474,11 +1481,7 @@ func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.GetGatewayHistory(ctx, &pb.GetGatewayHistoryRequest{
 		OrgId:  req.OrgId,
@@ -1507,11 +1510,7 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
 
 	resp, err := gwClient.SetGatewayMode(ctx, &pb.SetGatewayModeRequest{
 		OrgId:  req.OrgId,

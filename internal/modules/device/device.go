@@ -5,9 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
-
 	"github.com/apex/log"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
@@ -18,10 +15,12 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
@@ -103,11 +102,7 @@ func CreateDevice(ctx context.Context, d *Device, app *appd.Application, applica
 		timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
 
 		// add this device to m2m server
-		dvClient, err := m2mcli.GetM2MDeviceServiceClient()
-		if err != nil {
-			log.WithError(err).Error("Create device")
-			return status.Errorf(codes.Unavailable, err.Error())
-		}
+		dvClient := mxpcli.Global.GetM2MDeviceServiceClient()
 
 		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &pb.AddDeviceInM2MServerRequest{
 			OrgId: app.OrganizationID,
@@ -176,11 +171,7 @@ func DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 
 		// delete device from m2m server, this procedure should not block delete device from appserver once it's deleted from
 		// network server successfully
-		dvClient, err := m2mcli.GetM2MDeviceServiceClient()
-		if err != nil {
-			log.WithError(err).Error("get m2m-server client error")
-			return err
-		}
+		dvClient := mxpcli.Global.GetM2MDeviceServiceClient()
 
 		_, err = dvClient.DeleteDeviceInM2MServer(context.Background(), &pb.DeleteDeviceInM2MServerRequest{
 			DevEui: devEUI.String(),

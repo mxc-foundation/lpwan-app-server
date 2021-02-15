@@ -11,7 +11,7 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 )
 
 // ServerInfoAPI defines the Server Info API structure
@@ -50,10 +50,7 @@ func (s *ServerInfoAPI) GetServerRegion(ctx context.Context, req *empty.Empty) (
 func (s *ServerInfoAPI) GetMxprotocolServerVersion(ctx context.Context, req *empty.Empty) (*pb.GetMxprotocolServerVersionResponse, error) {
 	log.WithField("", "").Info("grpc_api/GetVersion")
 
-	verClient, err := m2mcli.GetServerServiceClient()
-	if err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
-	}
+	verClient := mxpcli.Global.GetServerServiceClient()
 
 	resp, err := verClient.GetVersion(ctx, req)
 	if err != nil {

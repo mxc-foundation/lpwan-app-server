@@ -4,15 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
-	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
-	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -66,10 +64,7 @@ func Setup(name string, h *store.Handler) (err error) {
 	log.Info("mining cron task begin...")
 
 	ctrl.st = h
-	ctrl.m2mClient, err = mxprotocolconn.GetMiningServiceClient()
-	if err != nil {
-		return errors.Wrap(err, "get m2m mining service client error")
-	}
+	ctrl.m2mClient = mxpcli.Global.GetMiningServiceClient()
 
 	go func() {
 		period := time.Duration(ctrl.s.Period) * time.Second

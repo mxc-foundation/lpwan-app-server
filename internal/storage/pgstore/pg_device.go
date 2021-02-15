@@ -13,7 +13,7 @@ import (
 
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
+	device "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 )
 
 func (ps *PgStore) CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
@@ -267,7 +267,7 @@ func (ps *PgStore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EU
 }
 
 // CreateDevice creates the given device.
-func (ps *PgStore) CreateDevice(ctx context.Context, d *Device) error {
+func (ps *PgStore) CreateDevice(ctx context.Context, d *device.Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -333,13 +333,13 @@ func (ps *PgStore) CreateDevice(ctx context.Context, d *Device) error {
 // When forUpdate is set to true, then tx must be a tx transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
-func (ps *PgStore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (Device, error) {
+func (ps *PgStore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (device.Device, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var d Device
+	var d device.Device
 	err := sqlx.GetContext(ctx, ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -352,7 +352,7 @@ func (ps *PgStore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdat
 }
 
 // GetDeviceCount returns the number of devices.
-func (ps *PgStore) GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error) {
+func (ps *PgStore) GetDeviceCount(ctx context.Context, filters device.DeviceFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -396,7 +396,7 @@ func (ps *PgStore) GetAllDeviceEuis(ctx context.Context) ([]string, error) {
 }
 
 // GetDevices returns a slice of devices.
-func (ps *PgStore) GetDevices(ctx context.Context, filters DeviceFilters) ([]DeviceListItem, error) {
+func (ps *PgStore) GetDevices(ctx context.Context, filters device.DeviceFilters) ([]device.DeviceListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -423,7 +423,7 @@ func (ps *PgStore) GetDevices(ctx context.Context, filters DeviceFilters) ([]Dev
 		return nil, errors.Wrap(err, "named query error")
 	}
 
-	var devices []DeviceListItem
+	var devices []device.DeviceListItem
 	err = sqlx.SelectContext(ctx, ps.db, &devices, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
@@ -434,7 +434,7 @@ func (ps *PgStore) GetDevices(ctx context.Context, filters DeviceFilters) ([]Dev
 
 // UpdateDevice updates the given device.
 // When localOnly is set, it will not update the device on the network-server.
-func (ps *PgStore) UpdateDevice(ctx context.Context, d *Device) error {
+func (ps *PgStore) UpdateDevice(ctx context.Context, d *device.Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -556,7 +556,7 @@ func (ps *PgStore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
 }
 
 // CreateDeviceKeys creates the keys for the given device.
-func (ps *PgStore) CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
+func (ps *PgStore) CreateDeviceKeys(ctx context.Context, dc *device.DeviceKeys) error {
 	now := time.Now()
 	dc.CreatedAt = now
 	dc.UpdatedAt = now
@@ -592,8 +592,8 @@ func (ps *PgStore) CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
 }
 
 // GetDeviceKeys returns the device-keys for the given DevEUI.
-func (ps *PgStore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (DeviceKeys, error) {
-	var dc DeviceKeys
+func (ps *PgStore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (device.DeviceKeys, error) {
+	var dc device.DeviceKeys
 
 	err := sqlx.GetContext(ctx, ps.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
@@ -604,7 +604,7 @@ func (ps *PgStore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (Dev
 }
 
 // UpdateDeviceKeys updates the given device-keys.
-func (ps *PgStore) UpdateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
+func (ps *PgStore) UpdateDeviceKeys(ctx context.Context, dc *device.DeviceKeys) error {
 	dc.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -666,7 +666,7 @@ func (ps *PgStore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) e
 }
 
 // CreateDeviceActivation creates the given device-activation.
-func (ps *PgStore) CreateDeviceActivation(ctx context.Context, da *DeviceActivation) error {
+func (ps *PgStore) CreateDeviceActivation(ctx context.Context, da *device.DeviceActivation) error {
 	da.CreatedAt = time.Now()
 
 	err := sqlx.GetContext(ctx, ps.db, &da.ID, `
@@ -696,8 +696,8 @@ func (ps *PgStore) CreateDeviceActivation(ctx context.Context, da *DeviceActivat
 }
 
 // GetLastDeviceActivationForDevEUI returns the most recent device-activation for the given DevEUI.
-func (ps *PgStore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error) {
-	var da DeviceActivation
+func (ps *PgStore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (device.DeviceActivation, error) {
+	var da device.DeviceActivation
 
 	err := sqlx.GetContext(ctx, ps.db, &da, `
         select *
@@ -718,7 +718,7 @@ func (ps *PgStore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI 
 
 // DeleteAllDevicesForApplicationID deletes all devices given an application id.
 func (ps *PgStore) DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error {
-	var devs []Device
+	var devs []device.Device
 	err := sqlx.SelectContext(ctx, ps.db, &devs, "select * from device where application_id = $1", applicationID)
 	if err != nil {
 		return errors.Wrap(err, "select error")
@@ -735,8 +735,8 @@ func (ps *PgStore) DeleteAllDevicesForApplicationID(ctx context.Context, applica
 }
 
 // GetDevicesActiveInactive returns the active / inactive devices.
-func (ps *PgStore) GetDevicesActiveInactive(ctx context.Context, organizationID int64) (DevicesActiveInactive, error) {
-	var out DevicesActiveInactive
+func (ps *PgStore) GetDevicesActiveInactive(ctx context.Context, organizationID int64) (device.DevicesActiveInactive, error) {
+	var out device.DevicesActiveInactive
 	err := sqlx.GetContext(ctx, ps.db, &out, `
 		with device_active_inactive as (
 			select
@@ -766,8 +766,8 @@ func (ps *PgStore) GetDevicesActiveInactive(ctx context.Context, organizationID 
 }
 
 // GetDevicesDataRates returns the device counts by data-rate.
-func (ps *PgStore) GetDevicesDataRates(ctx context.Context, organizationID int64) (DevicesDataRates, error) {
-	out := make(DevicesDataRates)
+func (ps *PgStore) GetDevicesDataRates(ctx context.Context, organizationID int64) (device.DevicesDataRates, error) {
+	out := make(device.DevicesDataRates)
 
 	rows, err := ps.db.QueryxContext(ctx, `
 		select

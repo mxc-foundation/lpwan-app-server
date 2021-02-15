@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -12,7 +13,6 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 )
@@ -33,11 +33,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	withdrawClient, err := m2mcli.GetWithdrawServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	withdrawClient := mxpcli.Global.GetWithdrawServiceClient()
 
 	resp, err := withdrawClient.ModifyWithdrawFee(ctx, &pb.ModifyWithdrawFeeRequest{
 		Currency:    req.Currency,
@@ -58,11 +54,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawFee"
 
-	withdrawClient, err := m2mcli.GetWithdrawServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	withdrawClient := mxpcli.Global.GetWithdrawServiceClient()
 	resp, err := withdrawClient.GetWithdrawFee(ctx, &pb.GetWithdrawFeeRequest{
 		Currency: req.Currency,
 	})
@@ -84,11 +76,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	withdrawClient, err := m2mcli.GetWithdrawServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	withdrawClient := mxpcli.Global.GetWithdrawServiceClient()
 
 	resp, err := withdrawClient.GetWithdrawHistory(ctx, &pb.GetWithdrawHistoryRequest{
 		OrgId:    req.OrgId,
@@ -128,11 +116,7 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	withdrawClient, err := m2mcli.GetWithdrawServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
+	withdrawClient := mxpcli.Global.GetWithdrawServiceClient()
 
 	resp, err := withdrawClient.GetWithdraw(ctx, &pb.GetWithdrawRequest{
 		OrgId:      req.OrgId,

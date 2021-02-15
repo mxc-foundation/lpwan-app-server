@@ -21,7 +21,7 @@ test: internal/statics internal/migrations
 	go test -cover -coverprofile coverage.out -coverpkg ./internal/... ./...
 	# IMPORTANT: required coverage can only be increased
 	go tool cover -func coverage.out | \
-		awk 'END { print "Coverage: " $$3; if ($$3+0 < 9.0) { print "Insufficient coverage"; exit 1; } }'
+		awk 'END { print "Coverage: " $$3; if ($$3+0 < 9.3) { print "Insufficient coverage"; exit 1; } }'
 
 lint:
 	@echo "Running code syntax check"
@@ -29,12 +29,12 @@ lint:
 	@golint -set_exit_status $(PKGS)
 
 golangci-lint-new:
-	docker pull golangci/golangci-lint
-	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.26.0 golangci-lint run --new-from-rev master ./...
+	docker pull golangci/golangci-lint:v1.36.0
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.36.0 golangci-lint run --new-from-rev master ./...
 
 golangci-lint:
-	docker pull golangci/golangci-lint
-	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.26.0 golangci-lint run ./...
+	docker pull golangci/golangci-lint:v1.36.0
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.36.0 golangci-lint run ./...
 
 sec:
 	@echo "Running code security check"
@@ -87,3 +87,6 @@ dev-requirements:
 serve: build
 	@echo "Starting LPWAN App Server"
 	./build/lora-app-server
+
+dep-graph:
+	goda graph -short 'github.com/mxc-foundation/lpwan-app-server/...:root' | dot -Tpdf -o dep-graph.pdf
