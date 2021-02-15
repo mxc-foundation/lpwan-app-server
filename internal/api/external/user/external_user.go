@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
+	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
 	log "github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc/codes"
@@ -29,11 +29,11 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 	body := auth.GetAccessTokenResponse{}
 	user := auth.GetWeChatUserInfoResponse{}
 
-	if err := auth.GetAccessTokenFromCode(ctx, auth.URLStrGetAccessTokenFromCode, code, appID, secret, &body); err != nil {
+	if err := auth.GetAccessTokenFromCode(ctx, code, appID, secret, &body); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.URLStrGetWeChatUserInfoFromAccessToken, body.AccessToken, body.OpenID, &user); err != nil {
+	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, body.AccessToken, body.OpenID, &user); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
@@ -353,7 +353,7 @@ func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, email string
 		a.config.ShopifyConfig.AdminAPI.APIVersion, email)
 
 	var customers ShopifyCustomerList
-	if err := auth.GetHTTPResponse(url, &customers, false); err != nil {
+	if err := httpcli.GetResponse(url, &customers, false); err != nil {
 		return "", status.Errorf(codes.Internal, err.Error())
 	}
 
@@ -398,7 +398,7 @@ func (a *Server) ConfirmBindingEmail(ctx context.Context, req *pb.ConfirmBinding
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	go CheckNewOrders(ctx, cred.OrgID, extUser.UserID, a.config.ShopifyConfig, a.store)
+	go CheckNewOrders(context.Background(), cred.OrgID, extUser.UserID, a.config.ShopifyConfig, a.store)
 
 	return &pb.ConfirmBindingEmailResponse{}, nil
 }

@@ -5,7 +5,8 @@ package app
 import (
 	"context"
 	"fmt"
-
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
@@ -32,6 +33,8 @@ type App struct {
 	mxpSrv *mxpapisrv.MXPAPIServer
 	// shopify service
 	shopify *shopify.Service
+	// smtp service
+	mailer *email.Mailer
 }
 
 // Start starts all the routines required for appserver and returns the App
@@ -140,10 +143,12 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 		return fmt.Errorf("couldn't register on DHX server: %v", err)
 	}
 	// set up the email system
-	if err := email.Setup(cfg.Operator, cfg.SMTP, email.ServerInfo{
+	var err error
+	app.mailer, err = email.NewMailer(cfg.Operator, cfg.SMTP, email.ServerInfo{
 		ServerAddr:      cfg.General.ServerAddr,
 		DefaultLanguage: cfg.General.DefaultLanguage,
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
 	// start bonus distribution service
@@ -154,8 +159,26 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	var err error
 	// API for mxprotocol server
-	if app.mxpSrv, err = mxpapisrv.Start(app.pgstore, cfg.ApplicationServer.APIForM2M); err != nil {
+	if app.mxpSrv, err = mxpapisrv.Start(app.pgstore, cfg.ApplicationServer.APIForM2M, app.mailer); err != nil {
 		return err
 	}
+	// API for external clients
+	if err = external.Start(store.NewStore(), external.RESTApiServer{
+		S:                      cfg.ApplicationServer.ExternalAPI,
+		ApplicationServerID:    cfg.ApplicationServer.ID,
+		ServerAddr:             cfg.General.ServerAddr,
+		Recaptcha:              cfg.Recaptcha,
+		Enable2FA:              cfg.General.Enable2FALogin,
+		ServerRegion:           cfg.General.ServerRegion,
+		PasswordHashIterations: cfg.General.PasswordHashIterations,
+		EnableSTC:              cfg.General.EnableSTC,
+		ExternalAuth:           cfg.ExternalAuth,
+		ShopifyConfig:          cfg.ShopifyConfig,
+		OperatorLogo:           cfg.Operator.OperatorLogo,
+		Mailer:                 app.mailer,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }

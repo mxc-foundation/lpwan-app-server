@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
 	"testing"
 )
 
@@ -42,12 +43,12 @@ func TestGetHTTPResponse(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Logf(tc.name)
-		err := GetHTTPResponse(tc.url, &tc.respComplete, tc.disallowUnknownFields)
+		err := httpcli.GetResponse(tc.url, &tc.respComplete, tc.disallowUnknownFields)
 		if err != nil {
 			t.Errorf("expected: no error, got error %v", err)
 		}
 
-		err = GetHTTPResponse(tc.url, &tc.respIncomplete, tc.disallowUnknownFields)
+		err = httpcli.GetResponse(tc.url, &tc.respIncomplete, tc.disallowUnknownFields)
 		if tc.disallowUnknownFields {
 			if err == nil {
 				t.Errorf("expected: error %v, got no error", err)
@@ -117,7 +118,7 @@ func TestGetAccessTokenFromCode(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Logf(tc.name)
-		err := GetAccessTokenFromCode(tc.ctx, tc.urlStr, tc.code, tc.appID, tc.secret, &tc.resp)
+		err := GetAccessTokenFromCode(tc.ctx, tc.code, tc.appID, tc.secret, &tc.resp)
 		if tc.noErr != (err == nil) {
 			t.Errorf("expected: noError = %v, got %v", tc.noErr, err)
 		}
@@ -167,7 +168,7 @@ func TestGetWeChatUserInfoFromAccessToken(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Logf(tc.name)
-		err := GetWeChatUserInfoFromAccessToken(tc.ctx, tc.urlStr, tc.accessToken, tc.openID, &tc.resp)
+		err := GetWeChatUserInfoFromAccessToken(tc.ctx, tc.accessToken, tc.openID, &tc.resp)
 		if tc.noErr != (err == nil) {
 			t.Errorf("expected: noError = %v, got %v", tc.noErr, err)
 		}

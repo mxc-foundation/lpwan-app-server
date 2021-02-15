@@ -30,7 +30,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
@@ -39,7 +38,6 @@ import (
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
@@ -49,76 +47,28 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
+type RESTApiServer struct {
+	S                      ExternalAPIStruct
+	ApplicationServerID    string
+	ServerAddr             string
+	Recaptcha              user.RecaptchaConfig
+	Enable2FA              bool
+	ServerRegion           string
+	PasswordHashIterations int
+	EnableSTC              bool
+	ExternalAuth           user.ExternalAuthentication
+	ShopifyConfig          user.Shopify
+	OperatorLogo           string
+	Mailer                 *email.Mailer
 }
 
-const moduleName = "external"
-
-type controller struct {
-	name                   string
-	s                      ExternalAPIStruct
-	applicationServerID    uuid.UUID
-	serverAddr             string
-	recaptcha              user.RecaptchaConfig
-	enable2FA              bool
-	serverRegion           string
-	moduleUp               bool
-	passwordHashIterations int
-	enableSTC              bool
-	externalAuth           user.ExternalAuthentication
-	shopifyConfig          user.Shopify
-	operatorLogo           string
-}
-
-var ctrl *controller
-
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, conf config.Config) (err error) {
-	ctrl = &controller{
-		name:                   moduleName,
-		s:                      conf.ApplicationServer.ExternalAPI,
-		serverAddr:             conf.General.ServerAddr,
-		recaptcha:              conf.Recaptcha,
-		enable2FA:              conf.General.Enable2FALogin,
-		serverRegion:           conf.General.ServerRegion,
-		passwordHashIterations: conf.General.PasswordHashIterations,
-		enableSTC:              conf.General.EnableSTC,
-		externalAuth:           conf.ExternalAuth,
-		shopifyConfig:          conf.ShopifyConfig,
-		operatorLogo:           conf.Operator.OperatorLogo,
-	}
-	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
-	if err != nil {
-		return errors.Wrap(err, "application-server id to uuid error")
-	}
-
-	return nil
-}
-
-func GetApplicationServerID() uuid.UUID {
-	return ctrl.applicationServerID
-}
-
-func GetOTPSecret() string {
-	return ctrl.s.OTPSecret
-}
-
-// Setup configures the API endpoints.
-func Setup(name string, h *store.Handler) (err error) {
-	if ctrl.moduleUp == true {
-		return nil
-	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
-
+// Start configures the API endpoints.
+func Start(h *store.Handler, srv RESTApiServer) (err error) {
 	// Bind external api port to listen to requests to all services
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
 
-	if err := SetupCusAPI(h, grpcServer, GetApplicationServerID()); err != nil {
+	if err := srv.SetupCusAPI(h, grpcServer); err != nil {
 		return err
 	}
 
@@ -137,8 +87,8 @@ func Setup(name string, h *store.Handler) (err error) {
 				return
 			}
 
-			if ctrl.s.CORSAllowOrigin != "" {
-				w.Header().Set("Access-Control-Allow-Origin", ctrl.s.CORSAllowOrigin)
+			if srv.S.CORSAllowOrigin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", srv.S.CORSAllowOrigin)
 				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Grpc-Metadata-Authorization")
 
@@ -154,18 +104,18 @@ func Setup(name string, h *store.Handler) (err error) {
 	// start the API server
 	go func() {
 		log.WithFields(log.Fields{
-			"bind":     ctrl.s.Bind,
-			"tls-cert": ctrl.s.TLSCert,
-			"tls-key":  ctrl.s.TLSKey,
+			"bind":     srv.S.Bind,
+			"tls-cert": srv.S.TLSCert,
+			"tls-key":  srv.S.TLSKey,
 		}).Info("api/external: starting api server")
 
-		if ctrl.s.TLSCert == "" || ctrl.s.TLSKey == "" {
-			log.Fatal(http.ListenAndServe(ctrl.s.Bind, h2c.NewHandler(handler, &http2.Server{})))
+		if srv.S.TLSCert == "" || srv.S.TLSKey == "" {
+			log.Fatal(http.ListenAndServe(srv.S.Bind, h2c.NewHandler(handler, &http2.Server{})))
 		} else {
 			log.Fatal(http.ListenAndServeTLS(
-				ctrl.s.Bind,
-				ctrl.s.TLSCert,
-				ctrl.s.TLSKey,
+				srv.S.Bind,
+				srv.S.TLSCert,
+				srv.S.TLSKey,
 				h2c.NewHandler(handler, &http2.Server{}),
 			))
 		}
@@ -175,7 +125,7 @@ func Setup(name string, h *store.Handler) (err error) {
 	time.Sleep(time.Millisecond * 100)
 
 	// setup the HTTP handler
-	clientHTTPHandler, err = setupHTTPAPI()
+	clientHTTPHandler, err = srv.setupHTTPAPI()
 	if err != nil {
 		return err
 	}
@@ -183,21 +133,26 @@ func Setup(name string, h *store.Handler) (err error) {
 	return nil
 }
 
-func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) error {
-	jwtSecret := ctrl.s.JWTSecret
+func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server) error {
+	jwtSecret := srv.S.JWTSecret
 	if jwtSecret == "" {
 		return errors.New("jwt_secret must be set")
 	}
-	jwtTTL := ctrl.s.JWTDefaultTTL
+	jwtTTL := srv.S.JWTDefaultTTL
 	pgs := pgstore.New()
 
 	jwtValidator := jwt.NewValidator("HS256", []byte(jwtSecret), jwtTTL)
-	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), pgs)
+	otpValidator, err := otp.NewValidator("lpwan-app-server", srv.S.OTPSecret, pgs)
 	if err != nil {
 		return err
 	}
 	grpcAuth := grpcauth.New(pgs, jwtValidator, otpValidator)
 	authcus.SetupCred(pgs, jwtValidator, otpValidator)
+
+	rpID, err := uuid.FromString(srv.ApplicationServerID)
+	if err != nil {
+		return fmt.Errorf("failed to convert application server id from string to uuid: %v", err)
+	}
 
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(h))
 	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(h))
@@ -216,8 +171,8 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 		grpcAuth,
 		GwConfig{
 			ApplicationServerID: rpID,
-			ServerAddr:          ctrl.serverAddr,
-			EnableSTC:           ctrl.enableSTC,
+			ServerAddr:          srv.ServerAddr,
+			EnableSTC:           srv.EnableSTC,
 		},
 		psCli,
 	))
@@ -231,38 +186,38 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	// orgnization
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
 	// user
-	pwhasher, err := pwhash.New(16, ctrl.passwordHashIterations)
+	pwhasher, err := pwhash.New(16, srv.PasswordHashIterations)
 	if err != nil {
 		return err
 	}
 	userSrv := user.NewServer(
 		pgs,
-		&email.Mailer{},
+		srv.Mailer,
 		grpcAuth,
 		jwtValidator,
 		otpValidator,
 		pwhasher,
 		user.Config{
-			Recaptcha:        ctrl.recaptcha,
-			Enable2FALogin:   ctrl.enable2FA,
-			OperatorLogoPath: ctrl.operatorLogo,
-			WeChatLogin:      ctrl.externalAuth.WechatAuth,
-			DebugWeChatLogin: ctrl.externalAuth.DebugWechatAuth,
-			ShopifyConfig:    ctrl.shopifyConfig,
+			Recaptcha:        srv.Recaptcha,
+			Enable2FALogin:   srv.Enable2FA,
+			OperatorLogoPath: srv.OperatorLogo,
+			WeChatLogin:      srv.ExternalAuth.WechatAuth,
+			DebugWeChatLogin: srv.ExternalAuth.DebugWechatAuth,
+			ShopifyConfig:    srv.ShopifyConfig,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)
 	api.RegisterInternalServiceServer(grpcServer, userSrv)
 	api.RegisterExternalUserServiceServer(grpcServer, userSrv)
 
-	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(ctrl.serverRegion))
+	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(srv.ServerRegion))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
 	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI())
 
 	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI(
 		h,
 		grpcAuth,
-		ctrl.enableSTC,
+		srv.EnableSTC,
 	))
 
 	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI())
@@ -286,11 +241,11 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	return nil
 }
 
-func setupHTTPAPI() (http.Handler, error) {
+func (srv *RESTApiServer) setupHTTPAPI() (http.Handler, error) {
 	r := mux.NewRouter()
 
 	// setup json api handler
-	jsonHandler, err := getJSONGateway(context.Background())
+	jsonHandler, err := srv.getJSONGateway(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -322,14 +277,14 @@ func setupHTTPAPI() (http.Handler, error) {
 	return wsproxy.WebsocketProxy(r), nil
 }
 
-func getJSONGateway(ctx context.Context) (http.Handler, error) {
+func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, error) {
 	// dial options for the grpc-gateway
 	var grpcDialOpts []grpc.DialOption
 
-	if ctrl.s.TLSCert == "" || ctrl.s.TLSKey == "" {
+	if srv.S.TLSCert == "" || srv.S.TLSKey == "" {
 		grpcDialOpts = append(grpcDialOpts, grpc.WithInsecure())
 	} else {
-		b, err := ioutil.ReadFile(ctrl.s.TLSCert)
+		b, err := ioutil.ReadFile(srv.S.TLSCert)
 		if err != nil {
 			return nil, errors.Wrap(err, "read external api tls cert error")
 		}
@@ -345,7 +300,7 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		})))
 	}
 
-	bindParts := strings.SplitN(ctrl.s.Bind, ":", 2)
+	bindParts := strings.SplitN(srv.S.Bind, ":", 2)
 	if len(bindParts) != 2 {
 		log.Fatal("get port from bind failed")
 	}

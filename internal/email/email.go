@@ -82,41 +82,22 @@ var email struct {
 	mailTemplates    map[EmailOptions]*template.Template
 }
 
-type controller struct {
-	s        ServerInfo
-	operator Operator
-	smtp     map[string]SMTPConfig
-	cli      map[string]*client
-}
-
-var ctrl *controller
-
-// GetSettings returns ServerInfoStruct
-func GetSettings() ServerInfo {
-	return ctrl.s
-}
-
-// GetOperatorInfo returns OperatorStruct
-func GetOperatorInfo() Operator {
-	return ctrl.operator
-}
-
-// Setup configures the package.
-func Setup(operator Operator, smtp map[string]SMTPConfig, srvInfo ServerInfo) error {
-	ctrl = &controller{
-		operator: operator,
-		smtp:     smtp,
-		s:        srvInfo,
-		cli:      make(map[string]*client),
+// NewMailer returns a new instance of appserver's stmp service object
+func NewMailer(operator Operator, smtp map[string]SMTPConfig, srvInfo ServerInfo) (*Mailer, error) {
+	mailer := &Mailer{
+		Operator: operator,
+		SMTP:     smtp,
+		S:        srvInfo,
+		Cli:      make(map[string]*client),
 	}
 
-	for key, value := range ctrl.smtp {
+	for key, value := range mailer.SMTP {
 		port := value.Port
 		if port == "" {
 			port = "25"
 		}
 
-		ctrl.cli[key] = &client{
+		mailer.Cli[key] = &client{
 			senderID:    value.Email,
 			username:    value.Username,
 			password:    value.Password,
@@ -130,51 +111,60 @@ func Setup(operator Operator, smtp map[string]SMTPConfig, srvInfo ServerInfo) er
 	}
 
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
-	email.host = "https://" + ctrl.s.ServerAddr
+	email.host = "https://" + mailer.S.ServerAddr
 	email.operator = operatorInfo{
-		operatorName:       ctrl.operator.Operator,
-		downloadAppStore:   ctrl.operator.DownloadAppStore,
-		downloadGoogle:     ctrl.operator.DownloadGoogle,
-		downloadTestFlight: ctrl.operator.DownloadTestFlight,
-		downloadAPK:        ctrl.operator.DownloadAPK,
-		operatorAddress:    ctrl.operator.OperatorAddress,
-		operatorLegal:      ctrl.operator.OperatorLegal,
-		operatorLogo:       ctrl.operator.OperatorLogo,
-		operatorContact:    ctrl.operator.OperatorContact,
-		operatorSupport:    ctrl.operator.OperatorSupport,
+		operatorName:       mailer.Operator.Operator,
+		downloadAppStore:   mailer.Operator.DownloadAppStore,
+		downloadGoogle:     mailer.Operator.DownloadGoogle,
+		downloadTestFlight: mailer.Operator.DownloadTestFlight,
+		downloadAPK:        mailer.Operator.DownloadAPK,
+		operatorAddress:    mailer.Operator.OperatorAddress,
+		operatorLegal:      mailer.Operator.OperatorLegal,
+		operatorLogo:       mailer.Operator.OperatorLogo,
+		operatorContact:    mailer.Operator.OperatorContact,
+		operatorSupport:    mailer.Operator.OperatorSupport,
 	}
 
 	if err := loadEmailTemplates(); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return mailer, nil
 }
 
-type Mailer struct{}
+type Mailer struct {
+	S        ServerInfo
+	Operator Operator
+	SMTP     map[string]SMTPConfig
+	Cli      map[string]*client
+}
 
 // SendVerifyEmailConfirmation sends security token to given address for verifying the address
 func (m *Mailer) SendVerifyEmailConfirmation(email, lang, securityToken string) error {
-	return SendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), VerifyEmail)
+	return m.sendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), VerifyEmail)
 }
 
 func (m *Mailer) SendRegistrationConfirmation(email, lang, securityToken string) error {
-	return SendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), RegistrationConfirmation)
+	return m.sendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), RegistrationConfirmation)
 }
 
 func (m *Mailer) SendPasswordResetUnknown(email, lang string) error {
-	return SendInvite(email, Param{}, EmailLanguage(lang), PasswordResetUnknown)
+	return m.sendInvite(email, Param{}, EmailLanguage(lang), PasswordResetUnknown)
 }
 
 func (m *Mailer) SendPasswordReset(email, lang, otp string) error {
-	return SendInvite(email, Param{Token: otp}, EmailLanguage(lang), PasswordReset)
+	return m.sendInvite(email, Param{Token: otp}, EmailLanguage(lang), PasswordReset)
+}
+
+func (m *Mailer) SendStakeIncomeNotification(email, lang string, param Param) error {
+	return m.sendInvite(email, param, EmailLanguage(lang), StakingIncome)
 }
 
 // SendInvite ...
-func SendInvite(user string, param Param, language EmailLanguage, option EmailOptions) error {
+func (m *Mailer) sendInvite(user string, param Param, language EmailLanguage, option EmailOptions) error {
 	var err error
 
-	if ctrl.cli == nil {
+	if m.Cli == nil {
 		log.Error("Tried to send registration email, but SMTP is not configured")
 		return errors.New("Unable to send confirmation email")
 	}
@@ -244,7 +234,7 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 	str := strings.Replace(msg.String(), "=\"", "=3D\"", -1)
 	out := bytes.NewBufferString(str)
 
-	for k, v := range ctrl.cli {
+	for k, v := range m.Cli {
 		if v != nil {
 			err = v.send(user, *out)
 			if err == nil {

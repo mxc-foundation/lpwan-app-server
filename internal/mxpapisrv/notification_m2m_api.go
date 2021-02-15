@@ -14,12 +14,16 @@ import (
 
 // NotificationAPI keeps variables required for NotificationAPI service
 type NotificationAPI struct {
-	st *pgstore.PgStore
+	st     *pgstore.PgStore
+	mailer *email.Mailer
 }
 
 // NewNotificationAPI creates a new notification API service
-func NewNotificationAPI() *NotificationAPI {
-	return &NotificationAPI{}
+func NewNotificationAPI(h *pgstore.PgStore, mailer *email.Mailer) *NotificationAPI {
+	return &NotificationAPI{
+		st:     h,
+		mailer: mailer,
+	}
 }
 
 // SendStakeIncomeNotification is called to send email to user when stake revenue is applied
@@ -46,11 +50,11 @@ func (a *NotificationAPI) SendStakeIncomeNotification(ctx context.Context, req *
 		dateMap[email.StakeStartDate] = req.StakeStartDate
 		dateMap[email.StakeRevenueDate] = req.StakeRevenueDate
 
-		_ = email.SendInvite(v.Email, email.Param{
+		_ = a.mailer.SendStakeIncomeNotification(v.Email, a.mailer.S.DefaultLanguage, email.Param{
 			Amount: amountMap,
 			ItemID: itemIDMap,
 			Date:   dateMap,
-		}, email.EmailLanguage(email.GetSettings().DefaultLanguage), email.StakingIncome)
+		})
 
 	}
 

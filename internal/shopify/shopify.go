@@ -2,17 +2,16 @@ package shopify
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-
-	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 
 	log "github.com/sirupsen/logrus"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
 // Service represents an running instance of the serivce
@@ -26,7 +25,7 @@ type Service struct {
 
 // Start initiate goroutine to process shopify order records in the background
 func Start(ctx context.Context, config user.Shopify, store user.Store, cli api.DistributeBonusServiceClient) (*Service, error) {
-	if config.Bonus.Enable == false {
+	if !config.Bonus.Enable {
 		return nil, nil
 	}
 
@@ -48,22 +47,24 @@ func (c *Service) startCheckingOrdersForShopifyAccounts(ctx context.Context) {
 		log.Errorf("[shopify service] failed to get user amount: %v", err)
 	}
 
-	offset := int64(0)
 	limit := int64(50)
-
-	for i := int64(0); i <= userAmount/limit; i++ {
+	for offset := int64(0); offset <= userAmount/limit; offset = limit * (offset + 1) {
 		users, err := c.store.GetUsers(ctx, limit, offset)
 		if err != nil {
 			log.Errorf("[shopify service] failed to get users: %v", err)
 		}
 
 		for _, v := range users {
-			_, err := c.store.GetExternalUserByUserIDAndService(ctx, auth.SHOPIFY, v.ID)
+			extUser, err := c.store.GetExternalUserByUserIDAndService(ctx, auth.SHOPIFY, v.ID)
 			if err != nil {
 				if err == errHandler.ErrDoesNotExist {
 					continue
 				}
 				log.Errorf("[shopify service] failed to get external user: %v", err)
+			}
+
+			if extUser.ExternalUserID == "" {
+				continue
 			}
 
 			orgList, err := c.store.GetUserOrganizations(ctx, v.ID)
@@ -87,10 +88,8 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 		return err
 	}
 
-	offset := int64(0)
 	limit := int64(50)
-
-	for i := int64(0); i <= count/limit; i++ {
+	for offset := int64(0); offset <= count/limit; offset = limit * (offset + 1) {
 		orderList, err := c.store.GetOrdersWithPendingBonusStatus(ctx, offset, limit)
 		if err != nil {
 			if err == errHandler.ErrDoesNotExist {
@@ -129,6 +128,7 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 				Currency:    "BTC",
 				AmountUsd:   strconv.FormatInt(v.BonusPerPieceUSD, 64),
 				Description: "Purchase M2 Pro – LPWAN Crypto-Miner from m2prominer.com ",
+				ExternalRef: fmt.Sprintf("m2prominer.com-%d", v.OrderID),
 			})
 			if err != nil {
 				log.Errorf("failed to send add bonus request to mxp: %v", err)
@@ -140,8 +140,6 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 				continue
 			}
 		}
-
-		offset = limit * (i + 1)
 	}
 
 	return nil

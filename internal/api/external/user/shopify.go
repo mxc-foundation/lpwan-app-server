@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
+
 	"github.com/golang/protobuf/ptypes"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -35,23 +37,6 @@ type BonusSettings struct {
 type Shopify struct {
 	AdminAPI ShopifyAdminAPI `mapstructure:"shopify_admin_api"`
 	Bonus    BonusSettings   `mapstructure:"bonus"`
-}
-
-// ShopifyCustomer includes a part of attributes of customer
-type ShopifyCustomer struct {
-	ID          int64  `json:"id"`
-	Email       string `json:"email"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-	OrdersCount int    `json:"orders_count"`
-	State       string `json:"state"`
-	LastOrderID int64  `json:"last_order_id"`
-}
-
-// ShopifyCustomerList maps response of api
-// https://apikey:secret@{hostname}/admin/api/2021-01/customers/search.json\?query\=email:{email}
-type ShopifyCustomerList struct {
-	Customers []ShopifyCustomer `json:"customers"`
 }
 
 // ShopifyServiceServer defines the Shopify integration service Server API structure
@@ -154,6 +139,23 @@ func (s *ShopifyServiceServer) GetOrdersByUser(ctx context.Context, req *api.Get
 	return &api.GetOrdersByUserResponse{Orders: orders}, nil
 }
 
+// ShopifyCustomer includes a part of attributes of customer
+type ShopifyCustomer struct {
+	ID          int64  `json:"id"`
+	Email       string `json:"email"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	OrdersCount int    `json:"orders_count"`
+	State       string `json:"state"`
+	LastOrderID int64  `json:"last_order_id"`
+}
+
+// ShopifyCustomerList maps response of api
+// https://apikey:secret@{hostname}/admin/api/2021-01/customers/search.json\?query\=email:{email}
+type ShopifyCustomerList struct {
+	Customers []ShopifyCustomer `json:"customers"`
+}
+
 // ShopifyOrder defines a part of attributes from order item
 type ShopifyOrder struct {
 	ID int64 `json:"id"`
@@ -163,15 +165,18 @@ type ShopifyOrder struct {
 	FinancialStatus string `json:"financial_status"`
 
 	LineItems []struct {
-		ProductID int64  `json:"id"`
+		ProductID int64  `json:"product_id"`
 		Name      string `json:"name"`
+		Quantity  int64  `json:"quantity"`
 	} `json:"line_items"`
 
 	Refunds []struct {
 		RefundLineItems []struct {
-			LineItem struct {
-				Quantity  int64 `json:"quantity"`
-				ProductID int64 `json:"product_id"`
+			LineItemID int64 `json:"line_item_id"`
+			Quantity   int64 `json:"quantity"`
+			LineItem   struct {
+				LineItemID int64 `json:"id"`
+				ProductID  int64 `json:"product_id"`
 			} `json:"line_item"`
 		} `json:"refund_line_items"`
 	} `json:"refunds"`
@@ -183,8 +188,8 @@ type GetOrdersResponse struct {
 	Orders []ShopifyOrder `json:"orders"`
 }
 
-// Client defines client with functions that interact with shopify server
-type Client struct {
+// ShopifyUser defines client with functions that interact with shopify server
+type ShopifyUser struct {
 	OrganizationID int64
 	UserID         int64
 	config         Shopify
@@ -194,73 +199,83 @@ type Client struct {
 
 // CheckNewOrders starts go rountine for a specific user who has bound shopify account
 func CheckNewOrders(ctx context.Context, organizationID, userID int64, conf Shopify, store Store) {
-	cli := &Client{
+	if !conf.Bonus.Enable {
+		return
+	}
+
+	su := &ShopifyUser{
 		OrganizationID: organizationID,
 		UserID:         userID,
 		config:         conf,
 		Store:          store,
 	}
-	go cli.run(ctx)
+
+	go su.run(ctx)
 }
 
-func (cli *Client) parseOrders(ctx context.Context, orders []ShopifyOrder, shopifyAccountID string) error {
-	var orderItem Order
+func (su *ShopifyUser) parseOrders(ctx context.Context, orders []ShopifyOrder, shopifyAccountID string) error {
 	var orderList []Order
 
 	for _, v := range orders {
-		if v.FinancialStatus != "paid" {
+		var orderItem Order
+
+		if v.FinancialStatus != "paid" && v.FinancialStatus != "partially_refunded" {
 			// skip any other orders
 			continue
 		}
 
-		orderItem.OrganizationID = cli.OrganizationID
-		orderItem.OrderID = v.ID
-		orderItem.ShopifyAccountID = shopifyAccountID
-		orderItem.ProductID = cli.config.Bonus.ProductID
-		orderItem.CreatedAt = v.CreatedAt
+		orderItem.ProductID = su.config.Bonus.ProductID
 
 		// parse line items
 		for _, item := range v.LineItems {
-			if item.ProductID != orderItem.ProductID {
-				// only grant bonus with specific product
-				continue
+			if item.ProductID == orderItem.ProductID {
+				orderItem.AmountProduct += item.Quantity
 			}
-			orderItem.AmountProduct += 1
 		}
 
 		// parse refunds
 		for _, refund := range v.Refunds {
 			for _, refunLineItem := range refund.RefundLineItems {
 				if refunLineItem.LineItem.ProductID == orderItem.ProductID {
-					orderItem.AmountProduct -= refunLineItem.LineItem.Quantity
+					orderItem.AmountProduct -= refunLineItem.Quantity
 				}
 			}
 		}
 
-		orderItem.BonusPerPieceUSD = cli.config.Bonus.ValueUSD
+		if orderItem.AmountProduct <= 0 {
+			// skip abnormal order
+			continue
+		}
+
+		orderItem.OrganizationID = su.OrganizationID
+		orderItem.OrderID = v.ID
+		orderItem.ShopifyAccountID = shopifyAccountID
+		orderItem.CreatedAt = v.CreatedAt
+		orderItem.BonusPerPieceUSD = su.config.Bonus.ValueUSD
 
 		orderList = append(orderList, orderItem)
 	}
 
-	if err := cli.Store.AddShopifyOrderList(ctx, orderList); err != nil {
+	if err := su.Store.AddShopifyOrderList(ctx, orderList); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (cli *Client) getNewOrdersFromShopify(ctx context.Context, shopifyAccount ExternalUser) error {
+func (su *ShopifyUser) getNewOrdersFromShopify(ctx context.Context, shopifyAccount ExternalUser) error {
 	// get user's last order
-	lastOrder, err := cli.Store.GetLastOrderByShopifyAccountID(ctx, shopifyAccount.ExternalUserID)
+	lastOrder, err := su.Store.GetLastOrderByShopifyAccountID(ctx, shopifyAccount.ExternalUserID)
 	if err != nil {
 		if err == errHandler.ErrDoesNotExist {
 			// when there is no last order record, try to get full order list from shopify for this user
 			url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/%s/orders.json?status=any",
-				cli.config.AdminAPI.APIKey, cli.config.AdminAPI.Secret, cli.config.AdminAPI.Hostname,
-				cli.config.AdminAPI.APIVersion, shopifyAccount.ExternalUserID)
+				su.config.AdminAPI.APIKey, su.config.AdminAPI.Secret, su.config.AdminAPI.Hostname,
+				su.config.AdminAPI.APIVersion, shopifyAccount.ExternalUserID)
 
+			log.Debugf("GET %s", url)
 			var orderList GetOrdersResponse
-			if err := auth.GetHTTPResponse(url, &orderList, false); err != nil {
+			if err := httpcli.GetResponse(url, &orderList, false); err != nil {
 				// try again in 1 min
 				log.Errorf("failed to get external user from user id: %v", err)
 				return err
@@ -269,7 +284,7 @@ func (cli *Client) getNewOrdersFromShopify(ctx context.Context, shopifyAccount E
 				return nil
 			}
 			// if there is new order, save it
-			if err := cli.parseOrders(ctx, orderList.Orders, shopifyAccount.ExternalUserID); err != nil {
+			if err := su.parseOrders(ctx, orderList.Orders, shopifyAccount.ExternalUserID); err != nil {
 				log.Errorf("failed to save orders: %v", err)
 			}
 			return nil
@@ -287,10 +302,12 @@ func (cli *Client) getNewOrdersFromShopify(ctx context.Context, shopifyAccount E
 	}
 
 	url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/%s/orders.json?status=any&created_at_min=\"%s\"",
-		cli.config.AdminAPI.APIKey, cli.config.AdminAPI.Secret, cli.config.AdminAPI.Hostname,
-		cli.config.AdminAPI.APIVersion, shopifyAccount.ExternalUserID, timeMin.String())
+		su.config.AdminAPI.APIKey, su.config.AdminAPI.Secret, su.config.AdminAPI.Hostname,
+		su.config.AdminAPI.APIVersion, shopifyAccount.ExternalUserID, timeMin.String())
+	log.Debugf("GET %s", url)
+
 	var orderList GetOrdersResponse
-	if err := auth.GetHTTPResponse(url, &orderList, false); err != nil {
+	if err := httpcli.GetResponse(url, &orderList, false); err != nil {
 		// try again in 1 min
 		log.Errorf("failed to get external user from user id: %v", err)
 		return err
@@ -299,25 +316,27 @@ func (cli *Client) getNewOrdersFromShopify(ctx context.Context, shopifyAccount E
 		return nil
 	}
 	// if there is new order, save it
-	if err := cli.parseOrders(ctx, orderList.Orders, shopifyAccount.ExternalUserID); err != nil {
+	if err := su.parseOrders(ctx, orderList.Orders, shopifyAccount.ExternalUserID); err != nil {
 		log.Errorf("failed to save orders: %v", err)
 	}
 	return nil
 }
 
-func (cli *Client) nextRun(ctx context.Context) (time.Time, error) {
+func (su *ShopifyUser) nextRun(ctx context.Context) (time.Time, error) {
+	log.Debugf("check new orders for user: %d", su.UserID)
 	// first check whether the user is still binding shopify to supernode
-	extUser, err := cli.Store.GetExternalUserByUserIDAndService(ctx, auth.SHOPIFY, cli.UserID)
+	extUser, err := su.Store.GetExternalUserByUserIDAndService(ctx, auth.SHOPIFY, su.UserID)
 	if err != nil {
 		if err == errHandler.ErrDoesNotExist {
 			// user no longer binding to shopify account, stop this go routine
 			return time.Now(), nil
 		}
 		// try again in 10 min
-		log.Errorf("failed to get external user from user id: %v", err)
+		log.Debugf("failed to get external user from user id: %d", su.UserID)
 		return time.Now().Add(10 * time.Minute), err
 	}
-	if err := cli.getNewOrdersFromShopify(ctx, extUser); err != nil {
+	if err := su.getNewOrdersFromShopify(ctx, extUser); err != nil {
+		log.Debugf("failed to get new orders from shopify for user: %d", su.UserID)
 		return time.Now().Add(10 * time.Minute), err
 	}
 
@@ -326,19 +345,20 @@ func (cli *Client) nextRun(ctx context.Context) (time.Time, error) {
 	return next, nil
 }
 
-func (cli *Client) run(ctx context.Context) {
+func (su *ShopifyUser) run(ctx context.Context) {
 	for {
-		next, err := cli.nextRun(ctx)
+		next, err := su.nextRun(ctx)
 		if err != nil {
 			log.Errorf("check shopify order failure: %v", err)
 		}
 		delay := time.Until(next)
 		if delay < 0 {
 			// exit this goroutine
+			log.Debugf("end routine for user: %d", su.UserID)
 			return
 		}
 		select {
-		case <-cli.done:
+		case <-su.done:
 			return
 		case <-time.After(delay):
 		}
@@ -346,8 +366,8 @@ func (cli *Client) run(ctx context.Context) {
 }
 
 // Close terminates this goroutine
-func (cli *Client) Close() error {
-	cli.done <- struct{}{}
-	close(cli.done)
+func (su *ShopifyUser) Close() error {
+	su.done <- struct{}{}
+	close(su.done)
 	return nil
 }
