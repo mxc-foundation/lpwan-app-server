@@ -305,8 +305,11 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 	// check whether external email already exist
 	extUser, err := a.store.GetExternalUserByUsername(ctx, auth.SHOPIFY, req.Email)
 	if err == nil {
+		if extUser.UserID != cred.UserID {
+			return nil, status.Errorf(codes.AlreadyExists, "already bound to other supernode account")
+		}
 		if extUser.Verification == "" {
-			return nil, status.Errorf(codes.AlreadyExists, "email already exists")
+			return nil, status.Errorf(codes.AlreadyExists, "already successfully bound")
 		}
 		// email exists, but haven't confirmed, just need to resend security token
 		// send token to given email address
