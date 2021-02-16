@@ -47,6 +47,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
+// RESTApiServer defines all attributes for REST api service
 type RESTApiServer struct {
 	S                      ExternalAPIStruct
 	ApplicationServerID    string
@@ -133,6 +134,7 @@ func Start(h *store.Handler, srv RESTApiServer) (err error) {
 	return nil
 }
 
+// SetupCusAPI registers all REST api services
 func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server) error {
 	jwtSecret := srv.S.JWTSecret
 	if jwtSecret == "" {
@@ -314,71 +316,71 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 		},
 	))
 
-	if err := pb.RegisterDeviceQueueServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register downlink queue handler error")
-	}
-	if err := pb.RegisterServiceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register service-profile handler error")
-	}
-	if err := pb.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register device-profile handler error")
-	}
-	if err := pb.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register multicast-group handler error")
-	}
-	if err := pb.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register fuota deployment handler error")
-	}
+	err := pb.RegisterDeviceQueueServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register downlink queue handler: %v", err)
 
-	if err := api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register server info handler error")
-	}
-	if err := api.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
+	err = pb.RegisterServiceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register service-profile handler: %v", err)
 
-	if err := api.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register application handler error")
-	}
-	if err := api.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register node handler error")
-	}
-	if err := api.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register user handler error")
-	}
-	if err := api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register internal handler error")
-	}
-	if err := api.RegisterExternalUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register external user handler error")
-	}
-	if err := api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register gateway handler error")
-	}
-	if err := api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register gateway-profile handler error")
-	}
-	if err := api.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register organization handler error")
-	}
-	if err := api.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register network-server handler error")
-	}
-	if err := api.RegisterDHXServcieHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register dhx service hander error")
-	}
+	err = pb.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register device-profile handler: %v", err)
+
+	err = pb.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register multicast-group handler: %v", err)
+
+	err = pb.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register fuota deployment handler: %v", err)
+
+	err = api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register server info handler: %v", err)
+
+	err = api.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register staking service handler: %v", err)
+
+	err = api.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register top up service handler: %v", err)
+
+	err = api.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register wallet service  handler: %v", err)
+
+	err = api.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register withdraw service  handler: %v", err)
+
+	err = api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register settings service handler: %v", err)
+
+	err = api.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register application service handler: %v", err)
+
+	err = api.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register device service handler: %v", err)
+
+	err = api.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register user service handler: %v", err)
+
+	err = api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register internal service handler: %v", err)
+
+	err = api.RegisterExternalUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register external user service handler: %v", err)
+
+	err = api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register gateway service handler: %v", err)
+
+	err = api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register gateway profile service handler: %v", err)
+
+	err = api.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register organization service handler: %v", err)
+
+	err = api.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register network server service handler: %v", err)
+
+	err = api.RegisterDHXServcieHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register dhx service handler: %v", err)
+
+	err = api.RegisterShopifyIntegrationHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register shopify integration service handler: %v", err)
 
 	return mux, nil
 }

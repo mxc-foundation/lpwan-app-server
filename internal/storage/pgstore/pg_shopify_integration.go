@@ -70,9 +70,8 @@ func (ps *PgStore) GetLastOrderByShopifyAccountID(ctx context.Context, saID stri
 // GetOrdersWithPendingBonusStatus returns order list with bonus_id == 0
 func (ps *PgStore) GetOrdersWithPendingBonusStatus(ctx context.Context, offset, limit int64) ([]user.Order, error) {
 	var orderList []user.Order
-	var err error
 
-	err = sqlx.SelectContext(ctx, ps.db, &orderList, `
+	err := sqlx.SelectContext(ctx, ps.db, &orderList, `
 		select * from shopify_orders where bonus_id = 0 offset $1 limit $2
 	`, offset, limit)
 	if err != nil {

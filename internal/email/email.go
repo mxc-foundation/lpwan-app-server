@@ -132,6 +132,7 @@ func NewMailer(operator Operator, smtp map[string]SMTPConfig, srvInfo ServerInfo
 	return mailer, nil
 }
 
+// Mailer defines appserver's stmp service attributes
 type Mailer struct {
 	S        ServerInfo
 	Operator Operator
@@ -144,18 +145,22 @@ func (m *Mailer) SendVerifyEmailConfirmation(email, lang, securityToken string) 
 	return m.sendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), VerifyEmail)
 }
 
+// SendRegistrationConfirmation sends security token to given address for registering new account
 func (m *Mailer) SendRegistrationConfirmation(email, lang, securityToken string) error {
 	return m.sendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), RegistrationConfirmation)
 }
 
+// SendPasswordResetUnknown sends notification to user that given address does not exist in server
 func (m *Mailer) SendPasswordResetUnknown(email, lang string) error {
 	return m.sendInvite(email, Param{}, EmailLanguage(lang), PasswordResetUnknown)
 }
 
+// SendPasswordReset sends security token to given address for reset password
 func (m *Mailer) SendPasswordReset(email, lang, otp string) error {
 	return m.sendInvite(email, Param{Token: otp}, EmailLanguage(lang), PasswordReset)
 }
 
+// SendStakeIncomeNotification sends notification to given address on new staking revenue
 func (m *Mailer) SendStakeIncomeNotification(email, lang string, param Param) error {
 	return m.sendInvite(email, param, EmailLanguage(lang), StakingIncome)
 }

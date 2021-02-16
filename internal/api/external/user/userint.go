@@ -12,10 +12,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/golang/protobuf/ptypes/timestamp"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -206,13 +207,14 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 	}
 	for _, org := range orgs {
 		row := inpb.OrganizationLink{
-			OrganizationId:   org.OrganizationID,
-			OrganizationName: org.OrganizationName,
-			IsAdmin:          org.IsOrgAdmin,
-			IsDeviceAdmin:    org.IsDeviceAdmin,
-			IsGatewayAdmin:   org.IsGatewayAdmin,
-			CreatedAt:        &timestamp.Timestamp{Seconds: org.CreatedAt.Unix()},
-			UpdatedAt:        &timestamp.Timestamp{Seconds: org.UpdatedAt.Unix()},
+			OrganizationId:          org.OrganizationID,
+			OrganizationName:        org.OrganizationName,
+			OrganizationDisplayName: org.OrganizationDisplayName,
+			IsAdmin:                 org.IsOrgAdmin,
+			IsDeviceAdmin:           org.IsDeviceAdmin,
+			IsGatewayAdmin:          org.IsGatewayAdmin,
+			CreatedAt:               &timestamp.Timestamp{Seconds: org.CreatedAt.Unix()},
+			UpdatedAt:               &timestamp.Timestamp{Seconds: org.UpdatedAt.Unix()},
 		}
 
 		resp.Organizations = append(resp.Organizations, &row)

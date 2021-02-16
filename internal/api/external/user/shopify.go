@@ -26,13 +26,14 @@ type ShopifyAdminAPI struct {
 	StoreName  string `mapstructure:"store_name"`
 }
 
-// BonusSettings defines settings of shopify promitions
+// BonusSettings defines settings of shopify related bonus
 type BonusSettings struct {
 	Enable    bool  `mapstructure:"enable"`
 	ValueUSD  int64 `mapstructure:"value_usd"`
 	ProductID int64 `mapstructure:"product_id"`
 }
 
+// Shopify defines full shopify service settings
 type Shopify struct {
 	AdminAPI ShopifyAdminAPI `mapstructure:"shopify_admin_api"`
 	Bonus    BonusSettings   `mapstructure:"bonus"`

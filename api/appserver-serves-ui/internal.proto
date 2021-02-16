@@ -168,6 +168,9 @@ message OrganizationLink {
 
     // Last update timestamp.
     google.protobuf.Timestamp updated_at = 5;
+
+    // organization display name
+    string organization_display_name = 8;
 }
 
 message LoginRequest {

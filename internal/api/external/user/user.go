@@ -36,14 +36,15 @@ type User struct {
 }
 
 type OrganizationUser struct {
-	UserID           int64
-	OrganizationID   int64
-	OrganizationName string
-	IsOrgAdmin       bool
-	IsDeviceAdmin    bool
-	IsGatewayAdmin   bool
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	UserID                  int64
+	OrganizationID          int64
+	OrganizationName        string
+	OrganizationDisplayName string
+	IsOrgAdmin              bool
+	IsDeviceAdmin           bool
+	IsGatewayAdmin          bool
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
 }
 
 // Organization represents an organization.

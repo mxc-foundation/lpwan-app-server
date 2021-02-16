@@ -73,7 +73,7 @@ func (c *Service) startCheckingOrdersForShopifyAccounts(ctx context.Context) {
 			}
 
 			for _, org := range orgList {
-				if org.IsOrgAdmin == false {
+				if !org.IsOrgAdmin {
 					continue
 				}
 				user.CheckNewOrders(ctx, org.OrganizationID, v.ID, c.config, c.store)
