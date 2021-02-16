@@ -146,15 +146,11 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 }
 
 func (c *Service) nextRun(ctx context.Context) (time.Time, error) {
-	// check order every 24 hours
-	next := time.Now().Add(24 * time.Hour)
-	if time.Now().After(next) {
-		if err := c.distributeBonus(ctx); err != nil {
-			return time.Now().Add(10 * time.Minute), nil
-		}
-		return next, nil
+	if err := c.distributeBonus(ctx); err != nil {
+		return time.Now().Add(10 * time.Minute), nil
 	}
-	return next, nil
+	// check order every 24 hours
+	return time.Now().Add(24 * time.Hour), nil
 }
 
 func (c *Service) processOrders(ctx context.Context) {

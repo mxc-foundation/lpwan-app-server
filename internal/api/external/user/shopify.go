@@ -341,8 +341,7 @@ func (su *ShopifyUser) nextRun(ctx context.Context) (time.Time, error) {
 	}
 
 	// check order every 24 hours
-	next := time.Now().Add(24 * time.Hour)
-	return next, nil
+	return time.Now().Add(24 * time.Hour), nil
 }
 
 func (su *ShopifyUser) run(ctx context.Context) {
