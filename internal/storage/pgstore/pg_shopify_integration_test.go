@@ -2,10 +2,12 @@ package pgstore
 
 import (
 	"context"
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"regexp"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 )
 
 func TestAddShopifyOrderList(t *testing.T) {
