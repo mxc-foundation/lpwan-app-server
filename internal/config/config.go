@@ -51,7 +51,7 @@ type Config struct {
 
 	ExternalAuth user.ExternalAuthentication `mapstructure:"external_auth"`
 
-	ShopifyConfig user.ShopifyAdminAPI `mapstructure:"shopify_admin_api"`
+	ShopifyConfig user.Shopify `mapstructure:"shopify"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`

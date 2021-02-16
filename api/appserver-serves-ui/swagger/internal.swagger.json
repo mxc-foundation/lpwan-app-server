@@ -825,6 +825,10 @@
           "type": "string",
           "format": "date-time",
           "description": "Last update timestamp."
+        },
+        "organizationDisplayName": {
+          "type": "string",
+          "title": "organization display name"
         }
       },
       "description": "Defines an organization to which an user is associated."

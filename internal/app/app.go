@@ -8,6 +8,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
+	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
@@ -15,6 +19,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/shopify"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
@@ -29,6 +34,10 @@ type App struct {
 	mxpCli *mxpcli.Client
 	// mxprotocol server API
 	mxpSrv *mxpapisrv.MXPAPIServer
+	// shopify service
+	shopify *shopify.Service
+	// smtp service
+	mailer *email.Mailer
 }
 
 // Start starts all the routines required for appserver and returns the App
@@ -72,6 +81,9 @@ func (app *App) Close() error {
 	if app.bonus != nil {
 		app.bonus.Stop()
 	}
+	if app.shopify != nil {
+		app.shopify.Stop()
+	}
 	return nil
 }
 
@@ -80,6 +92,11 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 	var err error
 	// postgres
 	app.pgstore, err = pgstore.Setup(cfg.PostgreSQL)
+	if err != nil {
+		return err
+	}
+	// data migrations
+	err = code.Setup(store.NewStore(), cfg.PostgreSQL.Automigrate)
 	if err != nil {
 		return err
 	}
@@ -92,6 +109,12 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 	// bonus distribution service
 	app.bonus = bonus.Start(ctx, cfg.ApplicationServer.Airdrop,
 		app.pgstore, app.mxpCli.GetDistributeBonusServiceClient())
+	// shopify service
+	app.shopify, err = shopify.Start(ctx, cfg.ShopifyConfig, app.pgstore, app.mxpCli.GetDistributeBonusServiceClient())
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -128,10 +151,12 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 		return fmt.Errorf("couldn't register on DHX server: %v", err)
 	}
 	// set up the email system
-	if err := email.Setup(cfg.Operator, cfg.SMTP, email.ServerInfo{
+	var err error
+	app.mailer, err = email.NewMailer(cfg.Operator, cfg.SMTP, email.ServerInfo{
 		ServerAddr:      cfg.General.ServerAddr,
 		DefaultLanguage: cfg.General.DefaultLanguage,
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
 	// start bonus distribution service
@@ -142,8 +167,26 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	var err error
 	// API for mxprotocol server
-	if app.mxpSrv, err = mxpapisrv.Start(app.pgstore, cfg.ApplicationServer.APIForM2M); err != nil {
+	if app.mxpSrv, err = mxpapisrv.Start(app.pgstore, cfg.ApplicationServer.APIForM2M, app.mailer); err != nil {
 		return err
 	}
+	// API for external clients
+	if err = external.Start(store.NewStore(), external.RESTApiServer{
+		S:                      cfg.ApplicationServer.ExternalAPI,
+		ApplicationServerID:    cfg.ApplicationServer.ID,
+		ServerAddr:             cfg.General.ServerAddr,
+		Recaptcha:              cfg.Recaptcha,
+		Enable2FA:              cfg.General.Enable2FALogin,
+		ServerRegion:           cfg.General.ServerRegion,
+		PasswordHashIterations: cfg.General.PasswordHashIterations,
+		EnableSTC:              cfg.General.EnableSTC,
+		ExternalAuth:           cfg.ExternalAuth,
+		ShopifyConfig:          cfg.ShopifyConfig,
+		OperatorLogo:           cfg.Operator.OperatorLogo,
+		Mailer:                 app.mailer,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }

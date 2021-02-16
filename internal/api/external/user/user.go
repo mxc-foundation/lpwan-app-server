@@ -36,14 +36,15 @@ type User struct {
 }
 
 type OrganizationUser struct {
-	UserID           int64
-	OrganizationID   int64
-	OrganizationName string
-	IsOrgAdmin       bool
-	IsDeviceAdmin    bool
-	IsGatewayAdmin   bool
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	UserID                  int64
+	OrganizationID          int64
+	OrganizationName        string
+	OrganizationDisplayName string
+	IsOrgAdmin              bool
+	IsDeviceAdmin           bool
+	IsGatewayAdmin          bool
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
 }
 
 // Organization represents an organization.
@@ -90,7 +91,7 @@ type Store interface {
 	// GetUserCount returns the total number of users
 	GetUserCount(ctx context.Context) (int64, error)
 	// GetUsers returns list of users
-	GetUsers(ctx context.Context, limit, offset int) ([]User, error)
+	GetUsers(ctx context.Context, limit, offset int64) ([]User, error)
 	// GetOrSetPasswordResetOTP if the password reset OTP has been generated
 	// already then returns it, otherwise sets the new OTP and returns it
 	GetOrSetPasswordResetOTP(ctx context.Context, userID int64, otp string) (string, error)
@@ -131,6 +132,9 @@ type Store interface {
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
 	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
+
+	// ShopifyStore defines db apis for shopify service
+	ShopifyStore
 }
 
 // Mailer is an interface responsible for sending emails to the user
@@ -164,7 +168,7 @@ type Config struct {
 	// external user wechat login config, debug mode
 	DebugWeChatLogin auth.WeChatAuthentication
 	// shopify private app configuration
-	ShopifyConfig ShopifyAdminAPI
+	ShopifyConfig Shopify
 }
 
 // Server implements Internal User Service
@@ -298,7 +302,7 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	users, err := a.store.GetUsers(ctx, int(req.Limit), int(req.Offset))
+	users, err := a.store.GetUsers(ctx, req.Limit, req.Offset)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

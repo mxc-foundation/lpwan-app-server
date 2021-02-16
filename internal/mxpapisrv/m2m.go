@@ -3,6 +3,8 @@ package mxpapisrv
 import (
 	"net"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -24,16 +26,18 @@ type Config struct {
 
 // MXPAPIServer represents gRPC server serving mxp server
 type MXPAPIServer struct {
-	h  *pgstore.PgStore
-	gs *grpc.Server
+	h      *pgstore.PgStore
+	gs     *grpc.Server
+	mailer *email.Mailer
 }
 
 // Start starts gRPC server that serves mxp server
-func Start(h *pgstore.PgStore, cfg Config) (*MXPAPIServer, error) {
+func Start(h *pgstore.PgStore, cfg Config, mailer *email.Mailer) (*MXPAPIServer, error) {
 	log.Info("Starting API for m2m server")
 
 	srv := &MXPAPIServer{
-		h: h,
+		h:      h,
+		mailer: mailer,
 	}
 
 	if err := srv.listenWithCredentials(
@@ -68,7 +72,7 @@ func (srv *MXPAPIServer) listenWithCredentials(bind, caCert, tlsCert, tlsKey str
 
 	pb.RegisterDeviceM2MServiceServer(gs, NewDeviceM2MAPI(srv.h))
 	pb.RegisterGatewayM2MServiceServer(gs, NewGatewayM2MAPI(srv.h))
-	pb.RegisterNotificationServiceServer(gs, NewNotificationAPI())
+	pb.RegisterNotificationServiceServer(gs, NewNotificationAPI(srv.h, srv.mailer))
 
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {

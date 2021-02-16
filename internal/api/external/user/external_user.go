@@ -7,6 +7,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -29,11 +31,11 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 	body := auth.GetAccessTokenResponse{}
 	user := auth.GetWeChatUserInfoResponse{}
 
-	if err := auth.GetAccessTokenFromCode(ctx, auth.URLStrGetAccessTokenFromCode, code, appID, secret, &body); err != nil {
+	if err := auth.GetAccessTokenFromCode(ctx, code, appID, secret, &body); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.URLStrGetWeChatUserInfoFromAccessToken, body.AccessToken, body.OpenID, &user); err != nil {
+	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, body.AccessToken, body.OpenID, &user); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
@@ -305,8 +307,11 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 	// check whether external email already exist
 	extUser, err := a.store.GetExternalUserByUsername(ctx, auth.SHOPIFY, req.Email)
 	if err == nil {
+		if extUser.UserID != cred.UserID {
+			return nil, status.Errorf(codes.AlreadyExists, "already bound to other supernode account")
+		}
 		if extUser.Verification == "" {
-			return nil, status.Errorf(codes.AlreadyExists, "email already exists")
+			return nil, status.Errorf(codes.AlreadyExists, "already successfully bound")
 		}
 		// email exists, but haven't confirmed, just need to resend security token
 		// send token to given email address
@@ -346,16 +351,16 @@ func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 
 func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, email string) (string, error) {
 	url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/search.json?query=email:%s",
-		a.config.ShopifyConfig.APIKey, a.config.ShopifyConfig.Secret, a.config.ShopifyConfig.Hostname,
-		a.config.ShopifyConfig.APIVersion, email)
+		a.config.ShopifyConfig.AdminAPI.APIKey, a.config.ShopifyConfig.AdminAPI.Secret, a.config.ShopifyConfig.AdminAPI.Hostname,
+		a.config.ShopifyConfig.AdminAPI.APIVersion, email)
 
 	var customers ShopifyCustomerList
-	if err := auth.GetHTTPResponse(url, &customers, false); err != nil {
+	if err := httpcli.GetResponse(url, &customers, false); err != nil {
 		return "", status.Errorf(codes.Internal, err.Error())
 	}
 
 	if len(customers.Customers) == 0 {
-		return "", status.Errorf(codes.NotFound, "customer %s not found on store %s", email, a.config.ShopifyConfig.StoreName)
+		return "", status.Errorf(codes.NotFound, "customer %s not found on store %s", email, a.config.ShopifyConfig.AdminAPI.StoreName)
 	}
 
 	return fmt.Sprintf("%d", customers.Customers[0].ID), nil
@@ -394,6 +399,8 @@ func (a *Server) ConfirmBindingEmail(ctx context.Context, req *pb.ConfirmBinding
 	if err = a.store.ConfirmExternalUserID(ctx, extUser); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
+	go CheckNewOrders(context.Background(), cred.OrgID, extUser.UserID, a.config.ShopifyConfig, a.store)
 
 	return &pb.ConfirmBindingEmailResponse{}, nil
 }

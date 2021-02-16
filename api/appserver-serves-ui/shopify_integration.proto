@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
+
+import "google/api/annotations.proto";
+
+service ShopifyIntegration {
+    // GetOrdersByUser returns a list of shopify orders filtered by given email, this API is only open for global admin user
+    rpc GetOrdersByUser (GetOrdersByUserRequest) returns (GetOrdersByUserResponse) {
+        option (google.api.http) = {
+			get: "/api/shopify-integration/orders"
+		};
+    }
+}
+
+message GetOrdersByUserRequest {
+    // user's email address for supernode account
+    string email = 1;
+}
+
+message Order {
+    // email address user used for shopify account,
+    string shopify_account = 1;
+    // order id is generated and maintained on shopify service side, appserver saves this as a reference
+    string order_id = 2;
+    string created_at = 3;
+    // used to identify a specific product created in shopify
+    string product_id = 4;
+    // amount of product with given product_id from an order with given order_id
+    int64 amount_product = 5;
+    // when bonus_status is 'done'
+    //  users who request refund will get ( number of returned good * bonus_per_piece_usd ) less
+    // when bonus_status is 'pending'
+    //  users will get refund with full amount
+    string bonus_status = 6;
+    // amount of USD rewarded to user for purchasing one product with given product id
+    string bonus_per_piece_usd = 7;
+}
+
+message GetOrdersByUserResponse {
+    repeated Order orders = 1;
+}
