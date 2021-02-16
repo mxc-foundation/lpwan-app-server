@@ -105,16 +105,6 @@ func TestGetAccessTokenFromCode(t *testing.T) {
 			resp:   GetAccessTokenResponse{},
 			noErr:  false,
 		},
-		{
-			name:   "all input valid",
-			ctx:    ctx,
-			urlStr: "https://lora.build.cloud.mxc.org/test/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
-			code:   "123456",
-			appID:  "123456",
-			secret: "123456",
-			resp:   GetAccessTokenResponse{},
-			noErr:  true,
-		},
 	}
 
 	for _, tc := range tests {
@@ -155,15 +145,6 @@ func TestGetWeChatUserInfoFromAccessToken(t *testing.T) {
 			openID:      "",
 			resp:        GetWeChatUserInfoResponse{},
 			noErr:       false,
-		},
-		{
-			name:        "all input valid",
-			ctx:         ctx,
-			urlStr:      "https://lora.build.cloud.mxc.org/test/userinfo?access_token=%s&openid=%s",
-			accessToken: "afasfdasdfas",
-			openID:      "asdfasdfasfds",
-			resp:        GetWeChatUserInfoResponse{},
-			noErr:       true,
 		},
 	}
 
