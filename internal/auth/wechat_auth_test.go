@@ -2,8 +2,9 @@ package auth
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
 	"testing"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
 )
 
 type testRespIncomplete struct {

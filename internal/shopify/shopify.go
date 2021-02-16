@@ -99,7 +99,13 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 		}
 
 		for _, v := range orderList {
-			if v.CreatedAt.AddDate(0, 0, 30).After(time.Now()) {
+			ct, err := time.Parse("2006-01-02T15:04:05Z07:00", v.CreatedAt)
+			if err != nil {
+				log.Errorf("failed to convert createdAt: %v", err)
+				continue
+			}
+
+			if ct.AddDate(0, 0, 30).After(time.Now()) {
 				// order is not more than 30 days old, do not distribute bonus
 				continue
 			}
@@ -126,7 +132,7 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 			res, err := c.bonusCli.AddBonus(ctx, &api.AddBonusRequest{
 				OrgId:       v.OrganizationID,
 				Currency:    "BTC",
-				AmountUsd:   strconv.FormatInt(v.BonusPerPieceUSD, 64),
+				AmountUsd:   strconv.FormatInt(v.BonusPerPieceUSD, 10),
 				Description: "Purchase M2 Pro – LPWAN Crypto-Miner from m2prominer.com ",
 				ExternalRef: fmt.Sprintf("m2prominer.com-%d", v.OrderID),
 			})

@@ -8,7 +8,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/httpcli"
 
-	"github.com/golang/protobuf/ptypes"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -71,15 +70,15 @@ type ShopifyStore interface {
 
 // Order represent db data in table shopify_orders
 type Order struct {
-	ID               int64     `db:"id"`
-	OrganizationID   int64     `db:"org_id"`
-	ShopifyAccountID string    `db:"shopify_account_id"`
-	CreatedAt        time.Time `db:"created_at"`
-	ProductID        int64     `db:"product_id"`
-	OrderID          int64     `db:"order_id"`
-	AmountProduct    int64     `db:"amount_product"`
-	BonusID          int64     `db:"bonus_id"`
-	BonusPerPieceUSD int64     `db:"bonus_per_piece_usd"`
+	ID               int64  `db:"id"`
+	OrganizationID   int64  `db:"org_id"`
+	ShopifyAccountID string `db:"shopify_account_id"`
+	CreatedAt        string `db:"created_at"`
+	ProductID        int64  `db:"product_id"`
+	OrderID          int64  `db:"order_id"`
+	AmountProduct    int64  `db:"amount_product"`
+	BonusID          int64  `db:"bonus_id"`
+	BonusPerPieceUSD int64  `db:"bonus_per_piece_usd"`
 }
 
 // GetOrdersByUser returns a list of shopify orders filtered by given email, this API is only open for global admin user
@@ -119,11 +118,7 @@ func (s *ShopifyServiceServer) GetOrdersByUser(ctx context.Context, req *api.Get
 		orderItem.ProductId = strconv.FormatInt(v.ProductID, 10)
 		orderItem.ShopifyAccount = extUser.ExternalUsername
 		orderItem.OrderId = strconv.FormatInt(v.OrderID, 10)
-
-		orderItem.CreatedAt, err = ptypes.TimestampProto(v.CreatedAt)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "%v", err)
-		}
+		orderItem.CreatedAt = v.CreatedAt
 
 		if v.BonusID == 0 {
 			orderItem.BonusStatus = "done"
@@ -160,7 +155,7 @@ type ShopifyCustomerList struct {
 type ShopifyOrder struct {
 	ID int64 `json:"id"`
 
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt string `json:"created_at"`
 
 	FinancialStatus string `json:"financial_status"`
 
@@ -294,16 +289,9 @@ func (su *ShopifyUser) getNewOrdersFromShopify(ctx context.Context, shopifyAccou
 		return err
 	}
 	// get new orders generated after last order was processed
-	timeMin, err := ptypes.TimestampProto(lastOrder.CreatedAt)
-	if err != nil {
-		// something is wrong, try again in 1 min
-		log.Errorf("failed to get last order's processed time: %v", err)
-		return err
-	}
-
 	url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/%s/orders.json?status=any&created_at_min=\"%s\"",
 		su.config.AdminAPI.APIKey, su.config.AdminAPI.Secret, su.config.AdminAPI.Hostname,
-		su.config.AdminAPI.APIVersion, shopifyAccount.ExternalUserID, timeMin.String())
+		su.config.AdminAPI.APIVersion, shopifyAccount.ExternalUserID, lastOrder.CreatedAt)
 	log.Debugf("GET %s", url)
 
 	var orderList GetOrdersResponse

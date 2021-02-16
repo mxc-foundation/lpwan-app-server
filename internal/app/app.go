@@ -5,9 +5,12 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
 	"github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
+	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -89,6 +92,11 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 	var err error
 	// postgres
 	app.pgstore, err = pgstore.Setup(cfg.PostgreSQL)
+	if err != nil {
+		return err
+	}
+	// data migrations
+	err = code.Setup(store.NewStore(), cfg.PostgreSQL.Automigrate)
 	if err != nil {
 		return err
 	}

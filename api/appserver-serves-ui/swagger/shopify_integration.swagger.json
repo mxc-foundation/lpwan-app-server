@@ -68,8 +68,7 @@
           "title": "order id is generated and maintained on shopify service side, appserver saves this as a reference"
         },
         "createdAt": {
-          "type": "string",
-          "format": "date-time"
+          "type": "string"
         },
         "productId": {
           "type": "string",

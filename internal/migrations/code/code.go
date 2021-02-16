@@ -8,8 +8,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
 	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -19,48 +17,11 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
-}
+// Setup checks migration status and runs migration scripts right after db is ready
+func Setup(h *store.Handler, autoMigrate bool) error {
+	if autoMigrate {
 
-const moduleName = "migrations"
-const (
-	migrateGatewayStats  = "migrate_gw_stats"
-	migrateToClusterKeys = "migrate_to_cluster_keys"
-)
-
-type controller struct {
-	name        string
-	autoMigrate bool
-
-	st       *store.Handler
-	moduleUp bool
-}
-
-var ctrl *controller
-
-func SettingsSetup(name string, conf config.Config) error {
-	ctrl = &controller{
-		name:        moduleName,
-		autoMigrate: conf.PostgreSQL.Automigrate,
-	}
-
-	return nil
-}
-
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
-		return nil
-	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
-
-	ctrl.st = h
-	if ctrl.autoMigrate {
-
-		if err := MigrateGorpMigrations(ctrl.st); err != nil {
+		if err := MigrateGorpMigrations(h); err != nil {
 			log.Fatal(err, " fix gorp_migrations table error")
 		}
 
@@ -71,7 +32,7 @@ func Setup(name string, h *store.Handler) error {
 			Dir:      "",
 		}
 
-		if err := ctrl.st.ExecuteMigrateUp(m); err != nil {
+		if err := h.ExecuteMigrateUp(m); err != nil {
 			log.Fatal(err, "faile to migrate postgresql data")
 		}
 	}
@@ -80,11 +41,11 @@ func Setup(name string, h *store.Handler) error {
 		return err
 	}
 
-	if err := Migrate(migrateGatewayStats, ctrl.st, MigrateGatewayStats); err != nil {
+	if err := Migrate("migrate_gw_stats", h, MigrateGatewayStats); err != nil {
 		log.Fatal(errors.Wrap(err, "migration error"))
 	}
 
-	if err := Migrate(migrateToClusterKeys, ctrl.st, func(handler *store.Handler) error {
+	if err := Migrate("migrate_to_cluster_keys", h, func(handler *store.Handler) error {
 		return MigrateToClusterKeys(config.C)
 	}); err != nil {
 		log.Fatal(err)
