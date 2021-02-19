@@ -1,0 +1,231 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "provisionedDevice.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/device-provision": {
+      "post": {
+        "summary": "Create - creates the given provisioned device.",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiCreateProvisionedDeviceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProvisionedDeviceService"
+        ]
+      }
+    },
+    "/api/device-provision/{provisionId}": {
+      "get": {
+        "summary": "Get - returns the provision info of a device matching the given Provision ID.",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetProvisionedDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "provisionId",
+            "description": "Provision ID (HEX string without 0x prefix).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ProvisionedDeviceService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiCreateProvisionedDeviceRequest": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "$ref": "#/definitions/appserver_serves_uiProvisionedDevice",
+          "description": "Device object to create."
+        }
+      }
+    },
+    "appserver_serves_uiGetProvisionedDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "provisionId": {
+          "type": "string",
+          "description": "Provision ID (HEX string without 0x prefix)."
+        },
+        "manufacturerId": {
+          "type": "string",
+          "format": "int64",
+          "title": "Manufacturer info"
+        },
+        "manufacturerName": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "title": "Model of the device"
+        },
+        "serialNumber": {
+          "type": "string",
+          "title": "Serial number of the device"
+        },
+        "fixedDevEUI": {
+          "type": "boolean",
+          "title": "Is a fixed Device EUI"
+        },
+        "devEUI": {
+          "type": "string",
+          "description": "Device EUI (HEX string without 0x prefix)."
+        },
+        "status": {
+          "type": "string",
+          "title": "Status. (NEW / PROVISIONED / DISABLED)"
+        },
+        "server": {
+          "type": "string",
+          "description": "Server added to."
+        },
+        "timeCreated": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Timestamp"
+        },
+        "timeProvisioned": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "timeAddToServer": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "appserver_serves_uiProvisionedDevice": {
+      "type": "object",
+      "properties": {
+        "provisionId": {
+          "type": "string",
+          "description": "Device EUI (HEX string without 0x prefix)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the device (if left blank, it will be set to the DevEUI)."
+        },
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application to which the device must be added.\nIt is possible to move a device to a different application on update,\ngiven that both the old and the new application share the same\nservice-profile."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the device."
+        },
+        "deviceProfileID": {
+          "type": "string",
+          "description": "DeviceProfileID attached to the device."
+        },
+        "skipFCntCheck": {
+          "type": "boolean",
+          "description": "Skip frame-counter checks (this is insecure, but could be helpful for debugging)."
+        },
+        "referenceAltitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Reference altitude.\nWhen using geolocation, this altitude will be used as a reference\n(when supported by the geolocation-server) to increase geolocation\naccuracy."
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Variables (user defined).\nThese variables can be used together with integrations to store tokens /\nsecrets that must be configured per device. These variables are not\nexposed in the event payloads."
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Tags (user defined).\nThese tags are exposed in the event payloads or to integration. Tags are\nintended for aggregation and filtering."
+        },
+        "isDisabled": {
+          "type": "boolean",
+          "description": "Device is disabled."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
