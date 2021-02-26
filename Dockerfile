@@ -19,7 +19,7 @@ WORKDIR /root/
 RUN apk --no-cache add ca-certificates
 RUN mkdir /etc/lora-app-server
 COPY --from=development /lora-app-server/build/ .
-COPY --from=development /lora-app-server/configuration/ .
+COPY --from=development /lora-app-server/configuration configuration
 COPY --from=development /lora-app-server/scripts/init .
 RUN ["chmod", "+x", "./start"]
 ENTRYPOINT ["./start"]

@@ -12,6 +12,6 @@ if [ -f $CONFIG_PATH/$CONFIG_FILE ]; then
   exit 0
 fi
 
-echo "cp ./$CONFIG_FILE $CONFIG_PATH/$CONFIG_FILE "
-cp ./$CONFIG_FILE $CONFIG_PATH
+echo "cp ./configuration/$CONFIG_FILE $CONFIG_PATH/$CONFIG_FILE "
+cp ./configuration/$CONFIG_FILE $CONFIG_PATH
 ./$SERVICE_NAME -c $CONFIG_PATH/$CONFIG_FILE
