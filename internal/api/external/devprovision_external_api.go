@@ -19,6 +19,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	appmoddata "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -41,6 +42,60 @@ func NewDeviceProvisionAPI(h *store.Handler, auth auth.Authenticator,
 		ApplicationServerID: applicationID,
 		pscli:               pscli,
 	}
+}
+
+//
+func (a *ProvisionedDeviceAPI) createDevice(ctx context.Context, app appmoddata.Application, devEUI lorawan.EUI64,
+	req *api.CreateProvisionedDeviceRequest, deviceProfileID uuid.UUID, provisioned *psPb.GetDeviceResponse) error {
+	// Set Device struct.
+	d := data.Device{
+		DevEUI:            devEUI,
+		ApplicationID:     req.Device.ApplicationId,
+		DeviceProfileID:   deviceProfileID,
+		Name:              req.Device.Name,
+		Description:       req.Device.Description,
+		SkipFCntCheck:     req.Device.SkipFCntCheck,
+		ReferenceAltitude: req.Device.ReferenceAltitude,
+		Variables: hstore.Hstore{
+			Map: make(map[string]sql.NullString),
+		},
+		Tags: hstore.Hstore{
+			Map: make(map[string]sql.NullString),
+		},
+	}
+	log.Debugf("data.Device: %v", d)
+
+	for k, v := range req.Device.Variables {
+		d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
+	}
+
+	for k, v := range req.Device.Tags {
+		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
+	}
+
+	if err := devmod.CreateDevice(ctx, &d, &app, a.ApplicationServerID); err != nil {
+		return status.Errorf(codes.Unknown, err.Error())
+	}
+
+	// Set Keys
+	var appKey lorawan.AES128Key
+	var nwkKey lorawan.AES128Key
+	var genAppKey lorawan.AES128Key
+
+	copy(appKey[:], provisioned.AppKey)
+	copy(nwkKey[:], provisioned.NwkKey)
+	copy(genAppKey[:], provisioned.NwkKey)
+
+	if err := a.st.CreateDeviceKeys(ctx, &data.DeviceKeys{
+		DevEUI:    devEUI,
+		NwkKey:    nwkKey,
+		AppKey:    appKey,
+		GenAppKey: genAppKey,
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Create - creates the given gateway.
@@ -96,51 +151,9 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateProvis
 		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
 	}
 
-	// Set Device struct.
-	d := data.Device{
-		DevEUI:            devEUI,
-		ApplicationID:     req.Device.ApplicationId,
-		DeviceProfileID:   dpID,
-		Name:              req.Device.Name,
-		Description:       req.Device.Description,
-		SkipFCntCheck:     req.Device.SkipFCntCheck,
-		ReferenceAltitude: req.Device.ReferenceAltitude,
-		Variables: hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		},
-		Tags: hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		},
-	}
-	log.Debugf("data.Device: %v", d)
-
-	for k, v := range req.Device.Variables {
-		d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
-	}
-
-	for k, v := range req.Device.Tags {
-		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
-	}
-
-	if err := devmod.CreateDevice(ctx, &d, &app, a.ApplicationServerID); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
-	}
-
-	// Set Keys
-	var appKey lorawan.AES128Key
-	var nwkKey lorawan.AES128Key
-	var genAppKey lorawan.AES128Key
-
-	copy(appKey[:], provisioneddata.AppKey)
-	copy(nwkKey[:], provisioneddata.NwkKey)
-	copy(genAppKey[:], provisioneddata.NwkKey)
-
-	if err := a.st.CreateDeviceKeys(ctx, &data.DeviceKeys{
-		DevEUI:    devEUI,
-		NwkKey:    nwkKey,
-		AppKey:    appKey,
-		GenAppKey: genAppKey,
-	}); err != nil {
+	//
+	err = a.createDevice(ctx, app, devEUI, req, dpID, provisioneddata)
+	if err != nil {
 		return nil, err
 	}
 
