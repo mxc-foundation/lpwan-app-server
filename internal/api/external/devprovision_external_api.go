@@ -57,6 +57,9 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateProvis
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Failed to get device from PS: %v, %v", req.Device.ProvisionId, err)
 	}
+	if provisioneddata.Status != "PROVISIONED" {
+		return nil, status.Errorf(codes.NotFound, "Device not provisioned: %v", req.Device.ProvisionId)
+	}
 
 	//
 	var devEUI lorawan.EUI64
@@ -159,27 +162,36 @@ func (a *ProvisionedDeviceAPI) Get(ctx context.Context, req *api.GetProvisionedD
 		return nil, status.Errorf(codes.Internal, "Failed to check device existence: %v, %v", req.ProvisionId, err)
 	}
 	if !respcheck.Exist {
-		return nil, status.Errorf(codes.NotFound, "Device not found: %v, %v", req.ProvisionId, err)
+		return nil, status.Errorf(codes.NotFound, "Device not found: %v", req.ProvisionId)
 	}
 
 	//
-	resp, err := a.pscli.GetDeviceByID(ctx, &psPb.GetDeviceByIdRequest{ProvisionId: req.ProvisionId})
+	respdev, err := a.pscli.GetDeviceByID(ctx, &psPb.GetDeviceByIdRequest{ProvisionId: req.ProvisionId})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Failed to get device from PS: %v, %v", req.ProvisionId, err)
 	}
 
+	respmfg, err := a.pscli.GetManufacturerByID(ctx, &psPb.GetMfgByIdRequest{ManufacturerId: respdev.ManufacturerId})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Failed to get mfg info from PS: id=%v, %v", respdev.ManufacturerId, err)
+	}
+	if len(respmfg.Info) == 0 {
+		return nil, status.Errorf(codes.Internal, "mfg info not found from PS: id=%v", respdev.ManufacturerId)
+	}
+
 	ret := api.GetProvisionedDeviceResponse{
-		ProvisionId:     resp.ProvisionId,
-		ManufacturerId:  resp.ManufacturerId,
-		Model:           resp.Model,
-		SerialNumber:    resp.SerialNumber,
-		FixedDevEUI:     resp.FixedDevEUI,
-		DevEUI:          hex.EncodeToString(resp.DevEUI),
-		Status:          resp.Status,
-		Server:          resp.Server,
-		TimeCreated:     resp.TimeCreated,
-		TimeProvisioned: resp.TimeProvisioned,
-		TimeAddToServer: resp.TimeAddToServer,
+		ProvisionId:      respdev.ProvisionId,
+		ManufacturerId:   respdev.ManufacturerId,
+		ManufacturerName: respmfg.Info[0].Name,
+		Model:            respdev.Model,
+		SerialNumber:     respdev.SerialNumber,
+		FixedDevEUI:      respdev.FixedDevEUI,
+		DevEUI:           hex.EncodeToString(respdev.DevEUI),
+		Status:           respdev.Status,
+		Server:           respdev.Server,
+		TimeCreated:      respdev.TimeCreated,
+		TimeProvisioned:  respdev.TimeProvisioned,
+		TimeAddToServer:  respdev.TimeAddToServer,
 	}
 
 	return &ret, nil

@@ -568,10 +568,6 @@ func updateDevice(ctx context.Context, session deviceSession, deviceinfo deviceI
 
 		if !deviceinfo.FixedDevEUI || isByteArrayAllZero(deveui) {
 			// Generate devEUI
-			// randbuf := funcGen128Rand()
-			// copy(deveui[:], randbuf[:])
-			// copy(deviceinfo.DevEUI[:], deveui[:])
-
 			psClient, err := pscli.GetDevProClient()
 			if err != nil {
 				return session, deviceinfo, err
@@ -583,12 +579,6 @@ func updateDevice(ctx context.Context, session deviceSession, deviceinfo deviceI
 			}
 			copy(deveui[:], resp.DevEUI[:])
 			copy(deviceinfo.DevEUI[:], resp.DevEUI[:])
-		}
-		if isByteArrayAllZero(appeui) {
-			// Generate appEUI
-			randbuf := funcGen128Rand()
-			copy(appeui[:], randbuf[:])
-			copy(deviceinfo.AppEUI[:], appeui[:])
 		}
 
 		copy(session.assignedDevEui[:], deveui[:])
