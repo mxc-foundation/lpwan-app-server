@@ -33,15 +33,18 @@ message SendDelayedProprietaryPayloadRequest {
     // Frequency (Hz) to use for the transmission. Set 0 will use the Uplink freq to determine it.
     uint32 downlink_freq = 5;
 
-    // Frequency (Hz) For the related uplink.
+    // Frequency (Hz) for the related uplink.
     uint32 uplink_freq = 6;
 
-    // Data-rate to use for the transmission.
-    uint32 dr = 7;
+    // Bandwidth for the related uplink.
+    uint32 uplink_bandwidth = 7;
+
+    // Spreading-factors for the related uplink.
+    uint32 uplink_sf = 8;
     
     // Gateway specific context.
-    bytes context = 8;
+    bytes context = 9;
     
     // The delay will be added to the gateway internal timing, provided by the context object.
-    google.protobuf.Duration delay = 9;
+    google.protobuf.Duration delay = 10;
 }

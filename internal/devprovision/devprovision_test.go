@@ -24,17 +24,20 @@ const expectedRxInfoIdx = 1
 const mockTxFreq = 471100000
 
 var mockRxInfo = []*gwV3.UplinkRXInfo{
-	&gwV3.UplinkRXInfo{
+	{
 		GatewayId: []byte{0x00, 0x00, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x00},
 		Rssi:      -11,
 		Context:   []byte{'0', '0', '0', '0', '0', '0'},
 	},
-	&gwV3.UplinkRXInfo{
+	{
 		GatewayId: []byte{0x00, 0x00, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x01},
 		Rssi:      -10,
 		Context:   []byte{'0', '0', '0', '0', '0', '1'},
 	},
 }
+
+var mockLoraModInfo = gwV3.UplinkTXInfo_LoraModulationInfo{LoraModulationInfo: &gwV3.LoRaModulationInfo{}}
+
 var rDevEui = []byte{0x81, 0x82, 0x83, 0xff, 0xfe, 0x84, 0x85, 0x86}
 
 //
@@ -147,7 +150,7 @@ func TestDeviceSessionHandling(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareHelloMessage(rDevEui, devicepublickey),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)
@@ -207,7 +210,7 @@ func TestDeviceSessionExpire(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareHelloMessage(rDevEui, devicepublickey),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 
@@ -296,7 +299,7 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareHelloMessage(rDevEui, devicepublickey),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq},
+		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq, ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)
@@ -387,7 +390,7 @@ func TestHandleReceivedFrameWrongHello(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareHelloMessage(rDevEui, devicepublickey),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 	changeGwContext(&request)
@@ -456,7 +459,7 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareAuthMessage(&session, privisionidhash, verifycode, devicenonce),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq},
+		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq, ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)
@@ -551,7 +554,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: prepareAuthMessage(&session, privisionidhash, verifycode, devicenonce),
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 
@@ -590,7 +593,7 @@ func TestHandleReceivedFrameUnknownMsg(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: []byte{0x00, 0x02, 0x03, 0x04},
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{ModulationInfo: &mockLoraModInfo},
 		RxInfo:     mockRxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)
@@ -618,7 +621,7 @@ func TestHandleReceivedFrameNoRxInfo(t *testing.T) {
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: []byte{0x01, 0x02, 0x03, 0x04},
 		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
-		TxInfo:     &gwV3.UplinkTXInfo{},
+		TxInfo:     &gwV3.UplinkTXInfo{ModulationInfo: &mockLoraModInfo},
 		RxInfo:     rxInfo,
 	}
 	request.Mic = calProprietaryMic(request.MacPayload)

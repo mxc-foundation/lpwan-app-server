@@ -50,14 +50,15 @@ const moduleName = "devprovision"
 
 // Proprietary Payload
 type proprietaryPayload struct {
-	MacPayload   []byte
-	GatewayMAC   lorawan.EUI64
-	DownlinkFreq uint32
-	UplinkFreq   uint32
-	DR           int
-	Context      []byte
-	Delay        *duration.Duration
-	Mic          []byte
+	MacPayload      []byte
+	GatewayMAC      lorawan.EUI64
+	DownlinkFreq    uint32
+	UplinkFreq      uint32
+	UplinkBandwidth uint32
+	UplinkSf        uint32
+	Context         []byte
+	Delay           *duration.Duration
+	Mic             []byte
 }
 
 //
@@ -266,7 +267,8 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		PolarizationInversion: true,
 		UplinkFreq:            payload.UplinkFreq,
 		DownlinkFreq:          payload.DownlinkFreq,
-		Dr:                    uint32(payload.DR),
+		UplinkBandwidth:       payload.UplinkBandwidth,
+		UplinkSf:              payload.UplinkSf,
 		Context:               payload.Context,
 		Delay:                 payload.Delay,
 		Mic:                   calProprietaryMic(payload.MacPayload),
@@ -281,8 +283,10 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		log.WithFields(log.Fields{
 			"gateway_mac": payload.GatewayMAC,
 			"up_freq":     payload.UplinkFreq,
+			"up_bw":       payload.UplinkBandwidth,
+			"up_sf":       payload.UplinkSf,
 			"down_freq":   payload.DownlinkFreq,
-		}).Infof("gateway proprietary payload sent to network-server %s", n.Server)
+		}).Infof("gateway proprietary payload sent to %s", n.Server)
 	} else {
 		return errors.Errorf("ctrl.sendToNsFunc() not set.")
 	}
@@ -348,14 +352,15 @@ func handleHello(ctx context.Context, nserver nsd.NetworkServer, req *as.HandleP
 	copy(mac[:], targetgateway.GatewayId)
 
 	payload := proprietaryPayload{
-		MacPayload:   makeHelloResponse(currentsession),
-		GatewayMAC:   mac,
-		UplinkFreq:   req.TxInfo.Frequency,
-		DownlinkFreq: 0,
-		DR:           3,
-		Delay:        &duration.Duration{Seconds: 5, Nanos: 0},
-		Context:      targetgateway.Context,
-		Mic:          []byte{0x00, 0x00, 0x00, 0x00},
+		MacPayload:      makeHelloResponse(currentsession),
+		GatewayMAC:      mac,
+		UplinkFreq:      req.TxInfo.Frequency,
+		UplinkBandwidth: req.TxInfo.GetLoraModulationInfo().GetBandwidth(),
+		UplinkSf:        req.TxInfo.GetLoraModulationInfo().SpreadingFactor,
+		DownlinkFreq:    0,
+		Delay:           &duration.Duration{Seconds: 5, Nanos: 0},
+		Context:         targetgateway.Context,
+		Mic:             []byte{0x00, 0x00, 0x00, 0x00},
 	}
 	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
@@ -455,14 +460,15 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 	verifycode = currentsession.calVerifyCode(deviceinfo.ProvisionID, false)
 
 	payload := proprietaryPayload{
-		MacPayload:   makeAuthAccept(currentsession, verifycode),
-		GatewayMAC:   mac,
-		UplinkFreq:   req.TxInfo.Frequency,
-		DownlinkFreq: 0,
-		DR:           3,
-		Delay:        &duration.Duration{Seconds: 5, Nanos: 0},
-		Context:      targetgateway.Context,
-		Mic:          []byte{0x00, 0x00, 0x00, 0x00},
+		MacPayload:      makeAuthAccept(currentsession, verifycode),
+		GatewayMAC:      mac,
+		UplinkFreq:      req.TxInfo.Frequency,
+		DownlinkFreq:    0,
+		UplinkBandwidth: req.TxInfo.GetLoraModulationInfo().GetBandwidth(),
+		UplinkSf:        req.TxInfo.GetLoraModulationInfo().SpreadingFactor,
+		Delay:           &duration.Duration{Seconds: 5, Nanos: 0},
+		Context:         targetgateway.Context,
+		Mic:             []byte{0x00, 0x00, 0x00, 0x00},
 	}
 	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
