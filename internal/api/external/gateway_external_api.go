@@ -149,7 +149,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 		}
 
 		limit := 100
-		for offset := 0; offset <= count/limit; offset++ {
+		for offset := 0; offset <= count/limit; offset = limit * (offset + 1) {
 			list, err := organization.GetOrganizationIDList(ctx, limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
@@ -206,7 +206,7 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 	}
 
 	limit := 100
-	for offset := 0; offset <= count/limit; offset++ {
+	for offset := 0; offset <= count/limit; offset = limit * (offset + 1) {
 		filters.Limit = limit
 		filters.Offset = offset
 		gwList, err := a.st.GetGateways(ctx, filters)
@@ -1237,16 +1237,25 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		}
 	}
 
+	provClient, err := pscli.GetPServerClient()
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	// check whether gateway is allowed to be registered on current supernode
+	res, err := provClient.PreRegisterGW(ctx, &psPb.PreRegisterGWRequest{Sn: req.Sn})
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "get gateway info from ps by sn failed: %v", err)
+	}
+	if err = a.st.GatewayModelIsSupported(ctx, res.Model); err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "gateway model %s is not supported on supernode: %s", res.Model, err.Error())
+	}
+
 	// register gateway with current supernode on remote provisioning server
 	provReq := psPb.RegisterGWRequest{
 		Sn:            req.Sn,
 		SuperNodeAddr: a.config.ServerAddr,
 		OrgId:         req.OrganizationId,
-	}
-
-	provClient, err := pscli.GetPServerClient()
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	resp, err := provClient.RegisterGW(ctx, &provReq)
