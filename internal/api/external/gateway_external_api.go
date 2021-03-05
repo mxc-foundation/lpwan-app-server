@@ -149,7 +149,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 		}
 
 		limit := 100
-		for offset := 0; offset <= count/limit; offset = limit * (offset + 1) {
+		for offset := 0; offset <= count/limit; offset += limit {
 			list, err := organization.GetOrganizationIDList(ctx, limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
@@ -206,7 +206,7 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 	}
 
 	limit := 100
-	for offset := 0; offset <= count/limit; offset = limit * (offset + 1) {
+	for offset := 0; offset <= count/limit; offset += limit {
 		filters.Limit = limit
 		filters.Offset = offset
 		gwList, err := a.st.GetGateways(ctx, filters)
