@@ -223,6 +223,17 @@ func (ps *PgStore) CreateNetworkServer(ctx context.Context, n *NetworkServer) er
 	return nil
 }
 
+// GetNetworkServerByRegion returns the network-server matching the given region
+func (ps *PgStore) GetNetworkServerByRegion(ctx context.Context, region string) (NetworkServer, error) {
+	var networkServer NetworkServer
+	err := sqlx.GetContext(ctx, ps.db, &networkServer, "select * from network_server where region = $1", region)
+	if err != nil {
+		return networkServer, handlePSQLError(Select, err, "select error")
+	}
+
+	return networkServer, nil
+}
+
 // GetNetworkServer returns the network-server matching the given id.
 func (ps *PgStore) GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error) {
 	var networkServer NetworkServer

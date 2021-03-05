@@ -94,10 +94,8 @@ func createDefaultGatewayProfileForNetworkserver(ctx context.Context) error {
 		return errors.New("cannot create default gateway profile, no network server set")
 	}
 
-	offset := 0
 	limit := 10
-	for i := 0; i <= count/limit; i++ {
-		offset = offset + i*limit
+	for offset := 0; offset <= count/limit; offset += limit {
 		nsList, err := ctrl.st.GetNetworkServers(ctx, nsd.NetworkServerFilters{
 			OrganizationID: 0,
 			Limit:          limit,
@@ -156,10 +154,8 @@ func hasActiveGatewayProfileForNetworkServer(ctx context.Context, nServer *nsd.N
 		return false, nil
 	}
 
-	offset := 0
 	limit := 10
-	for i := 0; i <= count/limit; i++ {
-		offset = offset + i*limit
+	for offset := 0; offset <= count/limit; offset += limit {
 		gwpList, err := ctrl.st.GetGatewayProfilesForNetworkServerID(ctx, nServer.ID, limit, offset)
 		if err != nil {
 			return false, errors.Wrap(err, "get gateway profile for network server id error")
@@ -227,10 +223,8 @@ func hasActiveNetworkServer(ctx context.Context) (bool, error) {
 		return false, nil
 	}
 
-	offset := 0
 	limit := 10
-	for i := 0; i <= count/limit; i++ {
-		offset = offset + i*limit
+	for offset := 0; offset <= count/limit; offset += limit {
 		nsList, err := ctrl.st.GetNetworkServers(ctx, nsd.NetworkServerFilters{
 			OrganizationID: 0,
 			Limit:          limit,

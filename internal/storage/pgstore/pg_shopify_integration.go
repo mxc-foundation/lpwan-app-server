@@ -10,7 +10,7 @@ import (
 
 // AddShopifyOrderList inserts new order record into db
 func (ps *PgStore) AddShopifyOrderList(ctx context.Context, orderList []user.Order) error {
-	if err := ps.Tx(ctx, func(ctx context.Context, store *PgStore) error {
+	if err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
 		for _, v := range orderList {
 			_, err := ps.db.ExecContext(ctx,
 				`insert into shopify_orders 

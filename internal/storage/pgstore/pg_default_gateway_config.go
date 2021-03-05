@@ -3,6 +3,7 @@ package pgstore
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -72,4 +73,23 @@ func (ps *PgStore) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *D
 	}
 
 	return errors.Wrap(err, "GetDefaultGatewayConfig")
+}
+
+// GatewayModelIsSupported checks whether gateway model is supported in current supernode
+func (ps *PgStore) GatewayModelIsSupported(ctx context.Context, model string) error {
+	var region string
+
+	err := ps.db.QueryRowxContext(ctx, `select region from default_gateway_config where model = $1`,
+		model).Scan(&region)
+	if err != nil {
+		return fmt.Errorf("no default gateway config selected with given model %s: %v", model, err)
+	}
+
+	// check whether region is supported in network-server
+	_, err = ps.GetNetworkServerByRegion(ctx, region)
+	if err != nil {
+		return fmt.Errorf("no network server set for given rigion %s: %v", region, err)
+	}
+
+	return nil
 }
