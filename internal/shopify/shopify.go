@@ -48,7 +48,7 @@ func (c *Service) startCheckingOrdersForShopifyAccounts(ctx context.Context) {
 	}
 
 	limit := int64(50)
-	for offset := int64(0); offset <= userAmount/limit; offset = limit * (offset + 1) {
+	for offset := int64(0); offset <= userAmount/limit; offset += limit {
 		users, err := c.store.GetUsers(ctx, limit, offset)
 		if err != nil {
 			log.Errorf("[shopify service] failed to get users: %v", err)
@@ -89,7 +89,7 @@ func (c *Service) distributeBonus(ctx context.Context) error {
 	}
 
 	limit := int64(50)
-	for offset := int64(0); offset <= count/limit; offset = limit * (offset + 1) {
+	for offset := int64(0); offset <= count/limit; offset += limit {
 		orderList, err := c.store.GetOrdersWithPendingBonusStatus(ctx, offset, limit)
 		if err != nil {
 			if err == errHandler.ErrDoesNotExist {
