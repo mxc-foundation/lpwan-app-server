@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
+
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -61,6 +63,7 @@ type RESTApiServer struct {
 	ShopifyConfig          user.Shopify
 	OperatorLogo           string
 	Mailer                 *email.Mailer
+	MXPCli                 *mxpcli.Client
 }
 
 // Start configures the API endpoints.
@@ -240,6 +243,11 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		pgs,
 	))
 
+	api.RegisterDFIServiceServer(grpcServer, dfi.NewServer(
+		pgs,
+		srv.MXPCli,
+	))
+
 	return nil
 }
 
@@ -381,6 +389,9 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 
 	err = api.RegisterShopifyIntegrationHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register shopify integration service handler: %v", err)
+
+	err = api.RegisterDFIServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register dfi service handler: %v", err)
 
 	return mux, nil
 }
