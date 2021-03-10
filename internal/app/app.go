@@ -184,6 +184,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		ShopifyConfig:          cfg.ShopifyConfig,
 		OperatorLogo:           cfg.Operator.OperatorLogo,
 		Mailer:                 app.mailer,
+		MxpCli:                 app.mxpCli,
 	}); err != nil {
 		return err
 	}
