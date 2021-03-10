@@ -63,7 +63,7 @@ type RESTApiServer struct {
 	ShopifyConfig          user.Shopify
 	OperatorLogo           string
 	Mailer                 *email.Mailer
-	MxpCli                 *mxpcli.Client
+	MXPCli                 *mxpcli.Client
 }
 
 // Start configures the API endpoints.
@@ -245,7 +245,7 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 
 	api.RegisterDFIServiceServer(grpcServer, dfi.NewServer(
 		pgs,
-		srv.MxpCli,
+		srv.MXPCli,
 	))
 
 	return nil
