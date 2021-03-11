@@ -2,8 +2,8 @@ package devprovision
 
 import (
 	"context"
-	"database/sql"
 	"encoding/hex"
+	"time"
 
 	"github.com/apex/log"
 
@@ -12,21 +12,21 @@ import (
 )
 
 type deviceInfo struct {
-	ProvisionID     string       `json:"provisionId"`
-	ProvisionIDHash string       `json:"provisionIdHash"`
-	ManufacturerID  int64        `json:"manufacturerId"`
-	Model           string       `json:"model"`
-	SerialNumber    string       `json:"serialNumber"`
-	FixedDevEUI     bool         `json:"fixedDevEUI"`
-	DevEUI          []byte       `json:"devEUI"`
-	AppEUI          []byte       `json:"appEUI"`
-	AppKey          []byte       `json:"appKey"`
-	NwkKey          []byte       `json:"nwkKey"`
-	Status          string       `json:"status"`
-	Server          string       `json:"server"`
-	TimeCreated     sql.NullTime `json:"timeCreated"`
-	TimeProvisioned sql.NullTime `json:"timeProvisioned"`
-	TimeAddToServer sql.NullTime `json:"timeAddToServer"`
+	ProvisionID     string     `json:"provisionId"`
+	ProvisionIDHash string     `json:"provisionIdHash"`
+	ManufacturerID  int64      `json:"manufacturerId"`
+	Model           string     `json:"model"`
+	SerialNumber    string     `json:"serialNumber"`
+	FixedDevEUI     bool       `json:"fixedDevEUI"`
+	DevEUI          []byte     `json:"devEUI"`
+	AppEUI          []byte     `json:"appEUI"`
+	AppKey          []byte     `json:"appKey"`
+	NwkKey          []byte     `json:"nwkKey"`
+	Status          string     `json:"status"`
+	Server          string     `json:"server"`
+	TimeCreated     *time.Time `json:"timeCreated"`
+	TimeProvisioned *time.Time `json:"timeProvisioned"`
+	TimeAddToServer *time.Time `json:"timeAddToServer"`
 }
 
 //
@@ -63,16 +63,16 @@ func findDeviceBySnHash(ctx context.Context, provisionIdhash []byte) (bool, devi
 	copy(retdevice.AppKey[:], resp.AppKey)
 	copy(retdevice.NwkKey[:], resp.NwkKey)
 	if resp.TimeCreated != nil {
-		retdevice.TimeCreated.Valid = true
-		retdevice.TimeCreated.Time = resp.TimeCreated.AsTime()
+		time := resp.TimeCreated.AsTime()
+		retdevice.TimeCreated = &time
 	}
 	if resp.TimeProvisioned != nil {
-		retdevice.TimeProvisioned.Valid = true
-		retdevice.TimeProvisioned.Time = resp.TimeProvisioned.AsTime()
+		time := resp.TimeProvisioned.AsTime()
+		retdevice.TimeProvisioned = &time
 	}
 	if resp.TimeAddToServer != nil {
-		retdevice.TimeAddToServer.Valid = true
-		retdevice.TimeAddToServer.Time = resp.TimeAddToServer.AsTime()
+		time := resp.TimeAddToServer.AsTime()
+		retdevice.TimeAddToServer = &time
 	}
 	return true, retdevice
 }

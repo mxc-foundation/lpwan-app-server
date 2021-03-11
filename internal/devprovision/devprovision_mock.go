@@ -2,7 +2,6 @@ package devprovision
 
 import (
 	"context"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
@@ -74,6 +73,7 @@ func mockGen128Rand() []byte {
 }
 
 // Mock device list
+var timeCreated = time.Now()
 var mockDeviceList = []deviceInfo{
 	{ProvisionID: "SERIALNUMBEROOOOOOOO", ProvisionIDHash: "34dfcb3dde1a09fd340fafada1e431e84028fc53c328d359a8824613b86d568e",
 		ManufacturerID: 1, Model: "LoRaWatch", FixedDevEUI: true,
@@ -81,7 +81,7 @@ var mockDeviceList = []deviceInfo{
 		AppEUI:      make([]byte, 8),
 		AppKey:      make([]byte, 16),
 		NwkKey:      make([]byte, 16),
-		TimeCreated: sql.NullTime{Time: time.Now(), Valid: true}},
+		TimeCreated: &timeCreated},
 }
 
 func mockFindDeviceBySnHash(ctx context.Context, provisionIdhash []byte) (bool, deviceInfo) {

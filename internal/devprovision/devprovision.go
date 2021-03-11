@@ -436,7 +436,7 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 		hex.EncodeToString(deviceinfo.DevEUI), hex.EncodeToString(deviceinfo.AppEUI),
 		hex.EncodeToString(deviceinfo.AppKey), hex.EncodeToString(deviceinfo.NwkKey))
 	log.Debugf("  status=%v, model=%v, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI,
-		deviceinfo.TimeCreated.Time)
+		deviceinfo.TimeCreated)
 
 	calverifycode := currentsession.calVerifyCode(deviceinfo.ProvisionID, true)
 	if !bytes.Equal(verifycode, calverifycode) {
