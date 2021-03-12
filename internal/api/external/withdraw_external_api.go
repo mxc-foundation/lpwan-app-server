@@ -65,6 +65,7 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 	return &api.GetWithdrawFeeResponse{
 		WithdrawFee: resp.WithdrawFee,
+		Currency:    resp.Currency,
 	}, status.Error(codes.OK, "")
 }
 

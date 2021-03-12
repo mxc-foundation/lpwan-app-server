@@ -71,7 +71,8 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	topupClient := mxpcli.Global.GetTopupServiceClient()
 
 	resp, err := topupClient.GetTopUpDestination(ctx, &pb.GetTopUpDestinationRequest{
-		OrgId: req.OrgId,
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)

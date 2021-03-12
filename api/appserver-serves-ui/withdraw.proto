@@ -46,6 +46,9 @@ message GetWithdrawFeeRequest {
 message GetWithdrawFeeResponse {
     // Withdraw object.
     string withdrawFee = 1;
+    // actual currency of the withdraw fee
+    // for BTC, withdraw fee should be in MXC
+    string currency = 2;
 }
 
 message GetWithdrawHistoryRequest {
