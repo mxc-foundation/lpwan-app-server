@@ -268,7 +268,9 @@ func (ps *PgStore) UpdateNetworkServer(ctx context.Context, n *NetworkServer) er
 			gateway_discovery_enabled = $11,
 			gateway_discovery_interval = $12,
 			gateway_discovery_tx_frequency = $13,
-			gateway_discovery_dr = $14
+			gateway_discovery_dr = $14,
+			version = $15,
+			region = $16
 		where id = $1`,
 		n.ID,
 		n.UpdatedAt,
@@ -284,6 +286,8 @@ func (ps *PgStore) UpdateNetworkServer(ctx context.Context, n *NetworkServer) er
 		n.GatewayDiscoveryInterval,
 		n.GatewayDiscoveryTXFrequency,
 		n.GatewayDiscoveryDR,
+		n.Version,
+		n.Region,
 	)
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")

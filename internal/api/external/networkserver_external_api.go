@@ -3,6 +3,7 @@ package external
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -111,7 +112,10 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 		n.Region = res.Region.String()
 		n.Version = res.Version
 
-		_ = a.st.UpdateNetworkServer(ctx, &n)
+		err = a.st.UpdateNetworkServer(ctx, &n)
+		if err != nil {
+			log.Errorf("update network-server failed: %v", err)
+		}
 	}
 
 	response := pb.GetNetworkServerResponse{
