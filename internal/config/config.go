@@ -8,7 +8,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
 	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
@@ -42,8 +41,6 @@ type Config struct {
 	SMTP map[string]email.SMTPConfig `mapstructure:"smtp"`
 
 	M2MServer grpccli.ConnectionOpts `mapstructure:"m2m_server"`
-
-	DHXCenter dhx.Config `mapstructure:"dhx_center"`
 
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 
