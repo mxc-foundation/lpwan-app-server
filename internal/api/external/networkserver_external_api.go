@@ -91,6 +91,28 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
+	
+	if n.Region == "" || n.Version == "" {
+		nStruct := &nsmod.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
+		}
+		nsClient, err := nStruct.GetNetworkServiceClient()
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "%s", err)
+		}
+
+		res, err := nsClient.GetVersion(ctx, &empty.Empty{})
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "%s", err)
+		}
+		n.Region = res.Region.String()
+		n.Version = res.Version
+
+		_ = a.st.UpdateNetworkServer(ctx, &n)
+	}
 
 	response := pb.GetNetworkServerResponse{
 		NetworkServer: &pb.NetworkServer{
