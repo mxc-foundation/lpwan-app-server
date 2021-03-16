@@ -4,7 +4,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -14,7 +13,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
@@ -146,10 +144,6 @@ func (app *App) systemManager(ctx context.Context, cfg config.Config) error {
 // services that can be initialized in parallel, put here the ones that don't
 // depend on other services
 func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
-	// register on dhx-center server
-	if err := dhx.Register(cfg.General.ServerAddr, cfg.DHXCenter); err != nil {
-		return fmt.Errorf("couldn't register on DHX server: %v", err)
-	}
 	// set up the email system
 	var err error
 	app.mailer, err = email.NewMailer(cfg.Operator, cfg.SMTP, email.ServerInfo{
