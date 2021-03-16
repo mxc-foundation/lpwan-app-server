@@ -7,11 +7,12 @@
 package extapi
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	gw "github.com/brocaar/chirpstack-api/go/v3/gw"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

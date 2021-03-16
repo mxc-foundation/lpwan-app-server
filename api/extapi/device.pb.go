@@ -8,6 +8,9 @@ package extapi
 
 import (
 	context "context"
+	reflect "reflect"
+	sync "sync"
+
 	common "github.com/brocaar/chirpstack-api/go/v3/common"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -17,8 +20,6 @@ import (
 	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

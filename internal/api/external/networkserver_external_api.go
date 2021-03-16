@@ -91,7 +91,7 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
-	
+
 	if n.Region == "" || n.Version == "" {
 		nStruct := &nsmod.NSStruct{
 			Server:  n.Server,
