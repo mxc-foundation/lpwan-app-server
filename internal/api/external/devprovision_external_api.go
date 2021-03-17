@@ -29,17 +29,19 @@ import (
 type ProvisionedDeviceAPI struct {
 	st                  *store.Handler
 	ApplicationServerID uuid.UUID
+	ServerAddr          string
 	auth                auth.Authenticator
 	pscli               psPb.DeviceProvisionClient
 }
 
 // NewDeviceProvisionAPI - creates a new DeviceProvisionAPI.
 func NewDeviceProvisionAPI(h *store.Handler, auth auth.Authenticator,
-	applicationID uuid.UUID, pscli psPb.DeviceProvisionClient) *ProvisionedDeviceAPI {
+	applicationID uuid.UUID, serverAddr string, pscli psPb.DeviceProvisionClient) *ProvisionedDeviceAPI {
 	return &ProvisionedDeviceAPI{
 		st:                  h,
 		auth:                auth,
 		ApplicationServerID: applicationID,
+		ServerAddr:          serverAddr,
 		pscli:               pscli,
 	}
 }
@@ -98,7 +100,7 @@ func (a *ProvisionedDeviceAPI) createDevice(ctx context.Context, app appmoddata.
 	return nil
 }
 
-// Create - creates the given gateway.
+// Create - creates the given device.
 func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateProvisionedDeviceRequest) (*empty.Empty, error) {
 	log.Debugf("ProvisionedDeviceServiceServer.Create() called")
 	// first check whether user is an authorized user
@@ -157,10 +159,16 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateProvis
 		return nil, err
 	}
 
+	//
+	_, err = a.pscli.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: req.Device.ProvisionId, Server: a.ServerAddr})
+	if err != nil {
+		return nil, err
+	}
+
 	return &empty.Empty{}, nil
 }
 
-// Get - returns the gateway matching the given Mac.
+// Get - returns the device matching the given Provision ID.
 func (a *ProvisionedDeviceAPI) Get(ctx context.Context, req *api.GetProvisionedDeviceRequest) (*api.GetProvisionedDeviceResponse, error) {
 	log.Debugf("ProvisionedDeviceServiceServer.Get() called")
 	// first check whether user is an authorized user
