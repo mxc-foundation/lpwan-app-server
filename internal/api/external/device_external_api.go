@@ -1119,7 +1119,7 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListReq
 			var eui lorawan.EUI64
 			copy(eui[:], euiarray)
 			d, err := a.st.GetDevice(ctx, eui, false)
-			if err == nil {
+			if err == nil && d.LastSeenAt != nil {
 				deviceProfile.LastSeenAt = d.LastSeenAt.String()
 			}
 		}
