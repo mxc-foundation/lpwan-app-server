@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/grpc/status"
 
+	"github.com/gobuffalo/packr/v2/file/resolver/encoding/hex"
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -1110,6 +1111,17 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListReq
 			LastSeenAt:    item.LastSeenAt,
 			ApplicationId: item.ApplicationId,
 			Name:          item.Name,
+		}
+
+		// Get Last Seen from DB
+		euiarray, err := hex.DecodeString(item.DevEui)
+		if err == nil {
+			var eui lorawan.EUI64
+			copy(eui[:], euiarray)
+			d, err := a.st.GetDevice(ctx, eui, false)
+			if err == nil {
+				deviceProfile.LastSeenAt = d.LastSeenAt.String()
+			}
 		}
 
 		deviceProfileList = append(deviceProfileList, deviceProfile)
