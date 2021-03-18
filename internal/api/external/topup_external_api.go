@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,11 +18,15 @@ import (
 )
 
 // TopUpServerAPI defines the topup server api structure
-type TopUpServerAPI struct{}
+type TopUpServerAPI struct {
+	auth auth.Authenticator
+}
 
 // NewTopUpServerAPI validates the topup server api
-func NewTopUpServerAPI() *TopUpServerAPI {
-	return &TopUpServerAPI{}
+func NewTopUpServerAPI(auth auth.Authenticator) *TopUpServerAPI {
+	return &TopUpServerAPI{
+		auth: auth,
+	}
 }
 
 // GetTopUpHistory defines the topup history request and response
@@ -64,8 +70,12 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTopUpDestinationRequest) (*api.GetTopUpDestinationResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetTopUpDestination org=" + strconv.FormatInt(req.OrgId, 10)
 
-	if err := topup.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	topupClient := mxpcli.Global.GetTopupServiceClient()
@@ -73,6 +83,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	resp, err := topupClient.GetTopUpDestination(ctx, &pb.GetTopUpDestinationRequest{
 		OrgId:    req.OrgId,
 		Currency: req.Currency,
+		Email:    cred.Username,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)

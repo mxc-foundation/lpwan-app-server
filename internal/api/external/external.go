@@ -217,7 +217,7 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(srv.ServerRegion))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
-	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI())
+	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI(grpcAuth))
 
 	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI(
 		h,
