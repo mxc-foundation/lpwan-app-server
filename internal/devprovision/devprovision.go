@@ -386,6 +386,12 @@ func makeAuthAccept(session deviceSession, verifycode []byte) []byte {
 	return payload
 }
 
+func makeAuthReject(session deviceSession) []byte {
+	payload := []byte{DownRespAuthReject}
+	payload = append(payload, session.rDevEui...)
+	return payload
+}
+
 func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandleProprietaryUplinkRequest,
 	targetgateway *gwV3.UplinkRXInfo) error {
 	log.Debug("  AUTH Message.")
@@ -425,11 +431,13 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 	log.Debugf("  privisionidhash: %s", hex.EncodeToString(privisionidhash))
 	log.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
 
+	authaccepted := true
 	found, deviceinfo := funcFindDeviceBySnHash(ctx, privisionidhash)
 	if !found {
 		return errors.Errorf("Device %s not found.", hex.EncodeToString(privisionidhash))
 	} else if deviceinfo.Status == "DISABLED" {
-		return errors.Errorf("Device %s disabled.", deviceinfo.ProvisionID)
+		log.Errorf("Device %s disabled.", deviceinfo.ProvisionID)
+		authaccepted = false
 	}
 	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.ProvisionID, deviceinfo.ManufacturerID, deviceinfo.Server)
 	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s",
@@ -437,21 +445,27 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 		hex.EncodeToString(deviceinfo.AppKey), hex.EncodeToString(deviceinfo.NwkKey))
 	log.Debugf("  status=%v, model=%v, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI,
 		deviceinfo.TimeCreated)
-
-	calverifycode := currentsession.calVerifyCode(deviceinfo.ProvisionID, true)
-	if !bytes.Equal(verifycode, calverifycode) {
-		return errors.Errorf("Incorrect verify code at Auth message")
+	if deviceinfo.Server != "" {
+		log.Errorf("Device %s registered to %v, provisioning not allowed.", deviceinfo.ProvisionID, deviceinfo.Server)
+		authaccepted = false
 	}
 
-	currentsession, deviceinfo, err := updateDevice(ctx, currentsession, deviceinfo)
-	if err != nil {
-		return errors.Wrap(err, "updateDevice error")
-	}
-	updateDeviceSession(sessionid, currentsession)
+	if authaccepted {
+		calverifycode := currentsession.calVerifyCode(deviceinfo.ProvisionID, true)
+		if !bytes.Equal(verifycode, calverifycode) {
+			return errors.Errorf("Incorrect verify code at Auth message")
+		}
 
-	err = funcSaveDevice(ctx, deviceinfo)
-	if err != nil {
-		return errors.Wrap(err, "saveDevice error")
+		currentsession, deviceinfo, err := updateDevice(ctx, currentsession, deviceinfo)
+		if err != nil {
+			return errors.Wrap(err, "updateDevice error")
+		}
+		updateDeviceSession(sessionid, currentsession)
+
+		err = funcSaveDevice(ctx, deviceinfo)
+		if err != nil {
+			return errors.Wrap(err, "saveDevice error")
+		}
 	}
 
 	//
@@ -460,7 +474,6 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 	verifycode = currentsession.calVerifyCode(deviceinfo.ProvisionID, false)
 
 	payload := proprietaryPayload{
-		MacPayload:      makeAuthAccept(currentsession, verifycode),
 		GatewayMAC:      mac,
 		UplinkFreq:      req.TxInfo.Frequency,
 		DownlinkFreq:    0,
@@ -470,9 +483,14 @@ func handleAuth(ctx context.Context, nserver nsd.NetworkServer, req *as.HandlePr
 		Context:         targetgateway.Context,
 		Mic:             []byte{0x00, 0x00, 0x00, 0x00},
 	}
+	if authaccepted {
+		payload.MacPayload = makeAuthAccept(currentsession, verifycode)
+	} else {
+		payload.MacPayload = makeAuthReject(currentsession)
+	}
 	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
-	err = sendProprietary(nserver, payload)
+	err := sendProprietary(nserver, payload)
 	if err != nil {
 		return err
 	}

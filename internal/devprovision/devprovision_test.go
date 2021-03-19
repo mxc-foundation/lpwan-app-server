@@ -507,12 +507,104 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 
 	_, downdeveui, encpayload := extractAuthAccepted(macpayload)
 	if !bytes.Equal(rDevEui, downdeveui) {
-		t.Error("Mismatch rDevEui at Hello response.")
+		t.Error("Mismatch rDevEui at Auth response.")
 	}
 	if !bytes.Equal(encpayload, expectedpayload) {
 		t.Error("Wrong encrypted payload.")
 		t.Errorf("encpayload\n %s", hex.Dump(encpayload))
 		t.Errorf("expectedpayload\n %s", hex.Dump(expectedpayload))
+	}
+}
+
+func TestHandleReceivedFrameAuthReject(t *testing.T) {
+	provkey := []byte{0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03}
+	servernonce := []byte{0x01, 0x02, 0x03, 0x04}
+	devicenonce := []byte{0x55, 0xaa, 0x55, 0xaa}
+	privisionid := "TESTPIDOOOOOOOOOOOOO"
+	privisionidhash := []byte{
+		0xc8, 0xc7, 0x56, 0x4b, 0x46, 0xb9, 0x1c, 0x91,
+		0xef, 0x6c, 0x4f, 0x37, 0xbc, 0xca, 0x8c, 0xf7,
+		0xe8, 0x1b, 0xaa, 0xc6, 0xeb, 0x86, 0x9d, 0xcc,
+		0x62, 0xe5, 0xfa, 0xfd, 0xd0, 0x24, 0x24, 0x97}
+	sharedkey := []byte{0x57, 0x57, 0x3A, 0x81, 0xE2, 0x7E, 0x48, 0x26, 0xFA, 0x8E, 0x18, 0x70, 0xCD,
+		0x6B, 0x66, 0x40, 0xF3, 0x90, 0x5D, 0x98, 0x40, 0xF4, 0x12, 0xFA, 0xAE, 0x74,
+		0x0B, 0x12, 0xE0, 0x01, 0x00, 0x00, 0xC4, 0xD8, 0x27, 0xA9, 0x37, 0x49, 0xEE,
+		0x44, 0xEA, 0x1B, 0xAC, 0x1C, 0x18, 0x8C, 0x03, 0xAA, 0x6B, 0x02, 0xDA, 0x1C,
+		0x68, 0xE9, 0xE8, 0xE6, 0xCA, 0xB9, 0xD1, 0xED, 0x91, 0x01, 0x00, 0x00}
+
+	ctx := context.Background()
+
+	if setupUnitTest(&handlerMock{}) != nil {
+		t.Error("Uint test setup failed.")
+	}
+
+	// Create a device sssion
+	mockRandValue = 1
+	session := makeDeviceSession()
+	copy(session.rDevEui[:], rDevEui[:])
+	copy(session.provKey[:], provkey[:])
+	copy(session.sharedKey[:], sharedkey[:])
+	copy(session.serverNonce[:], servernonce[:])
+	copy(session.devNonce[:], devicenonce[:])
+	session.deriveKeys()
+	sessionid := binary.BigEndian.Uint64(rDevEui)
+	deviceSessionList[sessionid] = session
+
+	verifycode := session.calVerifyCode(privisionid, true)
+
+	request := as.HandleProprietaryUplinkRequest{
+		MacPayload: prepareAuthMessage(&session, privisionidhash, verifycode, devicenonce),
+		Mic:        []byte{0x00, 0x00, 0x00, 0x00},
+		TxInfo:     &gwV3.UplinkTXInfo{Frequency: mockTxFreq, ModulationInfo: &mockLoraModInfo},
+		RxInfo:     mockRxInfo,
+	}
+	request.Mic = calProprietaryMic(request.MacPayload)
+
+	//
+	changeGwContext(&request)
+	processed, err := HandleReceivedFrame(ctx, &request)
+	if err != nil {
+		t.Errorf("HandleReceivedFrame failed. %s", err)
+	}
+	if !processed {
+		t.Error("Request not processed.")
+	}
+	if mockData.request == nil {
+		t.Fatal("Mock frame not found.")
+	}
+
+	expectedRxInfo := mockRxInfo[expectedRxInfoIdx]
+	if !bytes.Equal(mockData.request.GatewayMacs[0], expectedRxInfo.GatewayId) {
+		t.Error("Highest RSSI gateway not selected.")
+	}
+	if !bytes.Equal(mockData.request.Context, expectedRxInfo.Context) {
+		t.Error("Context is mismatched.")
+	}
+	if !mockData.request.PolarizationInversion {
+		t.Error("ipol is wrong, it should be true always")
+	}
+	if mockData.request.Delay.Seconds != 5 {
+		t.Errorf("Delay should be 5, but got %d", mockData.request.Delay.Seconds)
+	}
+	if mockData.request.UplinkFreq != mockTxFreq {
+		t.Errorf("UplinkFreq not set.")
+	}
+	if mockData.request.DownlinkFreq != 0 {
+		t.Errorf("DownlinkFreq should not set.")
+	}
+
+	macpayload := mockData.request.MacPayload
+	if len(macpayload) != 9 {
+		t.Errorf("Auth Reject response should be 9 bytes, but got %d", len(macpayload))
+	}
+	if macpayload[0] != DownRespAuthReject {
+		t.Errorf("Wrong type value in Auth Reject response, expected %X but got %X", DownRespAuthReject, macpayload[0])
+	}
+
+	downdeveui := make([]byte, 8)
+	copy(downdeveui[:], macpayload[1:])
+	if !bytes.Equal(rDevEui, downdeveui) {
+		t.Error("Mismatch rDevEui at Auth response.")
 	}
 }
 

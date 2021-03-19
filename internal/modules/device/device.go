@@ -1,6 +1,7 @@
 package device
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,6 +18,8 @@ import (
 	"github.com/brocaar/lorawan"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
@@ -165,6 +169,25 @@ func DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 			return errors.Wrap(err, "get network-server error")
 		}
 
+		// Get Device Provision ID from Description
+		devicepid := ""
+		d, err := handler.GetDevice(ctx, devEUI, false)
+		if err == nil {
+			devdesc := d.Description
+			if strings.Contains(devdesc, "PID:") {
+				lines := strings.Split(devdesc, "\n")
+				for _, line := range lines {
+					if strings.Index(line, "PID:") == 0 {
+						fields := strings.Split(line, ":")
+						if len(fields) >= 2 {
+							devicepid = strings.Trim(fields[1], " ")
+						}
+					}
+				}
+			}
+		}
+
+		//
 		if err := handler.DeleteDevice(ctx, devEUI); err != nil {
 			return err
 		}
@@ -198,6 +221,21 @@ func DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 		})
 		if err != nil && status.Code(err) != codes.NotFound {
 			return errors.Wrap(err, "delete device error")
+		}
+
+		// Set device to no server at PS
+		if devicepid != "" {
+			log.Debugf("DeleteDevice() Clear server addr for %v at PS", devicepid)
+			client, err := pscli.GetDevProClient()
+			if err != nil {
+				log.WithError(err).Errorf("Create Provisioning server client error")
+				return err
+			}
+			_, err = client.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: devicepid, Server: ""})
+			if err != nil {
+				return err
+			}
+
 		}
 
 		return nil

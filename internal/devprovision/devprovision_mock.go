@@ -82,6 +82,14 @@ var mockDeviceList = []deviceInfo{
 		AppKey:      make([]byte, 16),
 		NwkKey:      make([]byte, 16),
 		TimeCreated: &timeCreated},
+	{ProvisionID: "TESTPIDOOOOOOOOOOOOO", ProvisionIDHash: "c8c7564b46b91c91ef6c4f37bcca8cf7e81baac6eb869dcc62e5fafdd0242497",
+		ManufacturerID: 1, Model: "LoRaWatch", FixedDevEUI: true,
+		DevEUI:      []byte{0x11, 0x22, 0x33, 0xff, 0xfe, 0x44, 0x55, 0x66},
+		AppEUI:      make([]byte, 8),
+		AppKey:      make([]byte, 16),
+		NwkKey:      make([]byte, 16),
+		Server:      "sn-dev.local",
+		TimeCreated: &timeCreated},
 }
 
 func mockFindDeviceBySnHash(ctx context.Context, provisionIdhash []byte) (bool, deviceInfo) {
