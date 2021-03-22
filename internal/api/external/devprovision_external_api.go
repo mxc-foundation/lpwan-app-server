@@ -117,6 +117,9 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateProvis
 	if provisioneddata.Status != "PROVISIONED" {
 		return nil, status.Errorf(codes.NotFound, "Device not provisioned: %v", req.Device.ProvisionId)
 	}
+	if provisioneddata.Server != "" {
+		return nil, status.Errorf(codes.Internal, "Device already registered at %v: %v", provisioneddata.Server, req.Device.ProvisionId)
+	}
 
 	//
 	var devEUI lorawan.EUI64
