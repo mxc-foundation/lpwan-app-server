@@ -43,6 +43,30 @@ service DHXServcie {
             get: "/api/dhx-mining/last-mining"
         };
     }
+
+    // Bond DHX to mine DHX
+    rpc DHXBond (DHXBondRequest) returns (DHXBondResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/bond"
+            body: "*"
+        };
+    }
+
+    // Unbond bonded DHX
+    rpc DHXUnbond (DHXUnbondRequest) returns (DHXUnbondResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/unbond"
+            body: "*"
+        };
+    }
+
+    // Get info about bonded, cooling off and unbonding DHX
+    rpc DHXBondInfo (DHXBondInfoRequest) returns (DHXBondInfoResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/bond-info"
+            body: "*"
+        };
+    }
 }
 
 message DHXGetLastMiningRequest {
@@ -57,9 +81,10 @@ message DHXGetLastMiningResponse {
     string mining_power = 2;
     // the amount of DHX that supernode has received
     string dhx_amount = 3;
-    // organization id, mining power and revenue (if requested)
+    // organization id, mining power, mining limit and revenue (if requested)
     int64 org_id = 4;
     string org_mining_power = 5;
+    string org_dhx_limit = 11;
     string org_dhx_amount = 6;
     // council id, name, mining power and revenue (if the org chairs one)
     int64 council_id = 7;
@@ -156,4 +181,60 @@ message DHXStake {
 
 message DHXListStakesResponse {
     repeated DHXStake stake = 1;
+}
+
+message DHXBondRequest {
+    // organization that wants to bond DHX
+    int64 org_id = 1;
+    // amount of DHX that should be bonded
+    string amount = 2;
+}
+
+message DHXBondResponse {
+}
+
+message DHXUnbondRequest {
+    // organization that wants to unbond DHX
+    int64 org_id = 1;
+    // amount of DHX that should be unbonded
+    string amount = 2;
+}
+
+message DHXUnbondResponse {
+}
+
+message DHXBondInfoRequest {
+    // organization for which the info should be returned
+    int64 org_id = 1;
+}
+
+// info about DHX cooling off
+message DHXCoolingOff {
+    // amount that is cooling off
+    string amount = 1;
+    // the date when cooling off has started
+    google.protobuf.Timestamp created = 2;
+}
+
+// info about DHX unbonding
+message DHXUnbonding {
+    // amount that is unbonding
+    string amount = 1;
+    // the date when unbonding has started
+    google.protobuf.Timestamp created = 2;
+}
+
+message DHXBondInfoResponse {
+    // organization for which the info is returned
+    int64 org_id = 1;
+    // the amount of DHX bonded
+    string dhx_bonded = 2;
+    // the total amount that is cooling off
+    string dhx_cooling_off_total = 3;
+    // detailed info about amounts in cooling off state
+    repeated DHXCoolingOff dhx_cooling_off = 4;
+    // the total amount in unbonding state
+    string dhx_unbonding_total = 5;
+    // detailed info about unbonding amounts
+    repeated DHXUnbonding dhx_unbonding = 6;
 }
