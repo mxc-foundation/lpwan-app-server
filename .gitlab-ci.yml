@@ -9,7 +9,7 @@ golangci-lint:
   image: golangci/golangci-lint:v1.26.0
   stage: test
   before_script:
-    - go install github.com/jteeuwen/go-bindata/go-bindata
+    - go get -u github.com/go-bindata/go-bindata/...
     - make internal/statics
   script:
     - golangci-lint run --new-from-rev origin/master ./...
@@ -24,7 +24,7 @@ go_test:
   image: golang:1
   stage: test
   before_script:
-    - go install github.com/jteeuwen/go-bindata/go-bindata
+    - go get -u github.com/go-bindata/go-bindata/...
     - make internal/statics
   script:
     - make test

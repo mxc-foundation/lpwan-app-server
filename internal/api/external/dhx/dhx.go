@@ -217,10 +217,95 @@ func (a *Server) DHXGetLastMining(ctx context.Context, req *api.DHXGetLastMining
 		DhxAmount:          res.DhxAmount,
 		OrgId:              res.OrgId,
 		OrgMiningPower:     res.OrgMiningPower,
+		OrgDhxLimit:        res.OrgDhxLimit,
 		OrgDhxAmount:       res.OrgDhxAmount,
 		CouncilId:          res.CouncilId,
 		CouncilName:        res.CouncilName,
 		CouncilMiningPower: res.CouncilMiningPower,
 		CouncilDhxAmount:   res.CouncilDhxAmount,
+	}, nil
+}
+
+// DHXBond bonds the specified amount of DHX for DHX mining
+func (a *Server) DHXBond(ctx context.Context, req *api.DHXBondRequest) (*api.DHXBondResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
+
+	_, err = a.dhxCli.DHXBond(ctx, &pb.DHXBondRequest{
+		OrgId:  req.OrgId,
+		Amount: req.Amount,
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.DHXBondResponse{}, nil
+}
+
+// DHXUnbond unbonds the specified amount of DHX
+func (a *Server) DHXUnbond(ctx context.Context, req *api.DHXUnbondRequest) (*api.DHXUnbondResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
+
+	_, err = a.dhxCli.DHXUnbond(ctx, &pb.DHXUnbondRequest{
+		OrgId:  req.OrgId,
+		Amount: req.Amount,
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.DHXUnbondResponse{}, nil
+}
+
+// DHXBondInfo returns info about amounts of DHX bonded, unbonding and cooling off
+func (a *Server) DHXBondInfo(ctx context.Context, req *api.DHXBondInfoRequest) (*api.DHXBondInfoResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
+
+	res, err := a.dhxCli.DHXBondInfo(ctx, &pb.DHXBondInfoRequest{
+		OrgId: req.OrgId,
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	var dhxUnbonding []*api.DHXUnbonding
+	for _, ub := range res.DhxUnbonding {
+		dhxUnbonding = append(dhxUnbonding, &api.DHXUnbonding{
+			Amount:  ub.Amount,
+			Created: ub.Created,
+		})
+	}
+	var dhxCoolingOff []*api.DHXCoolingOff
+	for _, co := range res.DhxCoolingOff {
+		dhxCoolingOff = append(dhxCoolingOff, &api.DHXCoolingOff{
+			Amount:  co.Amount,
+			Created: co.Created,
+		})
+	}
+
+	return &api.DHXBondInfoResponse{
+		OrgId:              res.OrgId,
+		DhxBonded:          res.DhxBonded,
+		DhxUnbonding:       dhxUnbonding,
+		DhxUnbondingTotal:  res.DhxUnbondingTotal,
+		DhxCoolingOff:      dhxCoolingOff,
+		DhxCoolingOffTotal: res.DhxCoolingOffTotal,
 	}, nil
 }

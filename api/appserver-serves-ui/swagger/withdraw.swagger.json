@@ -167,6 +167,10 @@
         "withdrawFee": {
           "type": "string",
           "description": "Withdraw object."
+        },
+        "currency": {
+          "type": "string",
+          "title": "actual currency of the withdraw fee\nfor BTC, withdraw fee should be in MXC"
         }
       }
     },

@@ -64,6 +64,14 @@ localDevelopTemplate = \
           - seccomp:unconfined
         cap_add:
           - SYS_PTRACE
+
+      dhx-center:
+        build:
+          context: ../../dhx-center
+          dockerfile: Dockerfile-devel
+        volumes:
+          - ../../dhx-center/configuration:/etc/dhx-center
+        tty: true
       
       gatewaybridge:
         image: mxcdocker/chirpstack-gateway-bridge

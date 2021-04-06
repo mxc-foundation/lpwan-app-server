@@ -11,6 +11,72 @@
     "application/json"
   ],
   "paths": {
+    "/api/dhx-mining/bond": {
+      "post": {
+        "summary": "Bond DHX to mine DHX",
+        "operationId": "DHXBond",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXBondResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXBondRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/bond-info": {
+      "post": {
+        "summary": "Get info about bonded, cooling off and unbonding DHX",
+        "operationId": "DHXBondInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXBondInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXBondInfoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
     "/api/dhx-mining/create-council": {
       "post": {
         "summary": "Request to create a new council",
@@ -173,6 +239,39 @@
           "DHXServcie"
         ]
       }
+    },
+    "/api/dhx-mining/unbond": {
+      "post": {
+        "summary": "Unbond bonded DHX",
+        "operationId": "DHXUnbond",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXUnbondResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXUnbondRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
     }
   },
   "definitions": {
@@ -208,6 +307,84 @@
         }
       },
       "title": "Information about the council"
+    },
+    "appserver_serves_uiDHXBondInfoRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization for which the info should be returned"
+        }
+      }
+    },
+    "appserver_serves_uiDHXBondInfoResponse": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization for which the info is returned"
+        },
+        "dhxBonded": {
+          "type": "string",
+          "title": "the amount of DHX bonded"
+        },
+        "dhxCoolingOffTotal": {
+          "type": "string",
+          "title": "the total amount that is cooling off"
+        },
+        "dhxCoolingOff": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiDHXCoolingOff"
+          },
+          "title": "detailed info about amounts in cooling off state"
+        },
+        "dhxUnbondingTotal": {
+          "type": "string",
+          "title": "the total amount in unbonding state"
+        },
+        "dhxUnbonding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiDHXUnbonding"
+          },
+          "title": "detailed info about unbonding amounts"
+        }
+      }
+    },
+    "appserver_serves_uiDHXBondRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that wants to bond DHX"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount of DHX that should be bonded"
+        }
+      }
+    },
+    "appserver_serves_uiDHXBondResponse": {
+      "type": "object"
+    },
+    "appserver_serves_uiDHXCoolingOff": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "title": "amount that is cooling off"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when cooling off has started"
+        }
+      },
+      "title": "info about DHX cooling off"
     },
     "appserver_serves_uiDHXCreateCouncilRequest": {
       "type": "object",
@@ -312,9 +489,12 @@
         "orgId": {
           "type": "string",
           "format": "int64",
-          "title": "organization id, mining power and revenue (if requested)"
+          "title": "organization id, mining power, mining limit and revenue (if requested)"
         },
         "orgMiningPower": {
+          "type": "string"
+        },
+        "orgDhxLimit": {
           "type": "string"
         },
         "orgDhxAmount": {
@@ -400,6 +580,38 @@
           "type": "string"
         }
       }
+    },
+    "appserver_serves_uiDHXUnbondRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that wants to unbond DHX"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount of DHX that should be unbonded"
+        }
+      }
+    },
+    "appserver_serves_uiDHXUnbondResponse": {
+      "type": "object"
+    },
+    "appserver_serves_uiDHXUnbonding": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "title": "amount that is unbonding"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when unbonding has started"
+        }
+      },
+      "title": "info about DHX unbonding"
     },
     "protobufAny": {
       "type": "object",
