@@ -225,7 +225,7 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		srv.EnableSTC,
 	))
 
-	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI())
+	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI(grpcAuth))
 
 	api.RegisterStakingServiceServer(grpcServer, staking.NewServer(
 		mxpcli.Global.GetStakingServiceClient(),
