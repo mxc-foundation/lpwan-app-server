@@ -4,7 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
 	log "github.com/sirupsen/logrus"
@@ -18,11 +19,15 @@ import (
 )
 
 // WithdrawServerAPI validates the withdraw server api
-type WithdrawServerAPI struct{}
+type WithdrawServerAPI struct {
+	auth auth.Authenticator
+}
 
 // NewWithdrawServerAPI defines the withdraw server api
-func NewWithdrawServerAPI() *WithdrawServerAPI {
-	return &WithdrawServerAPI{}
+func NewWithdrawServerAPI(auth auth.Authenticator) *WithdrawServerAPI {
+	return &WithdrawServerAPI{
+		auth: auth,
+	}
 }
 
 // ModifyWithdrawFee modifies the withdraw fee
@@ -113,8 +118,15 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdrawRequest) (*api.GetWithdrawResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
-	if err := withdraw.NewValidator().IsOrgAdmin(ctx, req.OrgId, authcus.WithValidOTP()); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	options := auth.NewOptions()
+	options.WithOrgID(req.OrgId)
+	options.WithRequireOTP()
+	cred, err := s.auth.GetCredentials(ctx, options)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed:%v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	withdrawClient := mxpcli.Global.GetWithdrawServiceClient()
@@ -124,6 +136,7 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 		Currency:   req.Currency,
 		Amount:     req.Amount,
 		EthAddress: req.EthAddress,
+		Email:      cred.Username,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
