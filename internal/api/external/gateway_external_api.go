@@ -1210,7 +1210,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if !cred.IsGlobalAdmin && !cred.IsGatewayAdmin {
+	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin && !cred.IsGatewayAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
