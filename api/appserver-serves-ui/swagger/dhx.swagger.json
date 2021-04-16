@@ -143,6 +143,55 @@
         ]
       }
     },
+    "/api/dhx-mining/history": {
+      "get": {
+        "summary": "Return info about DHX mining during the specified period",
+        "operationId": "DHXMiningHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXMiningHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization for which the history is returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "from",
+            "description": "the first day of the period.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "description": "the last day of the period.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
     "/api/dhx-mining/last-mining": {
       "get": {
         "summary": "Return info about the last paid day of DHX mining",
@@ -482,9 +531,13 @@
           "type": "string",
           "title": "the calculated mining power of the supernode for this day"
         },
+        "dhxAllocated": {
+          "type": "string",
+          "title": "the amount of DHX that supernode could distribute between users based on mpower"
+        },
         "dhxAmount": {
           "type": "string",
-          "title": "the amount of DHX that supernode has received"
+          "title": "the amount of DHX that supernode actually distributed"
         },
         "orgId": {
           "type": "string",
@@ -535,6 +588,45 @@
           "items": {
             "$ref": "#/definitions/appserver_serves_uiDHXStake"
           }
+        }
+      }
+    },
+    "appserver_serves_uiDHXMining": {
+      "type": "object",
+      "properties": {
+        "miningDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "mining date"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization ID"
+        },
+        "orgMiningPower": {
+          "type": "string",
+          "title": "mining power of the organization on the given date"
+        },
+        "orgDhxBonded": {
+          "type": "string",
+          "title": "amount of DHX the org had bonded on the date"
+        },
+        "orgDhxMined": {
+          "type": "string",
+          "title": "amount of DHX that was mined by the org on the date"
+        }
+      }
+    },
+    "appserver_serves_uiDHXMiningHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "dhxMining": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiDHXMining"
+          },
+          "title": "DHX mining daily records for the requested period"
         }
       }
     },
