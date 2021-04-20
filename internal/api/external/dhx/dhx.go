@@ -192,6 +192,41 @@ func (a *Server) DHXListStakes(ctx context.Context, req *api.DHXListStakesReques
 	return &api.DHXListStakesResponse{Stake: response}, nil
 }
 
+// DHXMiningHistory returns organization mining records for the specified period of time
+func (a *Server) DHXMiningHistory(ctx context.Context, req *api.DHXMiningHistoryRequest) (*api.DHXMiningHistoryResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
+	hist, err := a.dhxCli.DHXMiningHistory(ctx, &pb.DHXMiningHistoryRequest{
+		OrgId: req.OrgId,
+		From:  req.From,
+		Till:  req.Till,
+	})
+	if err != nil {
+		st, ok := status.FromError(err)
+		if !ok {
+			st = status.New(codes.Internal, err.Error())
+		}
+		return nil, status.Error(st.Code(), st.Message())
+	}
+	var res api.DHXMiningHistoryResponse
+	for _, mr := range hist.DhxMining {
+		dm := &api.DHXMining{
+			MiningDate:     mr.MiningDate,
+			OrgId:          mr.OrgId,
+			OrgMiningPower: mr.OrgMiningPower,
+			OrgDhxBonded:   mr.OrgDhxBonded,
+			OrgDhxMined:    mr.OrgDhxMined,
+		}
+		res.DhxMining = append(res.DhxMining, dm)
+	}
+	return &res, nil
+}
+
 // DHXGetLastMining returns info about the last paid day of DHX mining
 func (a *Server) DHXGetLastMining(ctx context.Context, req *api.DHXGetLastMiningRequest) (*api.DHXGetLastMiningResponse, error) {
 	authOpts := auth.NewOptions()
@@ -214,7 +249,8 @@ func (a *Server) DHXGetLastMining(ctx context.Context, req *api.DHXGetLastMining
 	return &api.DHXGetLastMiningResponse{
 		Date:               res.Date,
 		MiningPower:        res.MiningPower,
-		DhxAmount:          res.DhxAmount,
+		DhxAllocated:       res.DhxAllocated,
+		DhxAmount:          res.DhxDistributed,
 		OrgId:              res.OrgId,
 		OrgMiningPower:     res.OrgMiningPower,
 		OrgDhxLimit:        res.OrgDhxLimit,

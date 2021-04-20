@@ -98,9 +98,10 @@ func TestDHXGetLastMining(t *testing.T) {
 	date := &timestamppb.Timestamp{Seconds: time.Now().Unix()}
 	// just supernode totals
 	td.lastMining = &pb.DHXGetLastMiningResponse{
-		Date:        date,
-		MiningPower: "1000000",
-		DhxAmount:   "1000000",
+		Date:           date,
+		MiningPower:    "1000000",
+		DhxAllocated:   "1000000",
+		DhxDistributed: "1000000",
 	}
 	resp3, err := srv.DHXGetLastMining(ctx, &api.DHXGetLastMiningRequest{})
 	if err != nil {
@@ -113,7 +114,8 @@ func TestDHXGetLastMining(t *testing.T) {
 	// with org and council
 	td.lastMining.OrgId = 2
 	td.lastMining.OrgMiningPower = "1000"
-	td.lastMining.DhxAmount = "1000"
+	td.lastMining.DhxAllocated = "1000"
+	td.lastMining.DhxDistributed = "1000"
 	td.lastMining.CouncilId = 9
 	td.lastMining.CouncilName = "nine"
 	td.lastMining.CouncilMiningPower = "3000"

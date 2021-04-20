@@ -44,6 +44,13 @@ service DHXServcie {
         };
     }
 
+    // Return info about DHX mining during the specified period
+    rpc DHXMiningHistory (DHXMiningHistoryRequest) returns (DHXMiningHistoryResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/history"
+        };
+    }
+
     // Bond DHX to mine DHX
     rpc DHXBond (DHXBondRequest) returns (DHXBondResponse) {
         option (google.api.http) = {
@@ -79,7 +86,9 @@ message DHXGetLastMiningResponse {
     google.protobuf.Timestamp date = 1;
     // the calculated mining power of the supernode for this day
     string mining_power = 2;
-    // the amount of DHX that supernode has received
+    // the amount of DHX that supernode could distribute between users based on mpower
+    string dhx_allocated = 12;
+    // the amount of DHX that supernode actually distributed
     string dhx_amount = 3;
     // organization id, mining power, mining limit and revenue (if requested)
     int64 org_id = 4;
@@ -237,4 +246,31 @@ message DHXBondInfoResponse {
     string dhx_unbonding_total = 5;
     // detailed info about unbonding amounts
     repeated DHXUnbonding dhx_unbonding = 6;
+}
+
+message DHXMiningHistoryRequest {
+    // organization for which the history is returned
+    int64 org_id = 1;
+    // the first day of the period
+    google.protobuf.Timestamp from = 2;
+    // the last day of the period
+    google.protobuf.Timestamp till = 3;
+}
+
+message DHXMining {
+    // mining date
+    google.protobuf.Timestamp mining_date = 1;
+    // organization ID
+    int64 org_id = 2;
+    // mining power of the organization on the given date
+    string org_mining_power = 3;
+    // amount of DHX the org had bonded on the date
+    string org_dhx_bonded = 4;
+    // amount of DHX that was mined by the org on the date
+    string org_dhx_mined = 5;
+}
+
+message DHXMiningHistoryResponse {
+    // DHX mining daily records for the requested period
+    repeated DHXMining dhx_mining = 1;
 }
