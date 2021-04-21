@@ -324,3 +324,34 @@ func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceR
 
 	return &api.GetMXCpriceResponse{MxcPrice: usd.String()}, nil
 }
+
+// GetTransactionHistory returns the history of transactions of the specified
+// type over the specified period
+func (s *WalletServerAPI) GetTransactionHistory(ctx context.Context, req *api.GetTransactionHistoryRequest) (*api.GetTransactionHistoryResponse, error) {
+	if err := wallet.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	}
+
+	walletClient := mxpcli.Global.GetWalletServiceClient()
+	wcResp, err := walletClient.GetTransactionHistory(ctx, &pb.GetTransactionHistoryRequest{
+		OrgId:       req.OrgId,
+		Currency:    req.Currency,
+		From:        req.From,
+		Till:        req.Till,
+		PaymentType: req.PaymentType,
+	})
+	if err != nil {
+		return nil, err
+	}
+	resp := &api.GetTransactionHistoryResponse{}
+	for _, tx := range wcResp.Tx {
+		resp.Tx = append(resp.Tx, &api.Transaction{
+			Id:          tx.Id,
+			Timestamp:   tx.Timestamp,
+			Amount:      tx.Amount,
+			PaymentType: tx.PaymentType,
+			DetailsJson: tx.DetailsJson,
+		})
+	}
+	return resp, nil
+}

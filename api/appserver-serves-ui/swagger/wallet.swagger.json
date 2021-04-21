@@ -236,6 +236,71 @@
         ]
       }
     },
+    "/api/wallet/tx-history": {
+      "get": {
+        "operationId": "GetTransactionHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetTransactionHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "description": "currency.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "period for which transactions should be returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "paymentType",
+            "description": "if non-empty list of payment types is given only transactions of these\ntypes will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/{orgId}/downlink_price": {
       "get": {
         "operationId": "GetDlPrice",
@@ -427,6 +492,17 @@
         }
       }
     },
+    "appserver_serves_uiGetTransactionHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "tx": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiTransaction"
+          }
+        }
+      }
+    },
     "appserver_serves_uiGetVmxcTxHistoryResponse": {
       "type": "object",
       "properties": {
@@ -525,6 +601,31 @@
         "ulCntGwFree": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiTransaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount, decimal number with up to 18 decimal digits"
+        },
+        "paymentType": {
+          "type": "string",
+          "title": "payment type as a string"
+        },
+        "detailsJson": {
+          "type": "string",
+          "title": "transaction details encoded as JSON"
         }
       }
     },
