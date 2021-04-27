@@ -55,6 +55,12 @@ service WalletService {
 			get: "/api/wallet/mxc_price"
 		};
     }
+
+    rpc GetTransactionHistory (GetTransactionHistoryRequest) returns (GetTransactionHistoryResponse) {
+        option (google.api.http) = {
+                        get: "/api/wallet/tx-history"
+        };
+    }
 }
 
 message GetWalletBalanceRequest {
@@ -179,4 +185,32 @@ message GetMXCpriceRequest {
 
 message GetMXCpriceResponse {
     string mxc_price = 1;
+}
+
+message GetTransactionHistoryRequest {
+    // organization id
+    int64 org_id = 1;
+    // currency
+    string currency = 2;
+    // period for which transactions should be returned
+    google.protobuf.Timestamp from = 3;
+    google.protobuf.Timestamp till = 4;
+    // if non-empty list of payment types is given only transactions of these
+    // types will be returned
+    repeated string payment_type = 5;
+}
+
+message Transaction {
+    int64 id = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    // amount, decimal number with up to 18 decimal digits
+    string amount = 3;
+    // payment type as a string
+    string payment_type = 4;
+    // transaction details encoded as JSON
+    string details_json = 5;
+}
+
+message GetTransactionHistoryResponse {
+    repeated Transaction tx = 1;
 }
