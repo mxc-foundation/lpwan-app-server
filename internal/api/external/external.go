@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/download"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -248,6 +249,11 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		srv.MXPCli,
 	))
 
+	api.RegisterDownloadServiceServer(grpcServer, download.NewServer(
+		srv.MXPCli,
+		grpcAuth,
+		srv.ServerAddr,
+	))
 	return nil
 }
 
@@ -392,6 +398,9 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 
 	err = api.RegisterDFIServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register dfi service handler: %v", err)
+
+	err = api.RegisterDownloadServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register download service handler: %v", err)
 
 	return mux, nil
 }

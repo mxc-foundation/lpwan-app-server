@@ -90,3 +90,8 @@ func (c *Client) GetWalletServiceClient() pb.WalletServiceClient {
 func (c *Client) GetWithdrawServiceClient() pb.WithdrawServiceClient {
 	return pb.NewWithdrawServiceClient(c.mxpConn)
 }
+
+// GetFianceReportClient returns a new FinanceReportServiceClient of mxprotocol-server
+func (c *Client) GetFianceReportClient() pb.FinanceReportServiceClient {
+	return pb.NewFinanceReportServiceClient(c.mxpConn)
+}
