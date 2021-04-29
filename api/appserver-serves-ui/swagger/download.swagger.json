@@ -76,6 +76,13 @@
             "required": false,
             "type": "string",
             "format": "date-time"
+          },
+          {
+            "name": "decimals",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -148,6 +155,13 @@
             "required": false,
             "type": "string",
             "format": "date-time"
+          },
+          {
+            "name": "decimals",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [

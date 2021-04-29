@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jung-kurt/gofpdf"
 	"github.com/sirupsen/logrus"
@@ -57,121 +58,6 @@ func (s *Server) GetFiatCurrencyList(ctx context.Context, req *api.GetFiatCurren
 	return response, nil
 }
 
-type pdfFormat struct {
-	gridWidth          float64
-	gridHeight         float64
-	pageWidth          float64
-	pageHeight         float64
-	indentationUp      float64
-	indentationBottom  float64
-	indentationLeft    float64
-	indentationRight   float64
-	lineSpacing        float64
-	titleFontSize      float64
-	contentFontSize    float64
-	disclaimerFontSize float64
-	bannerHeight       float64
-}
-
-func drawGrid(pdf *gofpdf.Fpdf, f pdfFormat) {
-	fontSize := 6.0
-	pdf.SetFont("courier", "", fontSize)
-	pdf.SetTextColor(80, 80, 80)
-	pdf.SetDrawColor(200, 200, 200)
-	for x := 0.0; x < f.pageWidth; x += f.gridWidth {
-		pdf.Line(x, 0, x, f.pageHeight)
-		pdf.Text(x, fontSize, fmt.Sprintf("%d", int(x)))
-	}
-	for y := 0.0; y < f.pageHeight; y += f.gridHeight {
-		pdf.Line(0, y, f.pageWidth, y)
-		pdf.Text(0, y+fontSize, fmt.Sprintf("%d", int(y)))
-	}
-}
-
-func addReportTitle(pdf *gofpdf.Fpdf, f pdfFormat, supernode, username string) {
-	// draw banner
-	pdf.SetFillColor(28, 20, 120)
-	pdf.Polygon([]gofpdf.PointType{
-		{0, 0},
-		{f.pageWidth, 0},
-		{f.pageHeight, f.bannerHeight},
-		{0, f.bannerHeight},
-	}, "F")
-
-	// add title
-	pdf.SetFont("arial", "B", f.titleFontSize)
-	pdf.SetTextColor(255, 255, 255)
-	pdf.Text(f.gridWidth, f.bannerHeight/2.0+f.titleFontSize/2.0, "Mining Income Report ")
-
-	// add supernode name, username
-	pdf.SetFont("arial", "", f.contentFontSize)
-	pdf.SetTextColor(255, 255, 255)
-	pdf.MoveTo(f.pageWidth-f.indentationRight-5*f.gridWidth, 0.5*f.gridHeight)
-	pdf.MultiCell(5*f.gridWidth, f.contentFontSize+f.lineSpacing, fmt.Sprintf("Supernode: %s\n User: %s",
-		supernode, username), gofpdf.BorderNone, gofpdf.AlignCenter, false)
-}
-
-func addReportTable(pdf *gofpdf.Fpdf, f pdfFormat, table [][]string, cellWidth []float64) error {
-	// insanity check
-	if len(table[0]) != len(cellWidth) {
-		return fmt.Errorf("length of cellWidth must be same as length of table columns")
-	}
-
-	tableWidth := f.pageWidth - f.indentationLeft/2 - f.indentationRight/2
-	tableX := f.indentationLeft / 2
-	tableY := f.bannerHeight + f.lineSpacing
-	pdf.Rect(tableX, tableY, tableWidth, 3, "F")
-
-	pdf.SetFont("times", "", f.contentFontSize)
-	pdf.SetTextColor(51, 51, 51)
-
-	var moveToX, moveToY float64
-	cellHight := 1.2 * f.contentFontSize
-	lineMax := int((f.pageHeight-tableY-f.indentationBottom)/(2*cellHight)) - 2
-	for row, rowContent := range table {
-		if row == 0 {
-			moveToY = tableY
-		} else {
-			moveToY += 2 * cellHight
-		}
-		moveToX = tableX
-		for column, item := range rowContent {
-			if column == 0 {
-				moveToX = tableX
-			} else {
-				moveToX += cellWidth[column-1] + f.contentFontSize/2
-			}
-			pdf.MoveTo(moveToX, moveToY)
-			pdf.MultiCell(cellWidth[column], cellHight, item,
-				gofpdf.BorderNone, gofpdf.AlignRight, false)
-		}
-		pdf.Line(tableX, moveToY+2*cellHight, tableX+tableWidth, moveToY+2*cellHight)
-		if row != 0 && (row-lineMax*(row/lineMax)) == 0 {
-			pdf.SetFont("times", "", f.disclaimerFontSize)
-			pdf.MoveTo(tableX, moveToY+2*cellHight+f.lineSpacing)
-			pdf.MultiCell(f.pageWidth-f.indentationLeft-f.indentationRight, f.disclaimerFontSize,
-				"*This information is provided to the best of our current knowledge & ability. "+
-					"The MXC Foundation takes no legal responsibility for the accuracy or timeliness of this data. "+
-					"On-chain data is used to compile this information", gofpdf.BorderNone, gofpdf.AlignLeft, false)
-			pdf.AddPage()
-			pdf.SetTextColor(51, 51, 51)
-			pdf.Text(f.pageWidth/2, f.pageHeight-2*f.disclaimerFontSize, fmt.Sprintf("%d", pdf.PageNo()))
-			moveToY = 0
-			pdf.Rect(tableX, 2*cellHight-f.lineSpacing, tableWidth, 3, "F")
-			pdf.SetFont("times", "", f.contentFontSize)
-		}
-	}
-
-	pdf.SetFont("times", "", f.disclaimerFontSize)
-	pdf.SetTextColor(51, 51, 51)
-	pdf.MoveTo(tableX, moveToY+2*cellHight+f.lineSpacing)
-	pdf.MultiCell(f.pageWidth-f.indentationLeft-f.indentationRight, f.disclaimerFontSize,
-		"*This information is provided to the best of our current knowledge & ability. "+
-			"The MXC Foundation takes no legal responsibility for the accuracy or timeliness of this data. "+
-			"On-chain data is used to compile this information", gofpdf.BorderNone, gofpdf.AlignLeft, false)
-	return nil
-}
-
 // MiningReportPDF formats mining data into pdf with given filtering conditions then send to client in stream
 func (s *Server) MiningReportPDF(req *api.MiningReportRequest, server api.DownloadService_MiningReportPDFServer) error {
 	cred, err := s.auth.GetCredentials(server.Context(), auth.NewOptions().WithOrgID(req.OrganizationId))
@@ -180,6 +66,10 @@ func (s *Server) MiningReportPDF(req *api.MiningReportRequest, server api.Downlo
 	}
 	if !cred.IsOrgAdmin {
 		return status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+	decimals := req.Decimals
+	if decimals == 0 {
+		decimals = 4
 	}
 
 	pdf := gofpdf.New(gofpdf.OrientationPortrait, gofpdf.UnitPoint, gofpdf.PageSizeA4, "")
@@ -198,15 +88,15 @@ func (s *Server) MiningReportPDF(req *api.MiningReportRequest, server api.Downlo
 	format.lineSpacing = format.gridHeight / 2
 	format.titleFontSize = format.gridHeight
 	format.contentFontSize = format.gridHeight / 2
+	format.charSpacing = format.contentFontSize / 2
 	format.disclaimerFontSize = format.contentFontSize * 0.8
 	format.bannerHeight = format.indentationUp
+	format.tableWidth = format.pageWidth - format.indentationLeft/2 - format.indentationRight/2
 
-	pdf.AddPage()
-	pdf.SetFont("times", "", format.disclaimerFontSize)
-	pdf.SetTextColor(51, 51, 51)
-	pdf.Text(format.pageWidth/2, format.pageHeight-2*format.disclaimerFontSize, fmt.Sprintf("%d", pdf.PageNo()))
-
-	addReportTitle(pdf, format, s.server, cred.Username)
+	// new page
+	addNewPageWithCustomization(pdf, format)
+	// add banner for first page
+	addReportBanner(pdf, format, s.server, cred.Username)
 
 	for _, item := range req.Currency {
 		switch item {
@@ -215,15 +105,31 @@ func (s *Server) MiningReportPDF(req *api.MiningReportRequest, server api.Downlo
 			tableContent[0] = []string{
 				"\nDate",
 				"\nMXC Mined",
-				//"MXC Settlement Price",
-				"\nFiat Currency Mined",
+				"\nMXC Close Price",
+				fmt.Sprintf("\n%s Mined", strings.ToUpper(req.FiatCurrency)),
 				"\nOnline Seconds",
 			}
+			// configure cell width
+			totalUnits := (format.tableWidth - float64(len(tableContent[0])-1)*format.charSpacing) / format.contentFontSize
+			dateUnits := 5.5
+			mxcMinedUnits := 14.0
+			onlineSecondsUnits := 10.0
+			mxcClosePriceUnits := (totalUnits - dateUnits - mxcMinedUnits - onlineSecondsUnits) / 2
+			fiatMinedUnits := mxcClosePriceUnits
+			cellWidth := []float64{
+				dateUnits * format.contentFontSize,
+				mxcMinedUnits * format.contentFontSize,
+				mxcClosePriceUnits * format.contentFontSize,
+				fiatMinedUnits * format.contentFontSize,
+				onlineSecondsUnits * format.contentFontSize,
+			}
+			// get table content
 			res, err := s.financeReportCli.GetMXCMiningReportByDate(server.Context(), &pb.GetMXCMiningReportByDateRequest{
 				OrganizationId: req.OrganizationId,
 				Start:          req.Start,
 				End:            req.End,
 				FiatCurrency:   req.FiatCurrency,
+				Decimals:       decimals,
 			})
 			if err != nil {
 				return status.Errorf(codes.Internal, "failed to get MXC mining report : %v", err)
@@ -234,18 +140,12 @@ func (s *Server) MiningReportPDF(req *api.MiningReportRequest, server api.Downlo
 				tableContent = append(tableContent, []string{
 					dateStr,
 					v.MXCMined,
-					//v.MXCSettlementPrice,
+					v.MXCSettlementPrice,
 					v.FiatCurrencyMined,
 					fmt.Sprintf("%d", v.OnlineSeconds),
 				})
 			}
-			cellWidth := []float64{
-				5.5 * format.contentFontSize, // date
-				14 * format.contentFontSize,  // mxc mined
-				//10 * format.contentFontSize,  // mxc price
-				20 * format.contentFontSize, // fiat mined
-				11 * format.contentFontSize, //online seconds
-			}
+			// add table content
 			if err = addReportTable(pdf, format, tableContent, cellWidth); err != nil {
 				return status.Errorf(codes.Internal, "%v", err)
 			}
@@ -254,8 +154,8 @@ func (s *Server) MiningReportPDF(req *api.MiningReportRequest, server api.Downlo
 	// output to file
 	sy, sm, sd := req.Start.AsTime().Date()
 	ey, em, ed := req.End.AsTime().Date()
-	filename := fmt.Sprintf("mining_report_org_%d_%s_%s_%s", req.OrganizationId, req.FiatCurrency,
-		fmt.Sprintf("%d-%d-%d", sy, sm, sd), fmt.Sprintf("%d-%d-%d", ey, em, ed))
+	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", s.server, req.OrganizationId, req.FiatCurrency,
+		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
 	// drawGrid(pdf, format)
 	err = pdf.OutputFileAndClose(filepath.Join("/tmp/mining-report", filename))
 
@@ -271,12 +171,17 @@ func (s *Server) MiningReportCSV(req *api.MiningReportRequest, server api.Downlo
 	if !cred.IsOrgAdmin {
 		return status.Errorf(codes.PermissionDenied, "permission denied")
 	}
+	decimals := req.Decimals
+	if decimals == 0 {
+		decimals = 4
+	}
 
 	// write report to csv file
 	sy, sm, sd := req.Start.AsTime().Date()
 	ey, em, ed := req.End.AsTime().Date()
-	filename := fmt.Sprintf("mining_report_org_%d_%s_%s_%s.csv",
-		req.OrganizationId, req.FiatCurrency, fmt.Sprintf("%d-%d-%d", sy, sm, sd), fmt.Sprintf("%d-%d-%d", ey, em, ed))
+	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv",
+		s.server, req.OrganizationId, req.FiatCurrency, fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd),
+		fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
 	buff := bytes.Buffer{}
 	buff.Reset()
 
@@ -294,6 +199,7 @@ func (s *Server) MiningReportCSV(req *api.MiningReportRequest, server api.Downlo
 				Start:          req.Start,
 				End:            req.End,
 				FiatCurrency:   req.FiatCurrency,
+				Decimals:       decimals,
 			})
 			if err != nil {
 				return status.Errorf(codes.Internal, "failed to get MXC mining report : %v", err)
@@ -302,8 +208,8 @@ func (s *Server) MiningReportCSV(req *api.MiningReportRequest, server api.Downlo
 			err = w.Write([]string{
 				"Date",
 				"MXC Mined",
-				"MXC Settlement Price",
-				"Fiat Currency Mined",
+				"MXC Close Price",
+				fmt.Sprintf("%s Mined", strings.ToUpper(req.FiatCurrency)),
 				"Online Seconds"})
 			if err != nil {
 				return status.Errorf(codes.Internal, "failed to write title to csv file: %v", err)
@@ -312,8 +218,8 @@ func (s *Server) MiningReportCSV(req *api.MiningReportRequest, server api.Downlo
 			err = wFile.Write([]string{
 				"Date",
 				"MXC Mined",
-				"MXC Settlement Price",
-				"Fiat Currency Mined",
+				"MXC Close Price",
+				fmt.Sprintf("%s Mined", strings.ToUpper(req.FiatCurrency)),
 				"Online Seconds"})
 			if err != nil {
 				logrus.Debugf("Error occurs when writing title to buffer: %v", err)
@@ -321,7 +227,7 @@ func (s *Server) MiningReportCSV(req *api.MiningReportRequest, server api.Downlo
 
 			for _, v := range res.MiningRecordList {
 				y, m, d := v.DateTime.AsTime().Date()
-				dateStr := fmt.Sprintf("%d-%d-%d", y, m, d)
+				dateStr := fmt.Sprintf("%04d-%02d-%02d", y, m, d)
 				err = w.Write([]string{
 					dateStr,
 					v.MXCMined,
