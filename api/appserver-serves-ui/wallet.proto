@@ -44,6 +44,12 @@ service WalletService {
 		};
     }
 
+    rpc GetGatewayMiningHealth (GetGatewayMiningHealthRequest) returns (GetGatewayMiningHealthResponse) {
+        option (google.api.http) = {
+                        get: "/api/wallet/mining_health"
+        };
+    }
+
     rpc GetMiningInfo (GetMiningInfoRequest) returns (GetMiningInfoResponse) {
         option (google.api.http) = {
 			get: "/api/wallet/mining_info"
@@ -61,6 +67,37 @@ service WalletService {
                         get: "/api/wallet/tx-history"
         };
     }
+}
+
+// request information about mining health of gateways
+message GetGatewayMiningHealthRequest {
+    // organization_id
+    int64 org_id = 1;
+    // list of gateways for which the health should be returned. If empty, then
+    // health of all the gateways of the organization will be returned.
+    repeated string gateway_mac = 2;
+}
+
+message GatewayMiningHealth {
+    // MAC of the gateway
+    string gateway_mac = 1;
+    // organization that owns the gateway
+    int64 org_id = 2;
+    // overall health score
+    float health = 3;
+    // mining fuel bonded to the gw by the org
+    string mining_fuel = 4;
+    // mining fuel required for full mining efficiency
+    string mining_fuel_max = 5;
+    // mining fuel health score
+    float mining_fuel_health = 6;
+    // gateway's age, total online seconds
+    int64 age_seconds = 7;
+}
+
+message GetGatewayMiningHealthResponse {
+    // list of health records for every gateway that was requested
+    repeated GatewayMiningHealth gateway_health = 1;
 }
 
 message GetWalletBalanceRequest {
@@ -101,6 +138,10 @@ message MiningStats {
     google.protobuf.Timestamp date = 1;
     // amount mined on the specified day
     string amount = 2;
+    // gateway's online time on the date
+    int64 online_seconds = 3;
+    // average gateway's health on the date
+    float health = 4;
 }
 
 message GetGatewayMiningIncomeResponse {

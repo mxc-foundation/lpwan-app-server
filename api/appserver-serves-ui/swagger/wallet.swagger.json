@@ -55,6 +55,49 @@
         ]
       }
     },
+    "/api/wallet/mining_health": {
+      "get": {
+        "operationId": "GetGatewayMiningHealth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningHealthResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization_id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gatewayMac",
+            "description": "list of gateways for which the health should be returned. If empty, then\nhealth of all the gateways of the organization will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/mining_income": {
       "get": {
         "operationId": "GetWalletMiningIncome",
@@ -430,12 +473,61 @@
     }
   },
   "definitions": {
+    "appserver_serves_uiGatewayMiningHealth": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "MAC of the gateway"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that owns the gateway"
+        },
+        "health": {
+          "type": "number",
+          "format": "float",
+          "title": "overall health score"
+        },
+        "miningFuel": {
+          "type": "string",
+          "title": "mining fuel bonded to the gw by the org"
+        },
+        "miningFuelMax": {
+          "type": "string",
+          "title": "mining fuel required for full mining efficiency"
+        },
+        "miningFuelHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "mining fuel health score"
+        },
+        "ageSeconds": {
+          "type": "string",
+          "format": "int64",
+          "title": "gateway's age, total online seconds"
+        }
+      }
+    },
     "appserver_serves_uiGetDownLinkPriceResponse": {
       "type": "object",
       "properties": {
         "downLinkPrice": {
           "type": "number",
           "format": "double"
+        }
+      }
+    },
+    "appserver_serves_uiGetGatewayMiningHealthResponse": {
+      "type": "object",
+      "properties": {
+        "gatewayHealth": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGatewayMiningHealth"
+          },
+          "title": "list of health records for every gateway that was requested"
         }
       }
     },
@@ -556,6 +648,16 @@
         "amount": {
           "type": "string",
           "title": "amount mined on the specified day"
+        },
+        "onlineSeconds": {
+          "type": "string",
+          "format": "int64",
+          "title": "gateway's online time on the date"
+        },
+        "health": {
+          "type": "number",
+          "format": "float",
+          "title": "average gateway's health on the date"
         }
       },
       "title": "Mining stats for a single date"

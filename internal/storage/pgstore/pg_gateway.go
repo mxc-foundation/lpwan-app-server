@@ -3,6 +3,8 @@ package pgstore
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
+	"fmt"
 	"strings"
 	"time"
 
@@ -604,6 +606,48 @@ func (ps *PgStore) GetGatewayCount(ctx context.Context, filters GatewayFilters) 
 	}
 
 	return count, nil
+}
+
+// GetOrgGateways returns the list of gateways belonging to the organization,
+// if macs is not empty, they it only returns the gateways with the macs from
+// the list. It only fills MAC, OrgID and STCOrgID fields of the returned structure.
+func (ps *PgStore) GetOrgGateways(ctx context.Context, orgID int64, macs []string) ([]Gateway, error) {
+	query := `
+		SELECT mac, organization_id, stc_org_id
+		FROM gateway
+		WHERE organization_id = $1`
+	args := []interface{}{orgID}
+	if len(macs) > 0 {
+		macCond := ` AND mac IN (`
+		sep := ""
+		for _, mac := range macs {
+			gwMAC, err := hex.DecodeString(mac)
+			if err != nil {
+				return nil, fmt.Errorf("invalid MAC: %s", gwMAC)
+			}
+			args = append(args, gwMAC)
+			macCond += fmt.Sprintf("%s$%d", sep, len(args))
+			sep = ", "
+		}
+		macCond += ")"
+		query += macCond
+	}
+	rows, err := ps.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var res []Gateway
+	for rows.Next() {
+		var gw Gateway
+		var stcOrgID sql.NullInt64
+		if err := rows.Scan(&gw.MAC, &gw.OrganizationID, &stcOrgID); err != nil {
+			return nil, err
+		}
+		gw.STCOrgID = &stcOrgID.Int64
+		res = append(res, gw)
+	}
+	return res, rows.Err()
 }
 
 // GetGateways returns a slice of gateways sorted by name.

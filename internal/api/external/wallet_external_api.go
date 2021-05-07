@@ -71,6 +71,52 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	}, status.Error(codes.OK, "")
 }
 
+// GetGatewayMiningHealth returns information about health of the organization's gateways
+func (s *WalletServerAPI) GetGatewayMiningHealth(ctx context.Context, req *api.GetGatewayMiningHealthRequest) (*api.GetGatewayMiningHealthResponse, error) {
+	// req.OrgId should be the id of the org that user is making request with
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGatewayAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
+	gws, err := s.st.GetOrgGateways(ctx, cred.OrgID, req.GatewayMac)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	var mreq pb.GetGatewayMiningHealthRequest
+	for _, gw := range gws {
+		var stcOrgID int64
+		if gw.STCOrgID != nil {
+			stcOrgID = *gw.STCOrgID
+		}
+		mreq.Gateway = append(mreq.Gateway, &pb.GatewayMining{
+			GatewayMac: gw.MAC.String(),
+			OwnerOrgId: gw.OrganizationID,
+			StcOrgId:   stcOrgID,
+		})
+	}
+	walletClient := mxpcli.Global.GetMiningServiceClient()
+	mresp, err := walletClient.GetGatewayMiningHealth(ctx, &mreq)
+	if err != nil {
+		return nil, err
+	}
+	var resp api.GetGatewayMiningHealthResponse
+	for _, gw := range mresp.GatewayHealth {
+		resp.GatewayHealth = append(resp.GatewayHealth, &api.GatewayMiningHealth{
+			GatewayMac:       gw.GatewayMac,
+			OrgId:            gw.OrgId,
+			Health:           gw.Health,
+			MiningFuel:       gw.MiningFuel,
+			MiningFuelMax:    gw.MiningFuelMax,
+			MiningFuelHealth: gw.MiningFuelHealth,
+			AgeSeconds:       gw.AgeSeconds,
+		})
+	}
+	return &resp, nil
+}
+
 func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.GetGatewayMiningIncomeRequest) (*api.GetGatewayMiningIncomeResponse, error) {
 	// req.OrgId should be the id of the org that user is making request with
 	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
@@ -124,8 +170,10 @@ func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.G
 	}
 	for _, ds := range resp.DailyStats {
 		stats.DailyStats = append(stats.DailyStats, &api.MiningStats{
-			Date:   ds.Date,
-			Amount: ds.Amount,
+			Date:          ds.Date,
+			Amount:        ds.Amount,
+			OnlineSeconds: ds.OnlineSeconds,
+			Health:        ds.Health,
 		})
 	}
 	return stats, nil
