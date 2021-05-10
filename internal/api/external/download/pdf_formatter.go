@@ -2,6 +2,7 @@ package download
 
 import (
 	"fmt"
+
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -21,6 +22,29 @@ type pdfFormat struct {
 	tableWidth         float64
 	disclaimerFontSize float64
 	bannerHeight       float64
+}
+
+func defaultPDFConfiguration(pdf *gofpdf.Fpdf) pdfFormat {
+	w, h := pdf.GetPageSize()
+	format := pdfFormat{
+		pageWidth:  w,
+		pageHeight: h,
+		gridWidth:  h / 40.0,
+		gridHeight: h / 40.0,
+	}
+	format.indentationUp = format.gridHeight * 3
+	format.indentationBottom = format.gridHeight * 2
+	format.indentationLeft = format.gridWidth * 2
+	format.indentationRight = format.indentationLeft
+	format.lineSpacing = format.gridHeight / 2
+	format.titleFontSize = format.gridHeight
+	format.contentFontSize = format.gridHeight / 2
+	format.charSpacing = format.contentFontSize / 2
+	format.disclaimerFontSize = format.contentFontSize * 0.8
+	format.bannerHeight = format.indentationUp
+	format.tableWidth = format.pageWidth - format.indentationLeft/2 - format.indentationRight/2
+
+	return format
 }
 
 /*// drawGrid is extremely useful for designing pdf pages' layout in the beginning
@@ -107,7 +131,6 @@ func addReportTable(pdf *gofpdf.Fpdf, f pdfFormat, table [][]string, cellWidth [
 			pdf.Rect(tableX, tableY-recHeight, tableWidth, recHeight, "F")
 			moveToY = tableY
 		}
-		moveToX = tableY
 		end := (p + 1) * rowMaxPerPage
 		if p == pages-1 {
 			end = len(table)

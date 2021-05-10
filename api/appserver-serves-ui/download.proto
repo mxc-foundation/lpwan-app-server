@@ -14,13 +14,13 @@ service DownloadService {
         };
     }
     // Request to download miningReport in csv format filtered by date
-    rpc MiningReportCSV (MiningReportRequest) returns (stream MiningReportResponse) {
+    rpc MiningReportCSV (MiningReportRequest) returns (MiningReportResponse) {
         option (google.api.http) = {
             get: "/api/download/mining-income-report/csv"
         };
     }
     // Request to download miningReport in pdf filtered by date
-    rpc MiningReportPDF (MiningReportRequest) returns (stream MiningReportResponse) {
+    rpc MiningReportPDF (MiningReportRequest) returns (MiningReportResponse) {
         option (google.api.http) = {
             get: "/api/download/mining-income-report/pdf"
         };
@@ -50,5 +50,5 @@ message MiningReportRequest {
 }
 
 message MiningReportResponse {
-    bytes fileChunk = 1;
+    string report_uri = 1;
 }

@@ -4,20 +4,17 @@ import (
 	"context"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 )
 
 // Server defines DFI service server API structure
 type Server struct {
-	store  Store
-	mxpCli *mxpcli.Client
+	store Store
 }
 
 // NewServer creates a new DFI service server
-func NewServer(store Store, mxpCli *mxpcli.Client) *Server {
+func NewServer(store Store) *Server {
 	return &Server{
-		store:  store,
-		mxpCli: mxpCli,
+		store: store,
 	}
 }
 

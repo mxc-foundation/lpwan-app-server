@@ -55,7 +55,7 @@ var (
 	filter_DownloadService_MiningReportCSV_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_DownloadService_MiningReportCSV_0(ctx context.Context, marshaler runtime.Marshaler, client DownloadServiceClient, req *http.Request, pathParams map[string]string) (DownloadService_MiningReportCSVClient, runtime.ServerMetadata, error) {
+func request_DownloadService_MiningReportCSV_0(ctx context.Context, marshaler runtime.Marshaler, client DownloadServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MiningReportRequest
 	var metadata runtime.ServerMetadata
 
@@ -66,16 +66,24 @@ func request_DownloadService_MiningReportCSV_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	stream, err := client.MiningReportCSV(ctx, &protoReq)
-	if err != nil {
-		return nil, metadata, err
+	msg, err := client.MiningReportCSV(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DownloadService_MiningReportCSV_0(ctx context.Context, marshaler runtime.Marshaler, server DownloadServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq MiningReportRequest
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	header, err := stream.Header()
-	if err != nil {
-		return nil, metadata, err
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DownloadService_MiningReportCSV_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	metadata.HeaderMD = header
-	return stream, metadata, nil
+
+	msg, err := server.MiningReportCSV(ctx, &protoReq)
+	return msg, metadata, err
 
 }
 
@@ -83,7 +91,7 @@ var (
 	filter_DownloadService_MiningReportPDF_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_DownloadService_MiningReportPDF_0(ctx context.Context, marshaler runtime.Marshaler, client DownloadServiceClient, req *http.Request, pathParams map[string]string) (DownloadService_MiningReportPDFClient, runtime.ServerMetadata, error) {
+func request_DownloadService_MiningReportPDF_0(ctx context.Context, marshaler runtime.Marshaler, client DownloadServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MiningReportRequest
 	var metadata runtime.ServerMetadata
 
@@ -94,16 +102,24 @@ func request_DownloadService_MiningReportPDF_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	stream, err := client.MiningReportPDF(ctx, &protoReq)
-	if err != nil {
-		return nil, metadata, err
+	msg, err := client.MiningReportPDF(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DownloadService_MiningReportPDF_0(ctx context.Context, marshaler runtime.Marshaler, server DownloadServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq MiningReportRequest
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	header, err := stream.Header()
-	if err != nil {
-		return nil, metadata, err
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DownloadService_MiningReportPDF_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	metadata.HeaderMD = header
-	return stream, metadata, nil
+
+	msg, err := server.MiningReportPDF(ctx, &protoReq)
+	return msg, metadata, err
 
 }
 
@@ -137,17 +153,49 @@ func RegisterDownloadServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 	})
 
 	mux.Handle("GET", pattern_DownloadService_MiningReportCSV_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
-		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DownloadService_MiningReportCSV_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DownloadService_MiningReportCSV_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("GET", pattern_DownloadService_MiningReportPDF_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
-		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DownloadService_MiningReportPDF_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DownloadService_MiningReportPDF_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	return nil
@@ -227,7 +275,7 @@ func RegisterDownloadServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			return
 		}
 
-		forward_DownloadService_MiningReportCSV_0(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+		forward_DownloadService_MiningReportCSV_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -247,7 +295,7 @@ func RegisterDownloadServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 			return
 		}
 
-		forward_DownloadService_MiningReportPDF_0(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+		forward_DownloadService_MiningReportPDF_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -265,7 +313,7 @@ var (
 var (
 	forward_DownloadService_GetFiatCurrencyList_0 = runtime.ForwardResponseMessage
 
-	forward_DownloadService_MiningReportCSV_0 = runtime.ForwardResponseStream
+	forward_DownloadService_MiningReportCSV_0 = runtime.ForwardResponseMessage
 
-	forward_DownloadService_MiningReportPDF_0 = runtime.ForwardResponseStream
+	forward_DownloadService_MiningReportPDF_0 = runtime.ForwardResponseMessage
 )
