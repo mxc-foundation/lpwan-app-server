@@ -139,13 +139,30 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", s.server, req.OrganizationId, req.FiatCurrency,
 		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
 	// drawGrid(pdf, format)
-	filePath := filepath.Join("/tmp/mining-report", filename)
-	err = pdf.OutputFileAndClose(filePath)
+	filePath := "/tmp/mining-report"
+	if err = ensureFilePath(filePath); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
+	}
+	file := filepath.Join(filePath, filename)
+	err = pdf.OutputFileAndClose(file)
 	if err != nil {
 		return response, status.Errorf(codes.Internal, "failed to output report content to pdf file: %v", err)
 	}
-	response.ReportUri = filePath
+	response.ReportUri = file
 	return response, nil
+}
+
+func ensureFilePath(filePath string) error {
+	if _, err := os.Stat(filePath); err != nil {
+		if os.IsNotExist(err) {
+			if err = os.Mkdir(filePath, os.ModePerm); err != nil {
+				return err
+			}
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 // MiningReportCSV formats mining data into csv with given filtering conditions then send to client in stream
@@ -169,7 +186,11 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv",
 		s.server, req.OrganizationId, req.FiatCurrency, fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd),
 		fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	filePath := filepath.Join("/tmp/mining-report", filename)
+	filePath := "/tmp/mining-report"
+	if err = ensureFilePath(filePath); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
+	}
+	file := filepath.Join(filePath, filename)
 
 	buffFile := bytes.Buffer{}
 	buffFile.Reset()
@@ -222,9 +243,9 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	}
 	wFile.Flush()
 
-	if err := ioutil.WriteFile(filePath, buffFile.Bytes(), os.ModePerm); err != nil {
+	if err := ioutil.WriteFile(file, buffFile.Bytes(), os.ModePerm); err != nil {
 		return response, status.Errorf(codes.Internal, "failed to write report content to csv file: %v", err)
 	}
-	response.ReportUri = filePath
+	response.ReportUri = file
 	return response, nil
 }
