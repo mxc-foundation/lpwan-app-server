@@ -2,12 +2,15 @@ package download
 
 import (
 	"context"
+
+	/* #nosec */
+	"crypto/md5"
 	"fmt"
-	"google.golang.org/grpc"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
@@ -76,8 +79,11 @@ func TestGetMiningReportCSVFileURI(t *testing.T) {
 	ey, em, ed := request.End.AsTime().Date()
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv", "local_test_server", 1, "usd",
 		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	// drawGrid(pdf, format)
-	filePath := filepath.Join("/tmp/mining-report", filename)
+
+	/* #nosec */
+	filenameHash := fmt.Sprintf("%x", md5.Sum([]byte(filename)))
+	filePath := filepath.Join("/tmp/mining-report", filenameHash)
+	t.Log(filePath)
 	if resp.ReportUri != filePath {
 		t.Fatalf("expected %s, got %s", filePath, resp.ReportUri)
 	}
@@ -123,8 +129,11 @@ func TestGetMiningReportPDFFileURI(t *testing.T) {
 	ey, em, ed := request.End.AsTime().Date()
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", "local_test_server", 1, "usd",
 		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	// drawGrid(pdf, format)
-	filePath := filepath.Join("/tmp/mining-report", filename)
+
+	/* #nosec */
+	filenameHash := fmt.Sprintf("%x", md5.Sum([]byte(filename)))
+	filePath := filepath.Join("/tmp/mining-report", filenameHash)
+	t.Log(filePath)
 	if resp.ReportUri != filePath {
 		t.Fatalf("expected %s, got %s", filePath, resp.ReportUri)
 	}
