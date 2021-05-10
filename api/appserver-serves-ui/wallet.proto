@@ -56,6 +56,20 @@ service WalletService {
 		};
     }
 
+    rpc TopUpGatewayMiningFuel (TopUpGatewayMiningFuelRequest) returns (TopUpGatewayMiningFuelResponse) {
+        option (google.api.http) = {
+                        post: "/api/wallet/top-up-mining-fuel"
+                        body: "*"
+        };
+    }
+
+    rpc WithdrawGatewayMiningFuel (WithdrawGatewayMiningFuelRequest) returns (WithdrawGatewayMiningFuelResponse) {
+        option (google.api.http) = {
+                        post: "/api/wallet/withdraw-mining-fuel"
+                        body: "*"
+        };
+    }
+
     rpc GetMXCprice (GetMXCpriceRequest) returns (GetMXCpriceResponse) {
         option (google.api.http) = {
 			get: "/api/wallet/mxc_price"
@@ -67,6 +81,58 @@ service WalletService {
                         get: "/api/wallet/tx-history"
         };
     }
+}
+
+// top up amount bonded to a gateway
+message TopUpGatewayMiningFuelRequest {
+    // mac address of the gateway
+    string gateway_mac = 1;
+    // organization id
+    int64 org_id = 2;
+    // currency
+    string currency = 3;
+    // amount
+    string amount = 4;
+}
+
+message TopUpGatewayMiningFuelResponse {
+    // mac address of the gateway as a sequence of hex digits without any
+    // separators, for example 70b3d5fffeabcdef
+    string gateway_mac = 1;
+    // what organization owns the fuel
+    int64 org_id = 2;
+    // token that is bonded to gateway
+    string currency = 3;
+    // amount bonded to gateway
+    string amount = 4;
+}
+
+// withdraw amount from the gateway mining fuel
+message WithdrawGatewayMiningFuelRequest {
+    // mac address of the gateway as a sequence of hex digits without any
+    // separators, for example 70b3d5fffeabcdef
+    string gateway_mac = 1;
+    // what organization owns the fuel
+    int64 org_id = 2;
+    // token that is bonded to the gateway
+    string currency = 3;
+    // amount that should be withdrawn
+    string amount = 4;
+    // if true the whole amount will be withdrawn.
+    // Amount parameter should be empty in this case.
+    bool close = 5;
+}
+
+message WithdrawGatewayMiningFuelResponse {
+    // mac address of the gateway as a sequence of hex digits without any
+    // separators, for example 70b3d5fffeabcdef
+    string gateway_mac = 1;
+    // what organization owns the fuel
+    int64 org_id = 2;
+    // token that is bonded to gateway
+    string currency = 3;
+    // amount bonded to gateway
+    string amount = 4;
 }
 
 // request information about mining health of gateways

@@ -279,6 +279,38 @@
         ]
       }
     },
+    "/api/wallet/top-up-mining-fuel": {
+      "post": {
+        "operationId": "TopUpGatewayMiningFuel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTopUpGatewayMiningFuelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTopUpGatewayMiningFuelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/tx-history": {
       "get": {
         "operationId": "GetTransactionHistory",
@@ -337,6 +369,38 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/withdraw-mining-fuel": {
+      "post": {
+        "operationId": "WithdrawGatewayMiningFuel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawGatewayMiningFuelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawGatewayMiningFuelRequest"
+            }
           }
         ],
         "tags": [
@@ -706,6 +770,51 @@
         }
       }
     },
+    "appserver_serves_uiTopUpGatewayMiningFuelRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization id"
+        },
+        "currency": {
+          "type": "string",
+          "title": "currency"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount"
+        }
+      },
+      "title": "top up amount bonded to a gateway"
+    },
+    "appserver_serves_uiTopUpGatewayMiningFuelResponse": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "what organization owns the fuel"
+        },
+        "currency": {
+          "type": "string",
+          "title": "token that is bonded to gateway"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount bonded to gateway"
+        }
+      }
+    },
     "appserver_serves_uiTransaction": {
       "type": "object",
       "properties": {
@@ -749,6 +858,55 @@
         },
         "createdAt": {
           "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiWithdrawGatewayMiningFuelRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "what organization owns the fuel"
+        },
+        "currency": {
+          "type": "string",
+          "title": "token that is bonded to the gateway"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount that should be withdrawn"
+        },
+        "close": {
+          "type": "boolean",
+          "description": "if true the whole amount will be withdrawn.\nAmount parameter should be empty in this case."
+        }
+      },
+      "title": "withdraw amount from the gateway mining fuel"
+    },
+    "appserver_serves_uiWithdrawGatewayMiningFuelResponse": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "what organization owns the fuel"
+        },
+        "currency": {
+          "type": "string",
+          "title": "token that is bonded to gateway"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount bonded to gateway"
         }
       }
     },
