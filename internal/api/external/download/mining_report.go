@@ -164,16 +164,11 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 }
 
 func ensureFilePath(filePath string) error {
-	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			if err = os.MkdirAll(filePath, os.ModePerm); err != nil {
-				return err
-			}
-			return nil
-		}
+	if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
 		return err
 	}
 	return nil
+
 }
 
 // MiningReportCSV formats mining data into csv with given filtering conditions then send to client in stream
