@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 
-	/* #nosec */
-	"crypto/md5"
 	"encoding/csv"
 	"fmt"
 	"io/ioutil"
@@ -141,19 +139,17 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 	ey, em, ed := req.End.AsTime().Date()
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", s.server, req.OrganizationId, req.FiatCurrency,
 		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	/* #nosec */
-	filenameHash := fmt.Sprintf("%x", md5.Sum([]byte(filename)))
 	// drawGrid(pdf, format)
-	filePath := filepath.Join("/tmp/mining-report", filenameHash)
+	filePath := "/tmp/mining-report"
 	if err = ensureFilePath(filePath); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
 	}
-	file := filepath.Join(filePath, filename)
-	err = pdf.OutputFileAndClose(file)
+	fileURI := filepath.Join(filePath, filename)
+	err = pdf.OutputFileAndClose(fileURI)
 	if err != nil {
 		return response, status.Errorf(codes.Internal, "failed to output report content to pdf file: %v", err)
 	}
-	response.ReportUri = filePath
+	response.ReportUri = fileURI
 	return response, nil
 }
 
@@ -185,19 +181,17 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 		decimals = 4
 	}
 
-	// write report to csv file
+	// write report to csv fileURI
 	sy, sm, sd := req.Start.AsTime().Date()
 	ey, em, ed := req.End.AsTime().Date()
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv",
 		s.server, req.OrganizationId, req.FiatCurrency, fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd),
 		fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	/* #nosec */
-	filenameHash := fmt.Sprintf("%x", md5.Sum([]byte(filename)))
-	filePath := filepath.Join("/tmp/mining-report", filenameHash)
+	filePath := "/tmp/mining-report"
 	if err = ensureFilePath(filePath); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
+		return nil, status.Errorf(codes.Internal, "failed to create fileURI path %s: %v", filePath, err)
 	}
-	file := filepath.Join(filePath, filename)
+	fileURI := filepath.Join(filePath, filename)
 	buffFile := bytes.Buffer{}
 	buffFile.Reset()
 
@@ -249,9 +243,9 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	}
 	wFile.Flush()
 
-	if err := ioutil.WriteFile(file, buffFile.Bytes(), os.ModePerm); err != nil {
-		return response, status.Errorf(codes.Internal, "failed to write report content to csv file: %v", err)
+	if err := ioutil.WriteFile(fileURI, buffFile.Bytes(), os.ModePerm); err != nil {
+		return response, status.Errorf(codes.Internal, "failed to write report content to csv fileURI: %v", err)
 	}
-	response.ReportUri = filePath
+	response.ReportUri = fileURI
 	return response, nil
 }
