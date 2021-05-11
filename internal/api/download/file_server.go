@@ -15,11 +15,25 @@ func download() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestURL := r.URL.Path
 		pathList := strings.Split(requestURL, "/")
-		if pathList[1] != "download" {
+		// for now only mining-report and staking-report should be allowed to download
+		// e.g. /download/tmp/mining-report/a1a1a1a1a1a1a1a1a1a1/file_name.csv
+		// e.g. /download/tmp/mining-report/a1a1a1a1a1a1a1a1a1a1/file_name.pdf
+		if len(pathList) < 6 {
 			w.WriteHeader(400)
+			return
 		}
-		file := filepath.Join("/", filepath.Join(pathList[2:]...))
-		http.ServeFile(w, r, file)
+		if pathList[1] != "download" || pathList[2] != "tmp" {
+			w.WriteHeader(400)
+			return
+		}
+		switch pathList[3] {
+		case "mining-report":
+			file := filepath.Join("/", filepath.Join(pathList[2:]...))
+			http.ServeFile(w, r, file)
+		default:
+			w.WriteHeader(400)
+			return
+		}
 	})
 }
 

@@ -1,8 +1,8 @@
 package config
 
 import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/download"
 	external "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/download"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
 	multicastsetup "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"

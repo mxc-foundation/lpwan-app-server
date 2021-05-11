@@ -6,23 +6,23 @@ option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-se
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
-service DownloadService {
+service ReportService {
     // Get support fiat currency list
     rpc GetFiatCurrencyList (GetFiatCurrencyListRequest) returns (GetFiatCurrencyListResponse) {
         option (google.api.http) = {
-            get: "/api/download/supported-fiat-currencies"
+            get: "/api/report/supported-fiat-currencies"
         };
     }
     // Request to download miningReport in csv format filtered by date
     rpc MiningReportCSV (MiningReportRequest) returns (MiningReportResponse) {
         option (google.api.http) = {
-            get: "/api/download/mining-income-report/csv"
+            get: "/api/report/mining-income/csv"
         };
     }
     // Request to download miningReport in pdf filtered by date
     rpc MiningReportPDF (MiningReportRequest) returns (MiningReportResponse) {
         option (google.api.http) = {
-            get: "/api/download/mining-income-report/pdf"
+            get: "/api/report/mining-income/pdf"
         };
     }
 }

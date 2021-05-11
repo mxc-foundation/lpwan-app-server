@@ -29,7 +29,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/download"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/report"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -245,7 +245,7 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		pgs,
 	))
 
-	api.RegisterDownloadServiceServer(grpcServer, download.NewServer(
+	api.RegisterReportServiceServer(grpcServer, report.NewServer(
 		srv.MXPCli.GetFianceReportClient(),
 		grpcAuth,
 		srv.ServerAddr,
@@ -395,7 +395,7 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 	err = api.RegisterDFIServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register dfi service handler: %v", err)
 
-	err = api.RegisterDownloadServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	err = api.RegisterReportServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register download service handler: %v", err)
 
 	return mux, nil

@@ -1,4 +1,4 @@
-package download
+package report
 
 import (
 	"fmt"
