@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/brocaar/lorawan"
@@ -20,180 +19,23 @@ import (
 	mining "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
 )
 
-func (ps *PgStore) CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
-	userQuery := `
+// OrganizationCanAccessNetworkServer returns true if the organization has access to the specified network server
+func (ps *PgStore) OrganizationCanAccessNetworkServer(ctx context.Context, organizationID, networkserverID int64) (bool, error) {
+	query := `
 		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-	`
-	// global admin
-	// organization admin
-	// gateway admin
-	var userWhere = [][]string{
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_admin = true", "o.can_have_gateways = true"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_gateway_admin = true", "o.can_have_gateways = true"},
-	}
-
-	var ors []string
-	for _, ands := range userWhere {
-		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
-	}
-	whereStr := strings.Join(ors, " or ")
-	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
-
-	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
-		return false, errors.Wrap(err, "select error")
-	}
-	return count > 0, nil
-}
-
-func (ps *PgStore) CheckListGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-	`
-	// global admin
-	// organization user
-	// any active user (result filtered on user)
-	var userWhere = [][]string{
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 > 0", "o.id = $2"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 = 0"},
-	}
-
-	var ors []string
-	for _, ands := range userWhere {
-		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
-	}
-	whereStr := strings.Join(ors, " or ")
-	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
-
-	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
-		return false, errors.Wrap(err, "select error")
-	}
-	return count > 0, nil
-}
-
-func (ps *PgStore) CheckReadGatewayAccess(ctx context.Context, username string, mac lorawan.EUI64, userID int64) (bool, error) {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-		left join gateway g
-			on o.id = g.organization_id
-	`
-	// global admin
-	// organization user
-	var userWhere = [][]string{
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "g.mac = $2"},
-	}
-
-	var ors []string
-	for _, ands := range userWhere {
-		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
-	}
-	whereStr := strings.Join(ors, " or ")
-	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
-
-	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, mac, userID); err != nil {
-		return false, errors.Wrap(err, "select error")
-	}
-	return count > 0, nil
-}
-
-func (ps *PgStore) CheckUpdateDeleteGatewayAccess(ctx context.Context, username string, mac lorawan.EUI64, userID int64) (bool, error) {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-		left join gateway g
-			on o.id = g.organization_id
-	`
-	var userWhere = [][]string{
-		// global admin
-		// organization admin
-		// organization gateway admin
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "g.mac = $2", "ou.is_admin = true"},
-		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "g.mac = $2", "ou.is_gateway_admin = true"},
-	}
-
-	var ors []string
-	for _, ands := range userWhere {
-		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
-	}
-	whereStr := strings.Join(ors, " or ")
-	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
-
-	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, mac, userID); err != nil {
-		return false, errors.Wrap(err, "select error")
-	}
-	return count > 0, nil
-}
-
-func (ps *PgStore) CheckReadOrganizationNetworkServerAccess(ctx context.Context, username string, organizationID, networkserverID, userID int64) (bool, error) {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
+			count(*)
+		from organization o
 		left join service_profile sp
 			on sp.organization_id = o.id
 		left join device_profile dp
 			on dp.organization_id = o.id
 		left join network_server ns
 			on ns.id = sp.network_server_id or ns.id = dp.network_server_id
+		where o.id = $1 and ns.id = $2
 	`
-	// global admin
-	// organization user
-	var userWhere = [][]string{
-		{"(u.email = $1 or u.id = $4)", "u.is_active = true", "u.is_admin = true"},
-		{"(u.email = $1 or u.id = $4)", "u.is_active = true", "o.id = $2", "ns.id = $3"},
-	}
-
-	var ors []string
-	for _, ands := range userWhere {
-		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
-	}
-	whereStr := strings.Join(ors, " or ")
-	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
-
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, networkserverID, userID); err != nil {
-		return false, errors.Wrap(err, "select error")
-	}
-	return count > 0, nil
+	err := ps.db.QueryRowContext(ctx, query, organizationID, networkserverID).Scan(&count)
+	return count > 0, err
 }
 
 func (ps *PgStore) AddGatewayFirmware(ctx context.Context, gwFw *GatewayFirmware) (model string, err error) {

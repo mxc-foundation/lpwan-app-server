@@ -29,7 +29,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
@@ -41,12 +40,12 @@ import (
 	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	orgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
-	st     *store.Handler
+	st     *pgstore.PgStore
 	config GwConfig
 	auth   auth.Authenticator
 	pscli  psPb.ProvisionClient
@@ -59,7 +58,7 @@ type GwConfig struct {
 }
 
 // NewGatewayAPI creates a new GatewayAPI.
-func NewGatewayAPI(h *store.Handler, auth auth.Authenticator, config GwConfig, pscli psPb.ProvisionClient) *GatewayAPI {
+func NewGatewayAPI(h *pgstore.PgStore, auth auth.Authenticator, config GwConfig, pscli psPb.ProvisionClient) *GatewayAPI {
 	return &GatewayAPI{
 		st:     h,
 		auth:   auth,
@@ -130,10 +129,12 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 		"organization_list": req.OrganizationList,
 	}).Info("BatchResetDefaultGatewatConfig is called")
 
-	// check user permission, only global admin allowed
-	err := gw.NewValidator().IsGlobalAdmin(ctx)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	// if process for any organizaiton failed, return this error message to user for retry
@@ -249,9 +250,12 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *api
 	}).Info("ResetDefaultGatewatConfigByID is called")
 
 	// check user permission, only global admin allowed
-	err := gw.NewValidator().IsGlobalAdmin(ctx)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	var mac lorawan.EUI64
@@ -285,9 +289,12 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *api
 	}).Info("InsertNewDefaultGatewayConfig is called")
 
 	// check user permission, only global admin allowed
-	err := gw.NewValidator().IsGlobalAdmin(ctx)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	defaultGatewayConfig := DefaultGatewayConfig{
@@ -319,10 +326,13 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *api.Up
 		"region": req.Region,
 	}).Info("UpdateDefaultGatewayConfig is called")
 
-	// check user permission
-	err := gw.NewValidator().IsGlobalAdmin(ctx)
+	// check user permission, only global admin allowed
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	defaultGatewayConfig := DefaultGatewayConfig{
@@ -352,9 +362,12 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *api.GetDe
 	}).Info("GetDefaultGatewayConfig is called")
 
 	// check user permission, only global admin allowed
-	err := gw.NewValidator().IsGlobalAdmin(ctx)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	defaultGatewayConfig := DefaultGatewayConfig{
@@ -380,14 +393,17 @@ func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) 
 		return nil, status.Error(codes.InvalidArgument, "gateway.location must not be nil")
 	}
 
-	if valid, err := gw.NewValidator().ValidateGlobalGatewaysAccess(ctx, authcus.Create, req.Gateway.OrganizationId); !valid || err != nil {
+	// check user permission, only gateway admin allowed
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.Gateway.OrganizationId))
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-
-	// also validate that the network-server is accessible for the given organization
-	if valid, err := gw.NewValidator().ValidateOrganizationNetworkServerAccess(ctx, authcus.Read,
-		req.Gateway.OrganizationId, req.Gateway.NetworkServerId); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	nsAllowed, err := a.st.OrganizationCanAccessNetworkServer(ctx, req.Gateway.OrganizationId, req.Gateway.NetworkServerId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	if !cred.IsGatewayAdmin || !nsAllowed {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	if err := a.storeGateway(ctx, req.Gateway, &Gateway{}); err != nil {
@@ -854,6 +870,26 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLoca
 	return &resp, nil
 }
 
+func (a *GatewayAPI) ensureGatewayAdmin(ctx context.Context, mac lorawan.EUI64) error {
+	gw, err := a.st.GetGateway(ctx, mac, false)
+	if err != nil {
+		if err == errHandler.ErrDoesNotExist {
+			return status.Errorf(codes.NotFound, "Gateway does not exist: %s", mac.String())
+		}
+		return status.Errorf(codes.Internal, "%v", err)
+	}
+
+	// check user permission, only gateway admin allowed
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(gw.OrganizationID))
+	if err != nil {
+		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGatewayAdmin {
+		return status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+	return nil
+}
+
 // Update updates the given gateway.
 func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) (*empty.Empty, error) {
 	if req.Gateway == nil {
@@ -869,22 +905,11 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Update, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
-	// TODO: UI
-	/*
-		tags := hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		}
-			for k, v := range req.Gateway.Tags {
-				tags.Map[k] = sql.NullString{Valid: true, String: v}
-			}
-	*/
-
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *pgstore.PgStore) error {
 		gw, err := handler.GetGateway(ctx, mac, true)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
@@ -976,16 +1001,8 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	// check whether gateway exists first
-	if _, err := a.st.GetGateway(ctx, mac, false); err != nil {
-		if err == errHandler.ErrDoesNotExist {
-			return nil, status.Errorf(codes.NotFound, "Gateway does not exist: %s", mac.String())
-		}
-		return nil, status.Errorf(codes.Internal, "Get gateway error: %s", mac.String())
-	}
-
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Delete, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "Can not delete this gateway: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
 	if err := gw.DeleteGateway(ctx, mac); err != nil {
@@ -1001,9 +1018,8 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *api.GetGatewayStatsReque
 	if err := gatewayID.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
-
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, gatewayID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, gatewayID); err != nil {
+		return nil, err
 	}
 
 	start, err := ptypes.Timestamp(req.StartTimestamp)
@@ -1053,8 +1069,8 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *api.GetLastPingReques
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
 	ping, pingRX, err := a.st.GetLastGatewayPingAndRX(ctx, mac)
@@ -1095,8 +1111,8 @@ func (a *GatewayAPI) StreamFrameLogs(req *api.StreamGatewayFrameLogsRequest, srv
 		return status.Errorf(codes.InvalidArgument, "mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(srv.Context(), authcus.Read, mac); !valid || err != nil {
-		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(srv.Context(), mac); err != nil {
+		return err
 	}
 
 	n, err := a.st.GetNetworkServerForGatewayMAC(srv.Context(), mac)
@@ -1160,8 +1176,8 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *api.GetGwConfigReques
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
 	gwConfig, err := a.st.GetGatewayConfigByGwID(ctx, mac)
@@ -1179,8 +1195,8 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *api.UpdateGwConfig
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
 	if err := a.st.UpdateGatewayConfigByGwID(ctx, req.Conf, mac); err != nil {
@@ -1358,8 +1374,8 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *api.GetGwPwdRequest) (*a
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
 	provClient, err := pscli.GetPServerClient()
@@ -1384,8 +1400,8 @@ func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *api.SetAuto
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	if err := a.ensureGatewayAdmin(ctx, mac); err != nil {
+		return nil, err
 	}
 
 	if err := a.st.SetAutoUpdateFirmware(ctx, mac, req.AutoUpdate); err != nil {
@@ -1447,9 +1463,12 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewayProfileRequest) (*api.GetGSGatewayProfileResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
-	err := gw.NewValidator().IsOrgAdmin(ctx, req.OrgId)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
 	if err != nil {
-		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
@@ -1485,9 +1504,12 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
-	err := gw.NewValidator().IsOrgAdmin(ctx, req.OrgId)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
 	if err != nil {
-		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
@@ -1513,10 +1535,12 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 	logInfo := "api/appserver_serves_ui/SetGatewayMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	err := gw.NewValidator().IsGlobalAdmin(ctx)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
