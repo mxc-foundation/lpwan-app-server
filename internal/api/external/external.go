@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
-
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -29,22 +27,22 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/report"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
-	"github.com/mxc-foundation/lpwan-app-server/internal/email"
-	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
-	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
-
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
-	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -245,9 +243,13 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 
 	api.RegisterDFIServiceServer(grpcServer, dfi.NewServer(
 		pgs,
-		srv.MXPCli,
 	))
 
+	api.RegisterReportServiceServer(grpcServer, report.NewServer(
+		srv.MXPCli.GetFianceReportClient(),
+		grpcAuth,
+		srv.ServerAddr,
+	))
 	return nil
 }
 
@@ -392,6 +394,9 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 
 	err = api.RegisterDFIServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register dfi service handler: %v", err)
+
+	err = api.RegisterReportServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register download service handler: %v", err)
 
 	return mux, nil
 }

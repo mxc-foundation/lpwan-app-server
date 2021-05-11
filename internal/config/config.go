@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/download"
 	external "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
@@ -68,6 +69,8 @@ type Config struct {
 		APIForGateway gws.GatewayBindStruct `mapstructure:"api_for_gateway"`
 
 		ExternalAPI external.ExternalAPIStruct `mapstructure:"external_api"`
+
+		DownloadServiceAPI download.Config `mapstructure:"download_api"`
 
 		RemoteMulticastSetup multicastsetup.MulticastStruct `mapstructure:"remote_multicast_setup"`
 

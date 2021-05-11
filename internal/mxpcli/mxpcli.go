@@ -3,7 +3,6 @@ package mxpcli
 
 import (
 	"fmt"
-
 	"google.golang.org/grpc"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
@@ -89,4 +88,9 @@ func (c *Client) GetWalletServiceClient() pb.WalletServiceClient {
 // GetWithdrawServiceClient returns a new WithdrawServiceClient of mxprotocol-server
 func (c *Client) GetWithdrawServiceClient() pb.WithdrawServiceClient {
 	return pb.NewWithdrawServiceClient(c.mxpConn)
+}
+
+// GetFianceReportClient returns a new FinanceReportServiceClient of mxprotocol-server
+func (c *Client) GetFianceReportClient() pb.FinanceReportServiceClient {
+	return pb.NewFinanceReportServiceClient(c.mxpConn)
 }

@@ -7,18 +7,18 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/download"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
-	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/shopify"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
@@ -183,5 +183,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
+	// download API
+	download.Setup(cfg.ApplicationServer.DownloadServiceAPI)
 	return nil
 }
