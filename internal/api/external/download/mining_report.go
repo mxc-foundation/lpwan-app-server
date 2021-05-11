@@ -3,6 +3,7 @@ package download
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 
 	"encoding/csv"
 	"fmt"
@@ -55,6 +56,15 @@ func (s *Server) GetFiatCurrencyList(ctx context.Context, req *api.GetFiatCurren
 	}
 
 	return response, nil
+}
+
+func getRandom() string {
+	data := make([]byte, 10)
+	_, err := rand.Read(data)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", data)
 }
 
 // MiningReportPDF formats mining data into pdf with given filtering conditions then send to client in stream
@@ -140,7 +150,7 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", s.server, req.OrganizationId, req.FiatCurrency,
 		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
 	// drawGrid(pdf, format)
-	filePath := "/tmp/mining-report"
+	filePath := filepath.Join("/tmp/mining-report", getRandom())
 	if err = ensureFilePath(filePath); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
 	}
@@ -187,7 +197,7 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv",
 		s.server, req.OrganizationId, req.FiatCurrency, fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd),
 		fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	filePath := "/tmp/mining-report"
+	filePath := filepath.Join("/tmp/mining-report", getRandom())
 	if err = ensureFilePath(filePath); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create fileURI path %s: %v", filePath, err)
 	}

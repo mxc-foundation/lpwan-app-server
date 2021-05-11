@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/download"
 
 	"github.com/sirupsen/logrus"
 
@@ -183,5 +184,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
+	// download API
+	download.Setup(cfg.ApplicationServer.DownloadServiceAPI)
 	return nil
 }

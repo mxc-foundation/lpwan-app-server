@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"fmt"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -72,16 +71,7 @@ func TestGetMiningReportCSVFileURI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	sy, sm, sd := request.Start.AsTime().Date()
-	ey, em, ed := request.End.AsTime().Date()
-	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv", "local_test_server", 1, "usd",
-		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	fileURI := filepath.Join("/tmp/mining-report", filename)
-	t.Log(fileURI)
-	if resp.ReportUri != fileURI {
-		t.Fatalf("expected %s, got %s", fileURI, resp.ReportUri)
-	}
+	t.Log(resp.ReportUri)
 }
 
 func TestGetMiningReportPDFFileURI(t *testing.T) {
@@ -119,14 +109,5 @@ func TestGetMiningReportPDFFileURI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	sy, sm, sd := request.Start.AsTime().Date()
-	ey, em, ed := request.End.AsTime().Date()
-	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", "local_test_server", 1, "usd",
-		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	fileURI := filepath.Join("/tmp/mining-report", filename)
-	t.Log(fileURI)
-	if resp.ReportUri != fileURI {
-		t.Fatalf("expected %s, got %s", fileURI, resp.ReportUri)
-	}
+	t.Log(resp.ReportUri)
 }
