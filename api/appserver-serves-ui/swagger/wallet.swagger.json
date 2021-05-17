@@ -592,6 +592,10 @@
             "$ref": "#/definitions/appserver_serves_uiGatewayMiningHealth"
           },
           "title": "list of health records for every gateway that was requested"
+        },
+        "miningHealthAverage": {
+          "$ref": "#/definitions/appserver_serves_uiMiningHealthAverage",
+          "title": "\"average\" health numbers for the gateways in response"
         }
       }
     },
@@ -698,6 +702,21 @@
         },
         "amount": {
           "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiMiningHealthAverage": {
+      "type": "object",
+      "properties": {
+        "overall": {
+          "type": "number",
+          "format": "float",
+          "title": "overall health of the gateways"
+        },
+        "miningFuelHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "average mining fuel health"
         }
       }
     },

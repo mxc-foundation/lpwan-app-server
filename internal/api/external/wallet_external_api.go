@@ -103,6 +103,8 @@ func (s *WalletServerAPI) GetGatewayMiningHealth(ctx context.Context, req *api.G
 		return nil, err
 	}
 	var resp api.GetGatewayMiningHealthResponse
+	n := float32(len(mresp.GatewayHealth))
+	resp.MiningHealthAverage = &api.MiningHealthAverage{}
 	for _, gw := range mresp.GatewayHealth {
 		resp.GatewayHealth = append(resp.GatewayHealth, &api.GatewayMiningHealth{
 			GatewayMac:       gw.GatewayMac,
@@ -113,6 +115,8 @@ func (s *WalletServerAPI) GetGatewayMiningHealth(ctx context.Context, req *api.G
 			MiningFuelHealth: gw.MiningFuelHealth,
 			AgeSeconds:       gw.AgeSeconds,
 		})
+		resp.MiningHealthAverage.Overall += gw.Health / n
+		resp.MiningHealthAverage.MiningFuelHealth += gw.MiningFuelHealth / n
 	}
 	return &resp, nil
 }

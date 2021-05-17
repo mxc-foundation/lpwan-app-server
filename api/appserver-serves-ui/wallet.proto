@@ -161,9 +161,20 @@ message GatewayMiningHealth {
     int64 age_seconds = 7;
 }
 
+message MiningHealthAverage {
+    // overall health of the gateways
+    float overall = 1;
+    // average mining fuel health
+    float mining_fuel_health = 2;
+    // average uptime
+    float uptime_health = 3;
+}
+
 message GetGatewayMiningHealthResponse {
     // list of health records for every gateway that was requested
     repeated GatewayMiningHealth gateway_health = 1;
+    // "average" health numbers for the gateways in response
+    MiningHealthAverage mining_health_average = 2;
 }
 
 message GetWalletBalanceRequest {
