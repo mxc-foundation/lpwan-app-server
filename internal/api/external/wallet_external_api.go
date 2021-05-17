@@ -107,7 +107,7 @@ func (s *WalletServerAPI) GetGatewayMiningHealth(ctx context.Context, req *api.G
 	resp.MiningHealthAverage = &api.MiningHealthAverage{}
 	for _, gw := range mresp.GatewayHealth {
 		resp.GatewayHealth = append(resp.GatewayHealth, &api.GatewayMiningHealth{
-			GatewayMac:       gw.GatewayMac,
+			Id:               gw.GatewayMac,
 			OrgId:            gw.OrgId,
 			Health:           gw.Health,
 			MiningFuel:       gw.MiningFuel,

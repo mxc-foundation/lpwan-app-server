@@ -145,8 +145,8 @@ message GetGatewayMiningHealthRequest {
 }
 
 message GatewayMiningHealth {
-    // MAC of the gateway
-    string gateway_mac = 1;
+    // MAC of the gateway, called "id" for consistency with /api/gateways call
+    string id = 1;
     // organization that owns the gateway
     int64 org_id = 2;
     // overall health score

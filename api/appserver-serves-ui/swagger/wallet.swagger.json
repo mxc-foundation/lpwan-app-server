@@ -540,9 +540,9 @@
     "appserver_serves_uiGatewayMiningHealth": {
       "type": "object",
       "properties": {
-        "gatewayMac": {
+        "id": {
           "type": "string",
-          "title": "MAC of the gateway"
+          "title": "MAC of the gateway, called \"id\" for consistency with /api/gateways call"
         },
         "orgId": {
           "type": "string",
@@ -717,6 +717,11 @@
           "type": "number",
           "format": "float",
           "title": "average mining fuel health"
+        },
+        "uptimeHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "average uptime"
         }
       }
     },
