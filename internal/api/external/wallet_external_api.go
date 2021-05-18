@@ -114,9 +114,12 @@ func (s *WalletServerAPI) GetGatewayMiningHealth(ctx context.Context, req *api.G
 			MiningFuelMax:    gw.MiningFuelMax,
 			MiningFuelHealth: gw.MiningFuelHealth,
 			AgeSeconds:       gw.AgeSeconds,
+			TotalMined:       gw.TotalMined,
+			UptimeHealth:     gw.UptimeHealth,
 		})
 		resp.MiningHealthAverage.Overall += gw.Health / n
 		resp.MiningHealthAverage.MiningFuelHealth += gw.MiningFuelHealth / n
+		resp.MiningHealthAverage.UptimeHealth += gw.UptimeHealth / n
 	}
 	return &resp, nil
 }

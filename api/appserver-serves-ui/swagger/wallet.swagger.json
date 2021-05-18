@@ -571,6 +571,15 @@
           "type": "string",
           "format": "int64",
           "title": "gateway's age, total online seconds"
+        },
+        "totalMined": {
+          "type": "string",
+          "title": "gateway's total mining"
+        },
+        "uptimeHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "uptime percentage in the last 7 calendar days"
         }
       }
     },

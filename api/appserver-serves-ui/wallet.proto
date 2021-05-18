@@ -159,6 +159,10 @@ message GatewayMiningHealth {
     float mining_fuel_health = 6;
     // gateway's age, total online seconds
     int64 age_seconds = 7;
+    // gateway's total mining
+    string total_mined = 8;
+    // uptime percentage in the last 7 calendar days
+    float uptime_health = 9;
 }
 
 message MiningHealthAverage {
