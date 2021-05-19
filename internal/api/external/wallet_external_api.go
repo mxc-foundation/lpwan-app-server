@@ -256,55 +256,54 @@ func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.G
 	return stats, nil
 }
 
+// GetWalletMiningIncome returns organization's mining income during the specified period
 func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.GetWalletMiningIncomeRequest) (*api.GetWalletMiningIncomeResponse, error) {
-	logInfo := "api/appserver_serves_ui/GetWalletMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
-
-	if err := wallet.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	walletClient := mxpcli.Global.GetWalletServiceClient()
+	mClient := mxpcli.Global.GetMiningServiceClient()
 
-	resp, err := walletClient.GetWalletMiningIncome(ctx, &pb.GetWalletMiningIncomeRequest{
-		OrgId:    req.OrgId,
-		From:     req.From,
-		Till:     req.Till,
-		Currency: req.Currency,
+	resp, err := mClient.OrgMiningIncome(ctx, &pb.OrgMiningIncomeRequest{
+		OrgId: req.OrgId,
+		From:  req.From,
+		Till:  req.Till,
 	})
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &api.GetWalletMiningIncomeResponse{
-		MiningIncome: resp.MiningIncome,
-	}, status.Error(codes.OK, "")
+		MiningIncome: resp.Amount,
+	}, nil
 }
 
+// GetMiningInfo returns organization's monthly mining income since the
+// beginning of the year and today's mining income
 func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningInfoRequest) (*api.GetMiningInfoResponse, error) {
-	logInfo := "api/appserver_serves_ui/GetMiningInfo org=" + strconv.FormatInt(req.OrgId, 10)
-
-	if err := wallet.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	walletClient := mxpcli.Global.GetWalletServiceClient()
+	mClient := mxpcli.Global.GetMiningServiceClient()
 
-	resp, err := walletClient.GetMiningInfo(ctx, &pb.GetMiningInfoRequest{
+	resp, err := mClient.OrgMiningInfo(ctx, &pb.OrgMiningInfoRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	/*miningInfo := &api.GetMiningInfoResponse{}
-	for _, v := range resp.MiningData {
-		miningInfo.MiningData = append(miningInfo.MiningData, v)
-	}*/
-
 	var miningData []*api.MiningData
-	for _, item := range resp.Data {
+	for _, item := range resp.MiningInfo {
 		miningInfo := &api.MiningData{
 			Month:  item.Month,
 			Amount: item.Amount,
@@ -316,7 +315,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	return &api.GetMiningInfoResponse{
 		TodayRev: resp.TodayRev,
 		Data:     miningData,
-	}, status.Error(codes.OK, "")
+	}, nil
 }
 
 // GetVmxcTxHistory gets virtual MXC transaction history

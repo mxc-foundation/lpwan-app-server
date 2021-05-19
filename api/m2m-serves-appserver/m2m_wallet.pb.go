@@ -127,281 +127,6 @@ func (x *GetWalletBalanceResponse) GetBalance() string {
 	return ""
 }
 
-type GetWalletMiningIncomeRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	OrgId    int64                `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Currency string               `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
-	From     *timestamp.Timestamp `protobuf:"bytes,4,opt,name=from,proto3" json:"from,omitempty"`
-	Till     *timestamp.Timestamp `protobuf:"bytes,5,opt,name=till,proto3" json:"till,omitempty"`
-}
-
-func (x *GetWalletMiningIncomeRequest) Reset() {
-	*x = GetWalletMiningIncomeRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetWalletMiningIncomeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetWalletMiningIncomeRequest) ProtoMessage() {}
-
-func (x *GetWalletMiningIncomeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetWalletMiningIncomeRequest.ProtoReflect.Descriptor instead.
-func (*GetWalletMiningIncomeRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetWalletMiningIncomeRequest) GetOrgId() int64 {
-	if x != nil {
-		return x.OrgId
-	}
-	return 0
-}
-
-func (x *GetWalletMiningIncomeRequest) GetCurrency() string {
-	if x != nil {
-		return x.Currency
-	}
-	return ""
-}
-
-func (x *GetWalletMiningIncomeRequest) GetFrom() *timestamp.Timestamp {
-	if x != nil {
-		return x.From
-	}
-	return nil
-}
-
-func (x *GetWalletMiningIncomeRequest) GetTill() *timestamp.Timestamp {
-	if x != nil {
-		return x.Till
-	}
-	return nil
-}
-
-type GetWalletMiningIncomeResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MiningIncome string `protobuf:"bytes,1,opt,name=mining_income,json=miningIncome,proto3" json:"mining_income,omitempty"`
-}
-
-func (x *GetWalletMiningIncomeResponse) Reset() {
-	*x = GetWalletMiningIncomeResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetWalletMiningIncomeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetWalletMiningIncomeResponse) ProtoMessage() {}
-
-func (x *GetWalletMiningIncomeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetWalletMiningIncomeResponse.ProtoReflect.Descriptor instead.
-func (*GetWalletMiningIncomeResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *GetWalletMiningIncomeResponse) GetMiningIncome() string {
-	if x != nil {
-		return x.MiningIncome
-	}
-	return ""
-}
-
-type MiningData struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Month  string `protobuf:"bytes,1,opt,name=month,proto3" json:"month,omitempty"`
-	Amount string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
-}
-
-func (x *MiningData) Reset() {
-	*x = MiningData{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MiningData) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MiningData) ProtoMessage() {}
-
-func (x *MiningData) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MiningData.ProtoReflect.Descriptor instead.
-func (*MiningData) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *MiningData) GetMonth() string {
-	if x != nil {
-		return x.Month
-	}
-	return ""
-}
-
-func (x *MiningData) GetAmount() string {
-	if x != nil {
-		return x.Amount
-	}
-	return ""
-}
-
-type GetMiningInfoRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	OrgId int64 `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-}
-
-func (x *GetMiningInfoRequest) Reset() {
-	*x = GetMiningInfoRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMiningInfoRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMiningInfoRequest) ProtoMessage() {}
-
-func (x *GetMiningInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMiningInfoRequest.ProtoReflect.Descriptor instead.
-func (*GetMiningInfoRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetMiningInfoRequest) GetOrgId() int64 {
-	if x != nil {
-		return x.OrgId
-	}
-	return 0
-}
-
-type GetMiningInfoResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	TodayRev string        `protobuf:"bytes,1,opt,name=todayRev,proto3" json:"todayRev,omitempty"`
-	Data     []*MiningData `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
-}
-
-func (x *GetMiningInfoResponse) Reset() {
-	*x = GetMiningInfoResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMiningInfoResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMiningInfoResponse) ProtoMessage() {}
-
-func (x *GetMiningInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMiningInfoResponse.ProtoReflect.Descriptor instead.
-func (*GetMiningInfoResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetMiningInfoResponse) GetTodayRev() string {
-	if x != nil {
-		return x.TodayRev
-	}
-	return ""
-}
-
-func (x *GetMiningInfoResponse) GetData() []*MiningData {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
 type GetVmxcTxHistoryRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -415,7 +140,7 @@ type GetVmxcTxHistoryRequest struct {
 func (x *GetVmxcTxHistoryRequest) Reset() {
 	*x = GetVmxcTxHistoryRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[7]
+		mi := &file_m2m_wallet_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -428,7 +153,7 @@ func (x *GetVmxcTxHistoryRequest) String() string {
 func (*GetVmxcTxHistoryRequest) ProtoMessage() {}
 
 func (x *GetVmxcTxHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[7]
+	mi := &file_m2m_wallet_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -441,7 +166,7 @@ func (x *GetVmxcTxHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVmxcTxHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetVmxcTxHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{7}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetVmxcTxHistoryRequest) GetOrgId() int64 {
@@ -480,7 +205,7 @@ type VmxcTxHistory struct {
 func (x *VmxcTxHistory) Reset() {
 	*x = VmxcTxHistory{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[8]
+		mi := &file_m2m_wallet_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -493,7 +218,7 @@ func (x *VmxcTxHistory) String() string {
 func (*VmxcTxHistory) ProtoMessage() {}
 
 func (x *VmxcTxHistory) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[8]
+	mi := &file_m2m_wallet_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -506,7 +231,7 @@ func (x *VmxcTxHistory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VmxcTxHistory.ProtoReflect.Descriptor instead.
 func (*VmxcTxHistory) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{8}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *VmxcTxHistory) GetFrom() string {
@@ -556,7 +281,7 @@ type GetVmxcTxHistoryResponse struct {
 func (x *GetVmxcTxHistoryResponse) Reset() {
 	*x = GetVmxcTxHistoryResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[9]
+		mi := &file_m2m_wallet_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -569,7 +294,7 @@ func (x *GetVmxcTxHistoryResponse) String() string {
 func (*GetVmxcTxHistoryResponse) ProtoMessage() {}
 
 func (x *GetVmxcTxHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[9]
+	mi := &file_m2m_wallet_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -582,7 +307,7 @@ func (x *GetVmxcTxHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVmxcTxHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetVmxcTxHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{9}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetVmxcTxHistoryResponse) GetCount() int64 {
@@ -613,7 +338,7 @@ type GetNetworkUsageHistRequest struct {
 func (x *GetNetworkUsageHistRequest) Reset() {
 	*x = GetNetworkUsageHistRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[10]
+		mi := &file_m2m_wallet_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -626,7 +351,7 @@ func (x *GetNetworkUsageHistRequest) String() string {
 func (*GetNetworkUsageHistRequest) ProtoMessage() {}
 
 func (x *GetNetworkUsageHistRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[10]
+	mi := &file_m2m_wallet_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -639,7 +364,7 @@ func (x *GetNetworkUsageHistRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNetworkUsageHistRequest.ProtoReflect.Descriptor instead.
 func (*GetNetworkUsageHistRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{10}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetNetworkUsageHistRequest) GetOrgId() int64 {
@@ -690,7 +415,7 @@ type NetworkUsage struct {
 func (x *NetworkUsage) Reset() {
 	*x = NetworkUsage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[11]
+		mi := &file_m2m_wallet_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -703,7 +428,7 @@ func (x *NetworkUsage) String() string {
 func (*NetworkUsage) ProtoMessage() {}
 
 func (x *NetworkUsage) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[11]
+	mi := &file_m2m_wallet_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -716,7 +441,7 @@ func (x *NetworkUsage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkUsage.ProtoReflect.Descriptor instead.
 func (*NetworkUsage) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{11}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *NetworkUsage) GetTimestamp() *timestamp.Timestamp {
@@ -801,7 +526,7 @@ type GetNetworkUsageHistResponse struct {
 func (x *GetNetworkUsageHistResponse) Reset() {
 	*x = GetNetworkUsageHistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[12]
+		mi := &file_m2m_wallet_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -814,7 +539,7 @@ func (x *GetNetworkUsageHistResponse) String() string {
 func (*GetNetworkUsageHistResponse) ProtoMessage() {}
 
 func (x *GetNetworkUsageHistResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[12]
+	mi := &file_m2m_wallet_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -827,7 +552,7 @@ func (x *GetNetworkUsageHistResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNetworkUsageHistResponse.ProtoReflect.Descriptor instead.
 func (*GetNetworkUsageHistResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{12}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetNetworkUsageHistResponse) GetNetworkUsage() []*NetworkUsage {
@@ -855,7 +580,7 @@ type GetDownLinkPriceRequest struct {
 func (x *GetDownLinkPriceRequest) Reset() {
 	*x = GetDownLinkPriceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[13]
+		mi := &file_m2m_wallet_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -868,7 +593,7 @@ func (x *GetDownLinkPriceRequest) String() string {
 func (*GetDownLinkPriceRequest) ProtoMessage() {}
 
 func (x *GetDownLinkPriceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[13]
+	mi := &file_m2m_wallet_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -881,7 +606,7 @@ func (x *GetDownLinkPriceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDownLinkPriceRequest.ProtoReflect.Descriptor instead.
 func (*GetDownLinkPriceRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{13}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetDownLinkPriceRequest) GetOrgId() int64 {
@@ -902,7 +627,7 @@ type GetDownLinkPriceResponse struct {
 func (x *GetDownLinkPriceResponse) Reset() {
 	*x = GetDownLinkPriceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[14]
+		mi := &file_m2m_wallet_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -915,7 +640,7 @@ func (x *GetDownLinkPriceResponse) String() string {
 func (*GetDownLinkPriceResponse) ProtoMessage() {}
 
 func (x *GetDownLinkPriceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[14]
+	mi := &file_m2m_wallet_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +653,7 @@ func (x *GetDownLinkPriceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDownLinkPriceResponse.ProtoReflect.Descriptor instead.
 func (*GetDownLinkPriceResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{14}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetDownLinkPriceResponse) GetDownLinkPrice() float64 {
@@ -958,7 +683,7 @@ type GetTransactionHistoryRequest struct {
 func (x *GetTransactionHistoryRequest) Reset() {
 	*x = GetTransactionHistoryRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[15]
+		mi := &file_m2m_wallet_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -971,7 +696,7 @@ func (x *GetTransactionHistoryRequest) String() string {
 func (*GetTransactionHistoryRequest) ProtoMessage() {}
 
 func (x *GetTransactionHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[15]
+	mi := &file_m2m_wallet_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -984,7 +709,7 @@ func (x *GetTransactionHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTransactionHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetTransactionHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{15}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetTransactionHistoryRequest) GetOrgId() int64 {
@@ -1040,7 +765,7 @@ type Transaction struct {
 func (x *Transaction) Reset() {
 	*x = Transaction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[16]
+		mi := &file_m2m_wallet_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1053,7 +778,7 @@ func (x *Transaction) String() string {
 func (*Transaction) ProtoMessage() {}
 
 func (x *Transaction) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[16]
+	mi := &file_m2m_wallet_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1066,7 +791,7 @@ func (x *Transaction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Transaction.ProtoReflect.Descriptor instead.
 func (*Transaction) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{16}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Transaction) GetId() int64 {
@@ -1115,7 +840,7 @@ type GetTransactionHistoryResponse struct {
 func (x *GetTransactionHistoryResponse) Reset() {
 	*x = GetTransactionHistoryResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_wallet_proto_msgTypes[17]
+		mi := &file_m2m_wallet_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1128,7 +853,7 @@ func (x *GetTransactionHistoryResponse) String() string {
 func (*GetTransactionHistoryResponse) ProtoMessage() {}
 
 func (x *GetTransactionHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_wallet_proto_msgTypes[17]
+	mi := &file_m2m_wallet_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1141,7 +866,7 @@ func (x *GetTransactionHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTransactionHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetTransactionHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_wallet_proto_rawDescGZIP(), []int{17}
+	return file_m2m_wallet_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetTransactionHistoryResponse) GetTx() []*Transaction {
@@ -1166,36 +891,7 @@ var file_m2m_wallet_proto_rawDesc = []byte{
 	0x75, 0x72, 0x72, 0x65, 0x6e, 0x63, 0x79, 0x22, 0x34, 0x0a, 0x18, 0x47, 0x65, 0x74, 0x57, 0x61,
 	0x6c, 0x6c, 0x65, 0x74, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x22, 0xb1, 0x01,
-	0x0a, 0x1c, 0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x4d, 0x69, 0x6e, 0x69, 0x6e,
-	0x67, 0x49, 0x6e, 0x63, 0x6f, 0x6d, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x15,
-	0x0a, 0x06, 0x6f, 0x72, 0x67, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05,
-	0x6f, 0x72, 0x67, 0x49, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63,
-	0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x63,
-	0x79, 0x12, 0x2e, 0x0a, 0x04, 0x66, 0x72, 0x6f, 0x6d, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x04, 0x66, 0x72, 0x6f,
-	0x6d, 0x12, 0x2e, 0x0a, 0x04, 0x74, 0x69, 0x6c, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x04, 0x74, 0x69, 0x6c,
-	0x6c, 0x22, 0x44, 0x0a, 0x1d, 0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x4d, 0x69,
-	0x6e, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x63, 0x6f, 0x6d, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x5f, 0x69, 0x6e, 0x63,
-	0x6f, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x69, 0x6e, 0x69, 0x6e,
-	0x67, 0x49, 0x6e, 0x63, 0x6f, 0x6d, 0x65, 0x22, 0x3a, 0x0a, 0x0a, 0x4d, 0x69, 0x6e, 0x69, 0x6e,
-	0x67, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f,
-	0x75, 0x6e, 0x74, 0x22, 0x2d, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x4d, 0x69, 0x6e, 0x69, 0x6e, 0x67,
-	0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x15, 0x0a, 0x06, 0x6f,
-	0x72, 0x67, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x6f, 0x72, 0x67,
-	0x49, 0x64, 0x22, 0x69, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x4d, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x49,
-	0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x74,
-	0x6f, 0x64, 0x61, 0x79, 0x52, 0x65, 0x76, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x74,
-	0x6f, 0x64, 0x61, 0x79, 0x52, 0x65, 0x76, 0x12, 0x34, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18,
-	0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x4d, 0x69, 0x6e,
-	0x69, 0x6e, 0x67, 0x44, 0x61, 0x74, 0x61, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x5e, 0x0a,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x22, 0x5e, 0x0a,
 	0x17, 0x47, 0x65, 0x74, 0x56, 0x6d, 0x78, 0x63, 0x54, 0x78, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72,
 	0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x15, 0x0a, 0x06, 0x6f, 0x72, 0x67, 0x5f,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x6f, 0x72, 0x67, 0x49, 0x64, 0x12,
@@ -1297,7 +993,7 @@ var file_m2m_wallet_proto_rawDesc = []byte{
 	0x0a, 0x02, 0x74, 0x78, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x6d, 0x32, 0x6d,
 	0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65,
 	0x72, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x02, 0x74,
-	0x78, 0x32, 0xce, 0x06, 0x0a, 0x0d, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76,
+	0x78, 0x32, 0xe1, 0x04, 0x0a, 0x0d, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76,
 	0x69, 0x63, 0x65, 0x12, 0x71, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74,
 	0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x2d, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65,
 	0x72, 0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x47,
@@ -1327,35 +1023,20 @@ var file_m2m_wallet_proto_rawDesc = []byte{
 	0x73, 0x74, 0x1a, 0x2e, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f,
 	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x44, 0x6f, 0x77,
 	0x6e, 0x4c, 0x69, 0x6e, 0x6b, 0x50, 0x72, 0x69, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x80, 0x01, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74,
-	0x4d, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x63, 0x6f, 0x6d, 0x65, 0x12, 0x32, 0x2e, 0x6d,
+	0x73, 0x65, 0x12, 0x80, 0x01, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x32, 0x2e, 0x6d,
 	0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72,
-	0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x4d, 0x69, 0x6e,
-	0x69, 0x6e, 0x67, 0x49, 0x6e, 0x63, 0x6f, 0x6d, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
 	0x1a, 0x33, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f, 0x61, 0x70,
-	0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65,
-	0x74, 0x4d, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x63, 0x6f, 0x6d, 0x65, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x68, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x4d, 0x69, 0x6e, 0x69,
-	0x6e, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x2a, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72,
-	0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x47, 0x65,
-	0x74, 0x4d, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x2b, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f,
-	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x69, 0x6e,
-	0x69, 0x6e, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x80, 0x01, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x32, 0x2e, 0x6d, 0x32, 0x6d, 0x5f,
-	0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
-	0x2e, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48,
-	0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x33, 0x2e,
-	0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x42, 0x46, 0x5a, 0x44, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x6d, 0x78, 0x63, 0x2d, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f,
-	0x6d, 0x78, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2d, 0x73, 0x65, 0x72, 0x76, 0x65,
-	0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73,
-	0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x46, 0x5a, 0x44, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x78, 0x63, 0x2d, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x2f, 0x6d, 0x78, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2d, 0x73, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72,
+	0x76, 0x65, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1370,60 +1051,48 @@ func file_m2m_wallet_proto_rawDescGZIP() []byte {
 	return file_m2m_wallet_proto_rawDescData
 }
 
-var file_m2m_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_m2m_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_m2m_wallet_proto_goTypes = []interface{}{
 	(*GetWalletBalanceRequest)(nil),       // 0: m2m_serves_appserver.GetWalletBalanceRequest
 	(*GetWalletBalanceResponse)(nil),      // 1: m2m_serves_appserver.GetWalletBalanceResponse
-	(*GetWalletMiningIncomeRequest)(nil),  // 2: m2m_serves_appserver.GetWalletMiningIncomeRequest
-	(*GetWalletMiningIncomeResponse)(nil), // 3: m2m_serves_appserver.GetWalletMiningIncomeResponse
-	(*MiningData)(nil),                    // 4: m2m_serves_appserver.MiningData
-	(*GetMiningInfoRequest)(nil),          // 5: m2m_serves_appserver.GetMiningInfoRequest
-	(*GetMiningInfoResponse)(nil),         // 6: m2m_serves_appserver.GetMiningInfoResponse
-	(*GetVmxcTxHistoryRequest)(nil),       // 7: m2m_serves_appserver.GetVmxcTxHistoryRequest
-	(*VmxcTxHistory)(nil),                 // 8: m2m_serves_appserver.VmxcTxHistory
-	(*GetVmxcTxHistoryResponse)(nil),      // 9: m2m_serves_appserver.GetVmxcTxHistoryResponse
-	(*GetNetworkUsageHistRequest)(nil),    // 10: m2m_serves_appserver.GetNetworkUsageHistRequest
-	(*NetworkUsage)(nil),                  // 11: m2m_serves_appserver.NetworkUsage
-	(*GetNetworkUsageHistResponse)(nil),   // 12: m2m_serves_appserver.GetNetworkUsageHistResponse
-	(*GetDownLinkPriceRequest)(nil),       // 13: m2m_serves_appserver.GetDownLinkPriceRequest
-	(*GetDownLinkPriceResponse)(nil),      // 14: m2m_serves_appserver.GetDownLinkPriceResponse
-	(*GetTransactionHistoryRequest)(nil),  // 15: m2m_serves_appserver.GetTransactionHistoryRequest
-	(*Transaction)(nil),                   // 16: m2m_serves_appserver.Transaction
-	(*GetTransactionHistoryResponse)(nil), // 17: m2m_serves_appserver.GetTransactionHistoryResponse
-	(*timestamp.Timestamp)(nil),           // 18: google.protobuf.Timestamp
+	(*GetVmxcTxHistoryRequest)(nil),       // 2: m2m_serves_appserver.GetVmxcTxHistoryRequest
+	(*VmxcTxHistory)(nil),                 // 3: m2m_serves_appserver.VmxcTxHistory
+	(*GetVmxcTxHistoryResponse)(nil),      // 4: m2m_serves_appserver.GetVmxcTxHistoryResponse
+	(*GetNetworkUsageHistRequest)(nil),    // 5: m2m_serves_appserver.GetNetworkUsageHistRequest
+	(*NetworkUsage)(nil),                  // 6: m2m_serves_appserver.NetworkUsage
+	(*GetNetworkUsageHistResponse)(nil),   // 7: m2m_serves_appserver.GetNetworkUsageHistResponse
+	(*GetDownLinkPriceRequest)(nil),       // 8: m2m_serves_appserver.GetDownLinkPriceRequest
+	(*GetDownLinkPriceResponse)(nil),      // 9: m2m_serves_appserver.GetDownLinkPriceResponse
+	(*GetTransactionHistoryRequest)(nil),  // 10: m2m_serves_appserver.GetTransactionHistoryRequest
+	(*Transaction)(nil),                   // 11: m2m_serves_appserver.Transaction
+	(*GetTransactionHistoryResponse)(nil), // 12: m2m_serves_appserver.GetTransactionHistoryResponse
+	(*timestamp.Timestamp)(nil),           // 13: google.protobuf.Timestamp
 }
 var file_m2m_wallet_proto_depIdxs = []int32{
-	18, // 0: m2m_serves_appserver.GetWalletMiningIncomeRequest.from:type_name -> google.protobuf.Timestamp
-	18, // 1: m2m_serves_appserver.GetWalletMiningIncomeRequest.till:type_name -> google.protobuf.Timestamp
-	4,  // 2: m2m_serves_appserver.GetMiningInfoResponse.data:type_name -> m2m_serves_appserver.MiningData
-	8,  // 3: m2m_serves_appserver.GetVmxcTxHistoryResponse.tx_history:type_name -> m2m_serves_appserver.VmxcTxHistory
-	18, // 4: m2m_serves_appserver.GetNetworkUsageHistRequest.from:type_name -> google.protobuf.Timestamp
-	18, // 5: m2m_serves_appserver.GetNetworkUsageHistRequest.till:type_name -> google.protobuf.Timestamp
-	18, // 6: m2m_serves_appserver.NetworkUsage.timestamp:type_name -> google.protobuf.Timestamp
-	11, // 7: m2m_serves_appserver.GetNetworkUsageHistResponse.network_usage:type_name -> m2m_serves_appserver.NetworkUsage
-	18, // 8: m2m_serves_appserver.GetTransactionHistoryRequest.from:type_name -> google.protobuf.Timestamp
-	18, // 9: m2m_serves_appserver.GetTransactionHistoryRequest.till:type_name -> google.protobuf.Timestamp
-	18, // 10: m2m_serves_appserver.Transaction.timestamp:type_name -> google.protobuf.Timestamp
-	16, // 11: m2m_serves_appserver.GetTransactionHistoryResponse.tx:type_name -> m2m_serves_appserver.Transaction
-	0,  // 12: m2m_serves_appserver.WalletService.GetWalletBalance:input_type -> m2m_serves_appserver.GetWalletBalanceRequest
-	7,  // 13: m2m_serves_appserver.WalletService.GetVmxcTxHistory:input_type -> m2m_serves_appserver.GetVmxcTxHistoryRequest
-	10, // 14: m2m_serves_appserver.WalletService.GetNetworkUsageHist:input_type -> m2m_serves_appserver.GetNetworkUsageHistRequest
-	13, // 15: m2m_serves_appserver.WalletService.GetDlPrice:input_type -> m2m_serves_appserver.GetDownLinkPriceRequest
-	2,  // 16: m2m_serves_appserver.WalletService.GetWalletMiningIncome:input_type -> m2m_serves_appserver.GetWalletMiningIncomeRequest
-	5,  // 17: m2m_serves_appserver.WalletService.GetMiningInfo:input_type -> m2m_serves_appserver.GetMiningInfoRequest
-	15, // 18: m2m_serves_appserver.WalletService.GetTransactionHistory:input_type -> m2m_serves_appserver.GetTransactionHistoryRequest
-	1,  // 19: m2m_serves_appserver.WalletService.GetWalletBalance:output_type -> m2m_serves_appserver.GetWalletBalanceResponse
-	9,  // 20: m2m_serves_appserver.WalletService.GetVmxcTxHistory:output_type -> m2m_serves_appserver.GetVmxcTxHistoryResponse
-	12, // 21: m2m_serves_appserver.WalletService.GetNetworkUsageHist:output_type -> m2m_serves_appserver.GetNetworkUsageHistResponse
-	14, // 22: m2m_serves_appserver.WalletService.GetDlPrice:output_type -> m2m_serves_appserver.GetDownLinkPriceResponse
-	3,  // 23: m2m_serves_appserver.WalletService.GetWalletMiningIncome:output_type -> m2m_serves_appserver.GetWalletMiningIncomeResponse
-	6,  // 24: m2m_serves_appserver.WalletService.GetMiningInfo:output_type -> m2m_serves_appserver.GetMiningInfoResponse
-	17, // 25: m2m_serves_appserver.WalletService.GetTransactionHistory:output_type -> m2m_serves_appserver.GetTransactionHistoryResponse
-	19, // [19:26] is the sub-list for method output_type
-	12, // [12:19] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	3,  // 0: m2m_serves_appserver.GetVmxcTxHistoryResponse.tx_history:type_name -> m2m_serves_appserver.VmxcTxHistory
+	13, // 1: m2m_serves_appserver.GetNetworkUsageHistRequest.from:type_name -> google.protobuf.Timestamp
+	13, // 2: m2m_serves_appserver.GetNetworkUsageHistRequest.till:type_name -> google.protobuf.Timestamp
+	13, // 3: m2m_serves_appserver.NetworkUsage.timestamp:type_name -> google.protobuf.Timestamp
+	6,  // 4: m2m_serves_appserver.GetNetworkUsageHistResponse.network_usage:type_name -> m2m_serves_appserver.NetworkUsage
+	13, // 5: m2m_serves_appserver.GetTransactionHistoryRequest.from:type_name -> google.protobuf.Timestamp
+	13, // 6: m2m_serves_appserver.GetTransactionHistoryRequest.till:type_name -> google.protobuf.Timestamp
+	13, // 7: m2m_serves_appserver.Transaction.timestamp:type_name -> google.protobuf.Timestamp
+	11, // 8: m2m_serves_appserver.GetTransactionHistoryResponse.tx:type_name -> m2m_serves_appserver.Transaction
+	0,  // 9: m2m_serves_appserver.WalletService.GetWalletBalance:input_type -> m2m_serves_appserver.GetWalletBalanceRequest
+	2,  // 10: m2m_serves_appserver.WalletService.GetVmxcTxHistory:input_type -> m2m_serves_appserver.GetVmxcTxHistoryRequest
+	5,  // 11: m2m_serves_appserver.WalletService.GetNetworkUsageHist:input_type -> m2m_serves_appserver.GetNetworkUsageHistRequest
+	8,  // 12: m2m_serves_appserver.WalletService.GetDlPrice:input_type -> m2m_serves_appserver.GetDownLinkPriceRequest
+	10, // 13: m2m_serves_appserver.WalletService.GetTransactionHistory:input_type -> m2m_serves_appserver.GetTransactionHistoryRequest
+	1,  // 14: m2m_serves_appserver.WalletService.GetWalletBalance:output_type -> m2m_serves_appserver.GetWalletBalanceResponse
+	4,  // 15: m2m_serves_appserver.WalletService.GetVmxcTxHistory:output_type -> m2m_serves_appserver.GetVmxcTxHistoryResponse
+	7,  // 16: m2m_serves_appserver.WalletService.GetNetworkUsageHist:output_type -> m2m_serves_appserver.GetNetworkUsageHistResponse
+	9,  // 17: m2m_serves_appserver.WalletService.GetDlPrice:output_type -> m2m_serves_appserver.GetDownLinkPriceResponse
+	12, // 18: m2m_serves_appserver.WalletService.GetTransactionHistory:output_type -> m2m_serves_appserver.GetTransactionHistoryResponse
+	14, // [14:19] is the sub-list for method output_type
+	9,  // [9:14] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_m2m_wallet_proto_init() }
@@ -1457,66 +1126,6 @@ func file_m2m_wallet_proto_init() {
 			}
 		}
 		file_m2m_wallet_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWalletMiningIncomeRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_m2m_wallet_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWalletMiningIncomeResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_m2m_wallet_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MiningData); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_m2m_wallet_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMiningInfoRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_m2m_wallet_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMiningInfoResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_m2m_wallet_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetVmxcTxHistoryRequest); i {
 			case 0:
 				return &v.state
@@ -1528,7 +1137,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VmxcTxHistory); i {
 			case 0:
 				return &v.state
@@ -1540,7 +1149,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetVmxcTxHistoryResponse); i {
 			case 0:
 				return &v.state
@@ -1552,7 +1161,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetNetworkUsageHistRequest); i {
 			case 0:
 				return &v.state
@@ -1564,7 +1173,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NetworkUsage); i {
 			case 0:
 				return &v.state
@@ -1576,7 +1185,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetNetworkUsageHistResponse); i {
 			case 0:
 				return &v.state
@@ -1588,7 +1197,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetDownLinkPriceRequest); i {
 			case 0:
 				return &v.state
@@ -1600,7 +1209,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetDownLinkPriceResponse); i {
 			case 0:
 				return &v.state
@@ -1612,7 +1221,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTransactionHistoryRequest); i {
 			case 0:
 				return &v.state
@@ -1624,7 +1233,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Transaction); i {
 			case 0:
 				return &v.state
@@ -1636,7 +1245,7 @@ func file_m2m_wallet_proto_init() {
 				return nil
 			}
 		}
-		file_m2m_wallet_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_m2m_wallet_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTransactionHistoryResponse); i {
 			case 0:
 				return &v.state
@@ -1655,7 +1264,7 @@ func file_m2m_wallet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_m2m_wallet_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -1685,8 +1294,6 @@ type WalletServiceClient interface {
 	GetVmxcTxHistory(ctx context.Context, in *GetVmxcTxHistoryRequest, opts ...grpc.CallOption) (*GetVmxcTxHistoryResponse, error)
 	GetNetworkUsageHist(ctx context.Context, in *GetNetworkUsageHistRequest, opts ...grpc.CallOption) (*GetNetworkUsageHistResponse, error)
 	GetDlPrice(ctx context.Context, in *GetDownLinkPriceRequest, opts ...grpc.CallOption) (*GetDownLinkPriceResponse, error)
-	GetWalletMiningIncome(ctx context.Context, in *GetWalletMiningIncomeRequest, opts ...grpc.CallOption) (*GetWalletMiningIncomeResponse, error)
-	GetMiningInfo(ctx context.Context, in *GetMiningInfoRequest, opts ...grpc.CallOption) (*GetMiningInfoResponse, error)
 	GetTransactionHistory(ctx context.Context, in *GetTransactionHistoryRequest, opts ...grpc.CallOption) (*GetTransactionHistoryResponse, error)
 }
 
@@ -1734,24 +1341,6 @@ func (c *walletServiceClient) GetDlPrice(ctx context.Context, in *GetDownLinkPri
 	return out, nil
 }
 
-func (c *walletServiceClient) GetWalletMiningIncome(ctx context.Context, in *GetWalletMiningIncomeRequest, opts ...grpc.CallOption) (*GetWalletMiningIncomeResponse, error) {
-	out := new(GetWalletMiningIncomeResponse)
-	err := c.cc.Invoke(ctx, "/m2m_serves_appserver.WalletService/GetWalletMiningIncome", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *walletServiceClient) GetMiningInfo(ctx context.Context, in *GetMiningInfoRequest, opts ...grpc.CallOption) (*GetMiningInfoResponse, error) {
-	out := new(GetMiningInfoResponse)
-	err := c.cc.Invoke(ctx, "/m2m_serves_appserver.WalletService/GetMiningInfo", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *walletServiceClient) GetTransactionHistory(ctx context.Context, in *GetTransactionHistoryRequest, opts ...grpc.CallOption) (*GetTransactionHistoryResponse, error) {
 	out := new(GetTransactionHistoryResponse)
 	err := c.cc.Invoke(ctx, "/m2m_serves_appserver.WalletService/GetTransactionHistory", in, out, opts...)
@@ -1767,8 +1356,6 @@ type WalletServiceServer interface {
 	GetVmxcTxHistory(context.Context, *GetVmxcTxHistoryRequest) (*GetVmxcTxHistoryResponse, error)
 	GetNetworkUsageHist(context.Context, *GetNetworkUsageHistRequest) (*GetNetworkUsageHistResponse, error)
 	GetDlPrice(context.Context, *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error)
-	GetWalletMiningIncome(context.Context, *GetWalletMiningIncomeRequest) (*GetWalletMiningIncomeResponse, error)
-	GetMiningInfo(context.Context, *GetMiningInfoRequest) (*GetMiningInfoResponse, error)
 	GetTransactionHistory(context.Context, *GetTransactionHistoryRequest) (*GetTransactionHistoryResponse, error)
 }
 
@@ -1787,12 +1374,6 @@ func (*UnimplementedWalletServiceServer) GetNetworkUsageHist(context.Context, *G
 }
 func (*UnimplementedWalletServiceServer) GetDlPrice(context.Context, *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDlPrice not implemented")
-}
-func (*UnimplementedWalletServiceServer) GetWalletMiningIncome(context.Context, *GetWalletMiningIncomeRequest) (*GetWalletMiningIncomeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWalletMiningIncome not implemented")
-}
-func (*UnimplementedWalletServiceServer) GetMiningInfo(context.Context, *GetMiningInfoRequest) (*GetMiningInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMiningInfo not implemented")
 }
 func (*UnimplementedWalletServiceServer) GetTransactionHistory(context.Context, *GetTransactionHistoryRequest) (*GetTransactionHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTransactionHistory not implemented")
@@ -1874,42 +1455,6 @@ func _WalletService_GetDlPrice_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WalletService_GetWalletMiningIncome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWalletMiningIncomeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WalletServiceServer).GetWalletMiningIncome(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/m2m_serves_appserver.WalletService/GetWalletMiningIncome",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServiceServer).GetWalletMiningIncome(ctx, req.(*GetWalletMiningIncomeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _WalletService_GetMiningInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMiningInfoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WalletServiceServer).GetMiningInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/m2m_serves_appserver.WalletService/GetMiningInfo",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServiceServer).GetMiningInfo(ctx, req.(*GetMiningInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _WalletService_GetTransactionHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetTransactionHistoryRequest)
 	if err := dec(in); err != nil {
@@ -1947,14 +1492,6 @@ var _WalletService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDlPrice",
 			Handler:    _WalletService_GetDlPrice_Handler,
-		},
-		{
-			MethodName: "GetWalletMiningIncome",
-			Handler:    _WalletService_GetWalletMiningIncome_Handler,
-		},
-		{
-			MethodName: "GetMiningInfo",
-			Handler:    _WalletService_GetMiningInfo_Handler,
 		},
 		{
 			MethodName: "GetTransactionHistory",
