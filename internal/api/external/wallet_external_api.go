@@ -130,33 +130,36 @@ func (s *WalletServerAPI) TopUpGatewayMiningFuel(ctx context.Context, req *api.T
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	var gwMAC lorawan.EUI64
-	if err := gwMAC.UnmarshalText([]byte(req.GatewayMac)); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid MAC: %s: %v", req.GatewayMac, err)
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
 	}
-	gw, err := s.st.GetGateway(ctx, gwMAC, false)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+	mreq := &pb.TopUpGatewayMiningFuelRequest{
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
 	}
-	if gw.OrganizationID != req.OrgId || !cred.IsOrgAdmin {
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	for _, tu := range req.TopUps {
+		var gwMAC lorawan.EUI64
+		if err := gwMAC.UnmarshalText([]byte(tu.GatewayMac)); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid MAC: %s: %v", tu.GatewayMac, err)
+		}
+		gw, err := s.st.GetGateway(ctx, gwMAC, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		if gw.OrganizationID != req.OrgId {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+		mreq.TopUps = append(mreq.TopUps, &pb.GatewayMiningFuelChange{
+			GatewayMac: tu.GatewayMac,
+			Amount:     tu.Amount,
+		})
 	}
 	walletClient := mxpcli.Global.GetMiningServiceClient()
-	mresp, err := walletClient.TopUpGatewayMiningFuel(ctx, &pb.TopUpGatewayMiningFuelRequest{
-		OrgId:      req.OrgId,
-		GatewayMac: req.GatewayMac,
-		Amount:     req.Amount,
-		Currency:   req.Currency,
-	})
+	_, err = walletClient.TopUpGatewayMiningFuel(ctx, mreq)
 	if err != nil {
 		return nil, err
 	}
-	return &api.TopUpGatewayMiningFuelResponse{
-		OrgId:      mresp.OrgId,
-		GatewayMac: mresp.GatewayMac,
-		Amount:     mresp.Amount,
-		Currency:   mresp.Currency,
-	}, nil
+	return &api.TopUpGatewayMiningFuelResponse{}, nil
 }
 
 // WithdrawGatewayMiningFuel withdraws gateway's mining fuel
@@ -165,33 +168,36 @@ func (s *WalletServerAPI) WithdrawGatewayMiningFuel(ctx context.Context, req *ap
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	var gwMAC lorawan.EUI64
-	if err := gwMAC.UnmarshalText([]byte(req.GatewayMac)); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid MAC: %s: %v", req.GatewayMac, err)
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
 	}
-	gw, err := s.st.GetGateway(ctx, gwMAC, false)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+	mreq := &pb.WithdrawGatewayMiningFuelRequest{
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
 	}
-	if gw.OrganizationID != req.OrgId || !cred.IsOrgAdmin {
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	for _, wd := range req.Withdrawals {
+		var gwMAC lorawan.EUI64
+		if err := gwMAC.UnmarshalText([]byte(wd.GatewayMac)); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid MAC: %s: %v", wd.GatewayMac, err)
+		}
+		gw, err := s.st.GetGateway(ctx, gwMAC, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		if gw.OrganizationID != req.OrgId {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+		mreq.Withdrawals = append(mreq.Withdrawals, &pb.GatewayMiningFuelChange{
+			GatewayMac: wd.GatewayMac,
+			Amount:     wd.Amount,
+		})
 	}
 	walletClient := mxpcli.Global.GetMiningServiceClient()
-	mresp, err := walletClient.WithdrawGatewayMiningFuel(ctx, &pb.WithdrawGatewayMiningFuelRequest{
-		OrgId:      req.OrgId,
-		GatewayMac: req.GatewayMac,
-		Amount:     req.Amount,
-		Currency:   req.Currency,
-	})
+	_, err = walletClient.WithdrawGatewayMiningFuel(ctx, mreq)
 	if err != nil {
 		return nil, err
 	}
-	return &api.WithdrawGatewayMiningFuelResponse{
-		OrgId:      mresp.OrgId,
-		GatewayMac: mresp.GatewayMac,
-		Amount:     mresp.Amount,
-		Currency:   mresp.Currency,
-	}, nil
+	return &api.WithdrawGatewayMiningFuelResponse{}, nil
 }
 
 func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.GetGatewayMiningIncomeRequest) (*api.GetGatewayMiningIncomeResponse, error) {

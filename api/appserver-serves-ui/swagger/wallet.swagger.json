@@ -537,6 +537,20 @@
     }
   },
   "definitions": {
+    "appserver_serves_uiGatewayMiningFuelChange": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount that is to be added or withdrawn"
+        }
+      },
+      "title": "information about the gateway mining fuel"
+    },
     "appserver_serves_uiGatewayMiningHealth": {
       "type": "object",
       "properties": {
@@ -806,10 +820,6 @@
     "appserver_serves_uiTopUpGatewayMiningFuelRequest": {
       "type": "object",
       "properties": {
-        "gatewayMac": {
-          "type": "string",
-          "title": "mac address of the gateway"
-        },
         "orgId": {
           "type": "string",
           "format": "int64",
@@ -819,34 +829,18 @@
           "type": "string",
           "title": "currency"
         },
-        "amount": {
-          "type": "string",
-          "title": "amount"
+        "topUps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGatewayMiningFuelChange"
+          },
+          "title": "gateways and amounts that should be added to them"
         }
       },
       "title": "top up amount bonded to a gateway"
     },
     "appserver_serves_uiTopUpGatewayMiningFuelResponse": {
-      "type": "object",
-      "properties": {
-        "gatewayMac": {
-          "type": "string",
-          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
-        },
-        "orgId": {
-          "type": "string",
-          "format": "int64",
-          "title": "what organization owns the fuel"
-        },
-        "currency": {
-          "type": "string",
-          "title": "token that is bonded to gateway"
-        },
-        "amount": {
-          "type": "string",
-          "title": "amount bonded to gateway"
-        }
-      }
+      "type": "object"
     },
     "appserver_serves_uiTransaction": {
       "type": "object",
@@ -897,10 +891,6 @@
     "appserver_serves_uiWithdrawGatewayMiningFuelRequest": {
       "type": "object",
       "properties": {
-        "gatewayMac": {
-          "type": "string",
-          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
-        },
         "orgId": {
           "type": "string",
           "format": "int64",
@@ -910,38 +900,18 @@
           "type": "string",
           "title": "token that is bonded to the gateway"
         },
-        "amount": {
-          "type": "string",
-          "title": "amount that should be withdrawn"
-        },
-        "close": {
-          "type": "boolean",
-          "description": "if true the whole amount will be withdrawn.\nAmount parameter should be empty in this case."
+        "withdrawals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGatewayMiningFuelChange"
+          },
+          "title": "gateways and amounts that should be withdrawn from them"
         }
       },
       "title": "withdraw amount from the gateway mining fuel"
     },
     "appserver_serves_uiWithdrawGatewayMiningFuelResponse": {
-      "type": "object",
-      "properties": {
-        "gatewayMac": {
-          "type": "string",
-          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
-        },
-        "orgId": {
-          "type": "string",
-          "format": "int64",
-          "title": "what organization owns the fuel"
-        },
-        "currency": {
-          "type": "string",
-          "title": "token that is bonded to gateway"
-        },
-        "amount": {
-          "type": "string",
-          "title": "amount bonded to gateway"
-        }
-      }
+      "type": "object"
     },
     "protobufAny": {
       "type": "object",
