@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/mqttauth"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -250,6 +251,8 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		grpcAuth,
 		srv.ServerAddr,
 	))
+
+	api.RegisterMosquittoAuthServiceServer(grpcServer, mqttauth.NewServer(pgs, grpcAuth))
 	return nil
 }
 
@@ -398,5 +401,8 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 	err = api.RegisterReportServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register download service handler: %v", err)
 
+	err = api.RegisterMosquittoAuthServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register mosquitto auth service handler: %v", err)
+	
 	return mux, nil
 }
