@@ -1,0 +1,191 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "mosquitto_auth.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/mosquitto-auth/acl-check": {
+      "post": {
+        "summary": "This will be called by mosquitto auth plugin JWT backend, request and response are also defined there",
+        "operationId": "CheckACL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulCheckACLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulCheckACLRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    },
+    "/api/mosquitto-auth/get-user": {
+      "post": {
+        "summary": "This will be called by mosquitto auth plugin JWT backend, request and response are also defined there",
+        "operationId": "JWTAuthentication",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulJWTAuthenticationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulJWTAuthenticationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    },
+    "/api/mosquitto-auth/login": {
+      "post": {
+        "summary": "Get JWT for mosquitto auth with given org id\nOnly accessible for authenticated supernode user",
+        "operationId": "GetJWT",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGetJWTResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulGetJWTRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "restfulCheckACLRequest": {
+      "type": "object",
+      "properties": {
+        "clientid": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "acc": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "restfulCheckACLResponse": {
+      "type": "object"
+    },
+    "restfulGetJWTRequest": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "restfulGetJWTResponse": {
+      "type": "object",
+      "properties": {
+        "jwtMqttAuth": {
+          "type": "string",
+          "title": "jwt generated and used for authenticate mosquitto client"
+        }
+      }
+    },
+    "restfulJWTAuthenticationRequest": {
+      "type": "object"
+    },
+    "restfulJWTAuthenticationResponse": {
+      "type": "object"
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

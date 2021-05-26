@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package restful;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+
+service MosquittoAuthService {
+    // Get JWT for mosquitto auth with given org id
+    // Only accessible for authenticated supernode user
+    rpc GetJWT (GetJWTRequest) returns (GetJWTResponse) {
+        option (google.api.http) = {
+            post: "/api/mosquitto-auth/login"
+            body: "*"
+        };
+    }
+
+    // This will be called by mosquitto auth plugin JWT backend, request and response are also defined there
+    rpc JWTAuthentication (JWTAuthenticationRequest) returns (JWTAuthenticationResponse) {
+        option (google.api.http) = {
+            post: "/api/mosquitto-auth/get-user"
+            body: "*"
+        };
+    }
+    // This will be called by mosquitto auth plugin JWT backend, request and response are also defined there
+    rpc CheckACL (CheckACLRequest) returns (CheckACLResponse) {
+        option (google.api.http) = {
+            post: "/api/mosquitto-auth/acl-check"
+            body: "*"
+        };
+    }
+}
+
+message GetJWTRequest {
+    int64 organization_id = 1;
+}
+
+message GetJWTResponse {
+    // jwt generated and used for authenticate mosquitto client
+    string jwt_mqtt_auth = 1;
+}
+
+message JWTAuthenticationRequest {
+}
+message JWTAuthenticationResponse {
+}
+
+message CheckACLRequest {
+    string client_id = 1 [json_name = "clientid"];
+    string topic = 2 [json_name = "topic"];
+    int32 acc = 3 [json_name = "acc"];
+}
+message CheckACLResponse {
+}

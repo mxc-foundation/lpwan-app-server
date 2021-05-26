@@ -25,7 +25,7 @@ import (
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"

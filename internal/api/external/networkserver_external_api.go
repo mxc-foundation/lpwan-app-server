@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"

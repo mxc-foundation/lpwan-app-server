@@ -1,0 +1,742 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "dhx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/dhx-mining/bond": {
+      "post": {
+        "summary": "Bond DHX to mine DHX",
+        "operationId": "DHXBond",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXBondResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulDHXBondRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/bond-info": {
+      "post": {
+        "summary": "Get info about bonded, cooling off and unbonding DHX",
+        "operationId": "DHXBondInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXBondInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulDHXBondInfoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/create-council": {
+      "post": {
+        "summary": "Request to create a new council",
+        "operationId": "DHXCreateCouncil",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXCreateCouncilResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulDHXCreateCouncilRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/create-stake": {
+      "post": {
+        "summary": "Request to lockdrop for DHX pre-mining",
+        "operationId": "DHXCreateStake",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXCreateStakeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulDHXCreateStakeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/history": {
+      "get": {
+        "summary": "Return info about DHX mining during the specified period",
+        "operationId": "DHXMiningHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXMiningHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization for which the history is returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "from",
+            "description": "the first day of the period.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "description": "the last day of the period.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/last-mining": {
+      "get": {
+        "summary": "Return info about the last paid day of DHX mining",
+        "operationId": "DHXGetLastMining",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXGetLastMiningResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization id. If specified return details for the given organization and the council it chairs.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/list-councils": {
+      "get": {
+        "summary": "List all existing councils",
+        "operationId": "DHXListCouncils",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXListCouncilsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/list-stakes": {
+      "get": {
+        "summary": "List all dhx stakes for the organization",
+        "operationId": "DHXListStakes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXListStakesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "chairOrgId",
+            "description": "if not 0 then return stakes for the council chaired by the specified\norg. Only the council chair should be able to request this.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "organizationId",
+            "description": "if not 0 then return stakes of the given organization. Only the org user\nshould be able to request this.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/unbond": {
+      "post": {
+        "summary": "Unbond bonded DHX",
+        "operationId": "DHXUnbond",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulDHXUnbondResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulDHXUnbondRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "restfulCouncil": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "numerical council ID"
+        },
+        "chairOrgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "ID of the organization that chaires the council"
+        },
+        "name": {
+          "type": "string",
+          "title": "name of the council unique on this supernode"
+        },
+        "lastPaidDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when council was last paid revenues"
+        },
+        "lastMpower": {
+          "type": "string",
+          "title": "councils mpower when it was paid last time"
+        },
+        "lastDhxRevenue": {
+          "type": "string",
+          "title": "councils DHX revenue when it was paid last time"
+        }
+      },
+      "title": "Information about the council"
+    },
+    "restfulDHXBondInfoRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization for which the info should be returned"
+        }
+      }
+    },
+    "restfulDHXBondInfoResponse": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization for which the info is returned"
+        },
+        "dhxBonded": {
+          "type": "string",
+          "title": "the amount of DHX bonded"
+        },
+        "dhxCoolingOffTotal": {
+          "type": "string",
+          "title": "the total amount that is cooling off"
+        },
+        "dhxCoolingOff": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulDHXCoolingOff"
+          },
+          "title": "detailed info about amounts in cooling off state"
+        },
+        "dhxUnbondingTotal": {
+          "type": "string",
+          "title": "the total amount in unbonding state"
+        },
+        "dhxUnbonding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulDHXUnbonding"
+          },
+          "title": "detailed info about unbonding amounts"
+        }
+      }
+    },
+    "restfulDHXBondRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that wants to bond DHX"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount of DHX that should be bonded"
+        }
+      }
+    },
+    "restfulDHXBondResponse": {
+      "type": "object"
+    },
+    "restfulDHXCoolingOff": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "title": "amount that is cooling off"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when cooling off has started"
+        }
+      },
+      "title": "info about DHX cooling off"
+    },
+    "restfulDHXCreateCouncilRequest": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that will chair the council"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount that shall be staked then the council is created"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "lockMonths": {
+          "type": "string",
+          "format": "int64",
+          "title": "for how many months the stake should be locked"
+        },
+        "boost": {
+          "type": "string",
+          "title": "the boost that user expects"
+        },
+        "name": {
+          "type": "string",
+          "title": "the name of the council"
+        }
+      }
+    },
+    "restfulDHXCreateCouncilResponse": {
+      "type": "object",
+      "properties": {
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "id of the council create request in the table"
+        },
+        "stakeId": {
+          "type": "string",
+          "format": "int64",
+          "title": "id of the stake that was created while creating the council"
+        }
+      }
+    },
+    "restfulDHXCreateStakeRequest": {
+      "type": "object",
+      "properties": {
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "in which council to create the lockdrop"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "lockMonths": {
+          "type": "string",
+          "format": "int64",
+          "title": "for how many months the stake should be locked"
+        },
+        "boost": {
+          "type": "string",
+          "title": "the boost that user expects"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "restfulDHXCreateStakeResponse": {
+      "type": "object",
+      "properties": {
+        "stakeId": {
+          "type": "string",
+          "format": "int64",
+          "title": "ID of the created stake"
+        }
+      }
+    },
+    "restfulDHXGetLastMiningResponse": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the last date for which mining has been paid"
+        },
+        "miningPower": {
+          "type": "string",
+          "title": "the calculated mining power of the supernode for this day"
+        },
+        "dhxAllocated": {
+          "type": "string",
+          "title": "the amount of DHX that supernode could distribute between users based on mpower"
+        },
+        "dhxAmount": {
+          "type": "string",
+          "title": "the amount of DHX that supernode actually distributed"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization id, mining power, mining limit and revenue (if requested)"
+        },
+        "orgMiningPower": {
+          "type": "string"
+        },
+        "orgDhxLimit": {
+          "type": "string"
+        },
+        "orgDhxAmount": {
+          "type": "string"
+        },
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "council id, name, mining power and revenue (if the org chairs one)"
+        },
+        "councilName": {
+          "type": "string"
+        },
+        "councilMiningPower": {
+          "type": "string"
+        },
+        "councilDhxAmount": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulDHXListCouncilsResponse": {
+      "type": "object",
+      "properties": {
+        "council": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulCouncil"
+          }
+        }
+      }
+    },
+    "restfulDHXListStakesResponse": {
+      "type": "object",
+      "properties": {
+        "stake": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulDHXStake"
+          }
+        }
+      }
+    },
+    "restfulDHXMining": {
+      "type": "object",
+      "properties": {
+        "miningDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "mining date"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization ID"
+        },
+        "orgMiningPower": {
+          "type": "string",
+          "title": "mining power of the organization on the given date"
+        },
+        "orgDhxBonded": {
+          "type": "string",
+          "title": "amount of DHX the org had bonded on the date"
+        },
+        "orgDhxMined": {
+          "type": "string",
+          "title": "amount of DHX that was mined by the org on the date"
+        }
+      }
+    },
+    "restfulDHXMiningHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "dhxMining": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulDHXMining"
+          },
+          "title": "DHX mining daily records for the requested period"
+        }
+      }
+    },
+    "restfulDHXStake": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "councilId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "councilName": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lockTill": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "boost": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "dhxMined": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulDHXUnbondRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that wants to unbond DHX"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount of DHX that should be unbonded"
+        }
+      }
+    },
+    "restfulDHXUnbondResponse": {
+      "type": "object"
+    },
+    "restfulDHXUnbonding": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "title": "amount that is unbonding"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when unbonding has started"
+        }
+      },
+      "title": "info about DHX unbonding"
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

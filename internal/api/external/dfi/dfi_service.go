@@ -3,7 +3,7 @@ package dfi
 import (
 	"context"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 )
 
 // Server defines DFI service server API structure

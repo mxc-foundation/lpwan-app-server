@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package restful;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+
+// SettingsService is the service managing system settings.
+service SettingsService {
+    rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse) {
+        option (google.api.http) = {
+			get: "/api/settings"
+		};
+    }
+
+    rpc ModifySettings (ModifySettingsRequest) returns (ModifySettingsResponse) {
+        option (google.api.http) = {
+			put: "/api/settings"
+			body: "*"
+		};
+    }
+}
+
+message GetSettingsRequest {
+}
+
+message GetSettingsResponse {
+    // when supernode income is lower than expected revenue, warn system owner to increase income
+    string low_balance_warning = 1;
+    double downlink_price = 2;
+    double supernode_income_ratio = 3;
+    // this is the monthly interest we pay on stakes
+    double staking_interest = 5;
+    double compensation = 6;
+}
+
+message ModifySettingsRequest {
+    google.protobuf.Int64Value lowBalanceWarning = 1;
+    google.protobuf.Int64Value downlinkFee = 2;
+    google.protobuf.Int64Value transactionPercentageShare = 3;
+}
+
+message ModifySettingsResponse {
+    bool status = 1;
+}

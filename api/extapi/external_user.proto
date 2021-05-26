@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package restful;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+
+service ExternalUserService {
+    // AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user
+    // then check binding status of this wechat user
+    rpc AuthenticateWeChatUser (AuthenticateWeChatUserRequest) returns (AuthenticateWeChatUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/authenticate-wechat-user"
+            body: "*"
+        };
+    }
+
+    // DebugAuthenticateWeChatUser will only be called by debug mode
+    rpc DebugAuthenticateWeChatUser (AuthenticateWeChatUserRequest) returns (AuthenticateWeChatUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/debug-authenticate-wechat-user"
+            body: "*"
+        };
+    }
+
+    // BindExternalUser binds external user id to supernode user
+    rpc BindExternalUser (BindExternalUserRequest) returns (BindExternalUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/bind-external-user"
+            body: "*"
+        };
+    }
+
+    // RegisterExternalUser creates new supernode account then bind it with external user id
+    rpc RegisterExternalUser (RegisterExternalUserRequest) returns (RegisterExternalUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/register-external-user"
+            body: "*"
+        };
+    }
+
+    // UnbindExternalUser unbinds external user and supernode user account
+    rpc UnbindExternalUser (UnbindExternalUserRequest) returns (UnbindExternalUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/unbind-external-user"
+            body: "*"
+        };
+    }
+
+    // VerifyEmail sends email with confirmation message to given address
+    rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse) {
+        option (google.api.http) = {
+            post: "/api/verify-external-email"
+            body: "*"
+        };
+    }
+
+    // ConfirmBindingEmail checks given token and bind
+    rpc ConfirmBindingEmail (ConfirmBindingEmailRequest) returns (ConfirmBindingEmailResponse) {
+        option (google.api.http) = {
+            post: "/api/confirm-external-email"
+            body: "*"
+        };
+    }
+}
+
+message VerifyEmailRequest {
+    // user will receive confirmation message on given email address
+    string email = 1;
+    string language = 2;
+    int64 organization_id = 3;
+}
+
+message VerifyEmailResponse {
+    string status = 1;
+}
+
+message ConfirmBindingEmailRequest {
+    // token sent to user in VerifyEmail
+    string token = 1;
+    int64 organization_id = 3;
+}
+
+message ConfirmBindingEmailResponse {
+
+}
+
+message AuthenticateWeChatUserRequest {
+    string code = 1;
+}
+
+message AuthenticateWeChatUserResponse {
+    string jwt = 1;
+    bool binding_is_required = 2;
+}
+
+message BindExternalUserRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message BindExternalUserResponse {
+    string jwt = 1;
+}
+
+message RegisterExternalUserRequest {
+    string email = 1;
+    string organization_name = 2;
+}
+
+message RegisterExternalUserResponse {
+    string jwt = 1;
+}
+
+message UnbindExternalUserRequest {
+    string service = 1;
+    int64 organization_id = 2;
+}
+
+message UnbindExternalUserResponse {
+    string status = 1;
+}

@@ -97,8 +97,20 @@ localDevelopTemplate = \
       redis:
         image: redis:5-alpine
     
-      mosquitto:
-        image: eclipse-mosquitto
+      mosquitto-with-auth:
+        build:
+          context: ../../mosquitto-with-auth-plug
+          dockerfile: Dockerfile-devel
+        container_name: mosquitto-with-auth
+        volumes:
+          - ../..:/mosquitto-with-auth
+          - ../../mosquitto.service:/etc/systemd/system/mosquitto.service
+          - ../../log/:/var/log/mosquitto/
+        security_opt:
+          - seccomp:unconfined
+        cap_add:
+          - SYS_PTRACE
+        tty: true
     
       rabbitmq:
         image: rabbitmq:3-alpine

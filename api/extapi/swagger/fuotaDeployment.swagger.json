@@ -1,0 +1,483 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "fuotaDeployment.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/devices/{devEUI}/fuota-deployments": {
+      "post": {
+        "summary": "CreateForDevice creates a deployment for the given DevEUI.",
+        "operationId": "CreateForDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulCreateFUOTADeploymentForDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "description": "Device EUI (HEX encoded).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulCreateFUOTADeploymentForDeviceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FUOTADeploymentService"
+        ]
+      }
+    },
+    "/api/fuota-deployments": {
+      "get": {
+        "summary": "List lists the fuota deployments.",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulListFUOTADeploymentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "description": "Max number of deployments to return in the result-set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset in the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "applicationID",
+            "description": "Application ID to filter on (optional).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "devEUI",
+            "description": "Device EUI (HEX encoded) (optional).",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FUOTADeploymentService"
+        ]
+      }
+    },
+    "/api/fuota-deployments/{fuotaDeploymentID}/devices": {
+      "get": {
+        "summary": "ListDeploymentDevices lists the devices (and status) for the given fuota deployment ID.",
+        "operationId": "ListDeploymentDevices",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulListFUOTADeploymentDevicesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "fuotaDeploymentID",
+            "description": "ID of the deployment (string formatted UUID).\nThis value will be automatically assigned on create.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "description": "Max number of items to return.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset in the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "FUOTADeploymentService"
+        ]
+      }
+    },
+    "/api/fuota-deployments/{fuotaDeploymentID}/devices/{devEUI}": {
+      "get": {
+        "summary": "GetDeploymentDevice returns the deployment device.",
+        "operationId": "GetDeploymentDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGetFUOTADeploymentDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "fuotaDeploymentID",
+            "description": "ID of the deployment (string formatted UUID).\nThis value will be automatically assigned on create.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "devEUI",
+            "description": "Device EUI (HEX encoded).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FUOTADeploymentService"
+        ]
+      }
+    },
+    "/api/fuota-deployments/{id}": {
+      "get": {
+        "summary": "Get returns the fuota deployment for the given id.",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGetFUOTADeploymentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "ID of the deployment (string formatted UUID).\nThis value will be automatically assigned on create.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FUOTADeploymentService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "restfulCreateFUOTADeploymentForDeviceRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Device EUI (HEX encoded)."
+        },
+        "fuotaDeployment": {
+          "$ref": "#/definitions/restfulFUOTADeployment",
+          "description": "FUOTA deployment."
+        }
+      }
+    },
+    "restfulCreateFUOTADeploymentForDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the created deployment (string formatted UUID)."
+        }
+      }
+    },
+    "restfulFUOTADeployment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the deployment (string formatted UUID).\nThis value will be automatically assigned on create."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the deployment."
+        },
+        "groupType": {
+          "$ref": "#/definitions/restfulMulticastGroupType",
+          "title": "Multicast type.\nCurrently only Class-C is supported!"
+        },
+        "dr": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate."
+        },
+        "frequency": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Frequency (Hz)."
+        },
+        "payload": {
+          "type": "string",
+          "format": "byte",
+          "description": "Payload."
+        },
+        "redundancy": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Redundancy (number of packages)."
+        },
+        "multicastTimeout": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Multicast time-out.\nPlease refer to the Remote Multicast Setup specification as this field\nhas a different meaning for Class-B and Class-C groups."
+        },
+        "unicastTimeout": {
+          "type": "string",
+          "description": "Unicast time-out.\nSet this to the value in which you at least expect an uplink frame from the\ndevice. The FUOTA deployment engine will wait at least for the given time\nbefore proceeding with the next steps."
+        },
+        "state": {
+          "type": "string",
+          "description": "Deployment state.\nThis value will be automatically set on create."
+        },
+        "nextStepAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Next step after.\nThis value will be automatically set on create."
+        }
+      }
+    },
+    "restfulFUOTADeploymentDeviceListItem": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Device EUI (HEX encoded)."
+        },
+        "deviceName": {
+          "type": "string",
+          "description": "Device name."
+        },
+        "state": {
+          "$ref": "#/definitions/restfulFUOTADeploymentDeviceState",
+          "description": "Device state."
+        },
+        "errorMessage": {
+          "type": "string",
+          "description": "Error message (in case of error state)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Updated at timestamp."
+        }
+      }
+    },
+    "restfulFUOTADeploymentDeviceState": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "SUCCESS",
+        "ERROR"
+      ],
+      "default": "PENDING",
+      "description": " - PENDING: Pending.\n - SUCCESS: Success.\n - ERROR: Error."
+    },
+    "restfulFUOTADeploymentListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the deployment (string formatted UUID)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the deployment."
+        },
+        "state": {
+          "type": "string",
+          "description": "Deployment state."
+        },
+        "nextStepAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Next step after."
+        }
+      }
+    },
+    "restfulGetFUOTADeploymentDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "deploymentDevice": {
+          "$ref": "#/definitions/restfulFUOTADeploymentDeviceListItem"
+        }
+      }
+    },
+    "restfulGetFUOTADeploymentResponse": {
+      "type": "object",
+      "properties": {
+        "fuotaDeployment": {
+          "$ref": "#/definitions/restfulFUOTADeployment"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      }
+    },
+    "restfulListFUOTADeploymentDevicesResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of devices for the FUOTA deployment."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulFUOTADeploymentDeviceListItem"
+          }
+        }
+      }
+    },
+    "restfulListFUOTADeploymentResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of deployments available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulFUOTADeploymentListItem"
+          },
+          "description": "Deployments within this result-set."
+        }
+      }
+    },
+    "restfulMulticastGroupType": {
+      "type": "string",
+      "enum": [
+        "CLASS_C",
+        "CLASS_B"
+      ],
+      "default": "CLASS_C",
+      "description": " - CLASS_C: Class-C.\n - CLASS_B: Class-B."
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

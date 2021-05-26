@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package restful;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+
+service DFIService {
+    // AuthenticateUser authenticates user with given jwt, return necessary user info for DFI service
+    rpc AuthenticateUser (DFIAuthenticateUserRequest) returns (DFIAuthenticateUserResponse) {
+        option (google.api.http) = {
+            get: "/api/dfi/profile"
+        };
+    }
+
+    // TopUp allows user to top up DFI margin wallet from DD wallet/supernode wallet
+    rpc TopUp (TopUpRequest) returns (TopUpResponse) {
+        option (google.api.http) = {
+            get: "/api/dfi/top-up"
+        };
+    }
+
+    // Withdraw allows user to withdraw from DFI margin wallet to DD wallet/supernode wallet
+    rpc Withdraw (WithdrawRequest) returns (WithdrawResponse) {
+        option (google.api.http) = {
+            get: "/api/dfi/withdraw"
+        };
+    }
+}
+
+message DFIAuthenticateUserRequest {
+}
+
+message DFIAuthenticateUserResponse {
+    // for displaying
+    string user_email = 1 [json_name = "userEmail"];
+    string organization_id = 2 [json_name = "organizationID"];
+    // current mxc balance in user's dd wallet/supernode wallet
+    string mxc_balance = 3 [json_name = "mxcBalance"];
+}
+
+message TopUpRequest {
+    // returned after call of authenticate user request, represent user's DD wallet
+    int64 organization_id = 1 [json_name = "organizationID"];
+    // the amount that user wants to top up margin wallet from DD wallet
+    string amount = 2 [json_name = "amount"];
+}
+
+message TopUpResponse {
+}
+
+message WithdrawRequest {
+    int64 organization_id = 1 [json_name = "organizationID"];
+    string amount = 2 [json_name = "amount"];
+    string dfi_pool_balance = 3 [json_name = "DFIPoolBalance"];
+}
+
+message WithdrawResponse {
+    string msg = 1 [json_name = "msg"];
+}

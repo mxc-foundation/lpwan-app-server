@@ -1,0 +1,970 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "internal.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/internal/branding": {
+      "get": {
+        "summary": "Get the branding for the UI",
+        "operationId": "Branding",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulBrandingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/confirm-password-reset": {
+      "post": {
+        "operationId": "ConfirmPasswordReset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulPasswordResetResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulConfirmPasswordResetReq"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/login": {
+      "post": {
+        "summary": "Log the user in, returns JWT",
+        "operationId": "Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/login-2fa": {
+      "post": {
+        "summary": "Validate OTP, returns JWT",
+        "operationId": "Login2FA",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulLogin2FARequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/profile": {
+      "get": {
+        "summary": "Get the current user's profile",
+        "operationId": "Profile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/registration": {
+      "post": {
+        "operationId": "RegisterUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulRegisterUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/registration-confirm": {
+      "post": {
+        "operationId": "ConfirmRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulConfirmRegistrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulConfirmRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/registration-finish": {
+      "post": {
+        "operationId": "FinishRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulFinishRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/request-password-reset": {
+      "post": {
+        "operationId": "RequestPasswordReset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulPasswordResetResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulPasswordResetReq"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/search": {
+      "get": {
+        "summary": "Perform a global search.",
+        "operationId": "GlobalSearch",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGlobalSearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "description": "Search query.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "description": "Max number of results to return.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset offset of the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-configuration": {
+      "post": {
+        "operationId": "GetTOTPConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGetTOTPConfigurationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulGetTOTPConfigurationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-disable": {
+      "post": {
+        "operationId": "DisableTOTP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulTOTPStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulTOTPStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-enable": {
+      "post": {
+        "operationId": "EnableTOTP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulTOTPStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulTOTPStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-recovery-codes": {
+      "post": {
+        "operationId": "GetRecoveryCodes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGetRecoveryCodesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulGetRecoveryCodesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-status": {
+      "get": {
+        "operationId": "GetTOTPStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulTOTPStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/verify-g-recaptcha": {
+      "post": {
+        "operationId": "GetVerifyingGoogleRecaptcha",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/restfulGoogleRecaptchaResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/restfulGoogleRecaptchaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "restfulBrandingResponse": {
+      "type": "object",
+      "properties": {
+        "logo": {
+          "type": "string",
+          "description": "Logo html."
+        },
+        "registration": {
+          "type": "string",
+          "description": "Registration html."
+        },
+        "footer": {
+          "type": "string",
+          "description": "Footer html."
+        },
+        "logoPath": {
+          "type": "string",
+          "title": "Logo img path"
+        }
+      }
+    },
+    "restfulConfirmPasswordResetReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "title": "username to reset password for"
+        },
+        "otp": {
+          "type": "string",
+          "title": "OTP code from password reset email"
+        },
+        "newPassword": {
+          "type": "string",
+          "title": "new password"
+        }
+      }
+    },
+    "restfulConfirmRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulConfirmRegistrationResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "isAdmin": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "jwt": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulExternalUserAccount": {
+      "type": "object",
+      "properties": {
+        "externalUserId": {
+          "type": "string"
+        },
+        "externalUsername": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulFinishRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "organizationName": {
+          "type": "string"
+        },
+        "organizationDisplayName": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulGetRecoveryCodesRequest": {
+      "type": "object",
+      "properties": {
+        "regenerate": {
+          "type": "boolean",
+          "title": "if true, then old recovery codes will be removed and new will be\ngenerated, otherwise the old codes will remain valid and will be returned"
+        }
+      }
+    },
+    "restfulGetRecoveryCodesResponse": {
+      "type": "object",
+      "properties": {
+        "recoveryCode": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of recovery codes"
+        }
+      }
+    },
+    "restfulGetTOTPConfigurationRequest": {
+      "type": "object",
+      "properties": {
+        "qrCodeSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "the size of QR code image"
+        }
+      }
+    },
+    "restfulGetTOTPConfigurationResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "title": "otpauth:// url containing details of TOTP configuration"
+        },
+        "secret": {
+          "type": "string",
+          "title": "the secret encoded as a string of 32 characters"
+        },
+        "recoveryCode": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of recovery codes"
+        },
+        "qrCode": {
+          "type": "string",
+          "title": "QR code base64 encoded in PNG format"
+        }
+      }
+    },
+    "restfulGlobalSearchResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulGlobalSearchResult"
+          }
+        }
+      }
+    },
+    "restfulGlobalSearchResult": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "Record kind."
+        },
+        "score": {
+          "type": "number",
+          "format": "float",
+          "description": "Search score."
+        },
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization id."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application id."
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "Application name."
+        },
+        "deviceDevEUI": {
+          "type": "string",
+          "description": "Device DevEUI (hex encoded)."
+        },
+        "deviceName": {
+          "type": "string",
+          "description": "Device name."
+        },
+        "gatewayMAC": {
+          "type": "string",
+          "description": "Gateway MAC (hex encoded)."
+        },
+        "gatewayName": {
+          "type": "string",
+          "description": "Gateway name."
+        }
+      }
+    },
+    "restfulGoogleRecaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string"
+        },
+        "response": {
+          "type": "string"
+        },
+        "remoteip": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulGoogleRecaptchaResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "challengeTs": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "errorCodes": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulLogin2FARequest": {
+      "type": "object"
+    },
+    "restfulLoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "password": {
+          "type": "string",
+          "description": "Password of the user."
+        }
+      }
+    },
+    "restfulLoginResponse": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "type": "string",
+          "description": "The JWT token to be used to access lora-app-server interfaces."
+        },
+        "is2faRequired": {
+          "type": "boolean",
+          "title": "Two-factor authentication is required to finish the process"
+        }
+      }
+    },
+    "restfulOrganizationLink": {
+      "type": "object",
+      "properties": {
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "User is admin within the context of this organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
+        },
+        "isDeviceAdmin": {
+          "type": "boolean",
+          "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
+        },
+        "isGatewayAdmin": {
+          "type": "boolean",
+          "description": "User is able to modify gateways."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        },
+        "organizationDisplayName": {
+          "type": "string",
+          "title": "organization display name"
+        }
+      },
+      "description": "Defines an organization to which an user is associated."
+    },
+    "restfulPasswordResetReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "title": "username to reset password for"
+        },
+        "language": {
+          "type": "string",
+          "title": "language for the email"
+        }
+      }
+    },
+    "restfulPasswordResetResp": {
+      "type": "object"
+    },
+    "restfulProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/restfulUser",
+          "description": "User object."
+        },
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulOrganizationLink"
+          },
+          "description": "Organizations to which the user is associated."
+        },
+        "externalUserAccounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restfulExternalUserAccount"
+          },
+          "description": "ExternalUserAccount to which the user is associated."
+        },
+        "lastLoginService": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulRegisterUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    },
+    "restfulTOTPStatusRequest": {
+      "type": "object"
+    },
+    "restfulTOTPStatusResponse": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "set to true if TOTP is enabled"
+        }
+      }
+    },
+    "restfulUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "User ID.\nWill be set automatically on create."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The session timeout, in minutes."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Set to true to make the user a global administrator."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Set to false to disable the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail of the user."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note to store with the user."
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
