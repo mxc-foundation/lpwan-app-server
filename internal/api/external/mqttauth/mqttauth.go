@@ -2,25 +2,27 @@ package mqttauth
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 )
 
 // Server defines the MosquittoAuth Service Server API structure
 type Server struct {
 	auth auth.Authenticator
 	st   Store
+	jwtv *jwt.Validator
 }
 
 // NewServer returns a new MosquittoAuth Service Server
-func NewServer(st Store, auth auth.Authenticator) *Server {
+func NewServer(st Store, auth auth.Authenticator, jwtv *jwt.Validator) *Server {
 	return &Server{
 		auth: auth,
 		st:   st,
+		jwtv: jwtv,
 	}
 }
 
@@ -40,21 +42,32 @@ func (s *Server) GetJWT(ctx context.Context, req *pb.GetJWTRequest) (*pb.GetJWTR
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied: %v", err)
 	}
 
-	logrus.Infof("username=%s", cred.Username)
-	return &pb.GetJWTResponse{}, nil
+	jwToken, err := s.jwtv.SignToken(jwt.Claims{
+		UserID:   cred.UserID,
+		Username: cred.Username,
+		Service:  auth.EMAIL,
+	}, 0, []string{"mosquitto-auth"})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
+	}
+
+	return &pb.GetJWTResponse{JwtMqttAuth: jwToken}, nil
 }
 
 // JWTAuthentication will be called by mosquitto auth plugin JWT backend, request and response are also defined there
 func (s *Server) JWTAuthentication(ctx context.Context, req *pb.JWTAuthenticationRequest) (*pb.JWTAuthenticationResponse, error) {
-	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions())
+	_, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithAudience("mosquitto-auth"))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 	}
-	logrus.Infof("username=%s", cred.Username)
 	return &pb.JWTAuthenticationResponse{}, nil
 }
 
 // CheckACL will be called by mosquitto auth plugin JWT backend, request and response are also defined there
 func (s *Server) CheckACL(ctx context.Context, req *pb.CheckACLRequest) (*pb.CheckACLResponse, error) {
+	_, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithAudience("mosquitto-auth"))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
 	return &pb.CheckACLResponse{}, nil
 }

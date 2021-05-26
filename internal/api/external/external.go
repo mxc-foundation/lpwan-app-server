@@ -252,7 +252,7 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		srv.ServerAddr,
 	))
 
-	api.RegisterMosquittoAuthServiceServer(grpcServer, mqttauth.NewServer(pgs, grpcAuth))
+	api.RegisterMosquittoAuthServiceServer(grpcServer, mqttauth.NewServer(pgs, grpcAuth, jwtValidator))
 	return nil
 }
 
@@ -403,6 +403,6 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 
 	err = api.RegisterMosquittoAuthServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register mosquitto auth service handler: %v", err)
-	
+
 	return mux, nil
 }
