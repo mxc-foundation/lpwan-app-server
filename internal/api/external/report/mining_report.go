@@ -154,7 +154,7 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 	if err = ensureFilePath(filePath); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
 	}
-	fileURI := filepath.Join(filePath, filename)
+	fileURI := filepath.Join("/download", filePath, filename)
 	err = pdf.OutputFileAndClose(fileURI)
 	if err != nil {
 		return response, status.Errorf(codes.Internal, "failed to output report content to pdf file: %v", err)
@@ -196,7 +196,7 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	if err = ensureFilePath(filePath); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create fileURI path %s: %v", filePath, err)
 	}
-	fileURI := filepath.Join(filePath, filename)
+	fileURI := filepath.Join("/download", filePath, filename)
 	buffFile := bytes.Buffer{}
 	buffFile.Reset()
 
