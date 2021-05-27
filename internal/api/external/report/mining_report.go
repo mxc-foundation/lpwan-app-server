@@ -159,7 +159,7 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 	if err != nil {
 		return response, status.Errorf(codes.Internal, "failed to output report content to pdf file: %v", err)
 	}
-	response.ReportUri = fileURI
+	response.ReportUri = filepath.Join("/download", fileURI)
 	return response, nil
 }
 
@@ -251,6 +251,6 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	if err := ioutil.WriteFile(fileURI, buffFile.Bytes(), os.ModePerm); err != nil {
 		return response, status.Errorf(codes.Internal, "failed to write report content to csv fileURI: %v", err)
 	}
-	response.ReportUri = fileURI
+	response.ReportUri = filepath.Join("/download", fileURI)
 	return response, nil
 }
