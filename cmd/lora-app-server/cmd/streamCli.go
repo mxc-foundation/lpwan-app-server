@@ -26,7 +26,7 @@ var streamCliCmd = &cobra.Command{
 		organizationIdStr := args[1]
 		organizationId, err := strconv.ParseInt(organizationIdStr, 10, 64)
 		if err != nil {
-			logrus.Fatal("%v", err)
+			logrus.Fatalf("%v", err)
 		}
 
 		currency := args[2]
@@ -34,13 +34,13 @@ var streamCliCmd = &cobra.Command{
 		start := args[4]
 		startTime, err := time.Parse("2006-01-02T15:04:05Z07:00", start)
 		if err != nil {
-			logrus.Fatal("%v", err)
+			logrus.Fatalf("%v", err)
 		}
 
 		end := args[5]
 		endTime, err := time.Parse("2006-01-02T15:04:05Z07:00", end)
 		if err != nil {
-			logrus.Fatal("%v", err)
+			logrus.Fatalf("%v", err)
 		}
 
 		choice := args[6]
@@ -52,7 +52,7 @@ var streamCliCmd = &cobra.Command{
 			TLSKey:  "",
 		})
 		if err != nil {
-			logrus.Fatal("%v", err)
+			logrus.Fatalf("%v", err)
 		}
 
 		md := metadata.Pairs("authorization", jwt)
@@ -80,19 +80,19 @@ func exportPDF(conn *grpc.ClientConn, ctx context.Context, request *api.MiningRe
 	cli := api.NewReportServiceClient(conn)
 	resCli, err := cli.MiningReportPDF(ctx, request)
 	if err != nil {
-		logrus.Fatal("%v", err)
+		logrus.Fatalf("%v", err)
 	}
 	for {
 		data, err := resCli.Recv()
 		if err != nil {
-			logrus.Fatal("%v", err)
+			logrus.Fatalf("%v", err)
 		}
 		fullData = append(fullData, data.Data...)
 		if data.Finish == true {
 			log.Println("Stream is over")
 			// save fullData to file
 			if err = ioutil.WriteFile("report.pdf", fullData, os.ModePerm); err != nil {
-				logrus.Fatal("%v", err)
+				logrus.Fatalf("%v", err)
 			}
 			break
 		}
@@ -104,19 +104,19 @@ func exportCSV(conn *grpc.ClientConn, ctx context.Context, request *api.MiningRe
 	cli := api.NewReportServiceClient(conn)
 	resCli, err := cli.MiningReportCSV(ctx, request)
 	if err != nil {
-		logrus.Fatal("%v", err)
+		logrus.Fatalf("%v", err)
 	}
 	for {
 		data, err := resCli.Recv()
 		if err != nil {
-			logrus.Fatal("%v", err)
+			logrus.Fatalf("%v", err)
 		}
 		fullData = append(fullData, data.Data...)
 		if data.Finish == true {
 			log.Println("Stream is over")
 			// save fullData to file
 			if err = ioutil.WriteFile("report.csv", fullData, os.ModePerm); err != nil {
-				logrus.Fatal("%v", err)
+				logrus.Fatalf("%v", err)
 			}
 			break
 		}
