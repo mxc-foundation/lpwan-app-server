@@ -3,13 +3,9 @@ package report
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-
 	"encoding/csv"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
+	"io"
 	"strings"
 
 	"github.com/jung-kurt/gofpdf"
@@ -58,24 +54,14 @@ func (s *Server) GetFiatCurrencyList(ctx context.Context, req *api.GetFiatCurren
 	return response, nil
 }
 
-func getRandom() string {
-	data := make([]byte, 10)
-	_, err := rand.Read(data)
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%x", data)
-}
-
 // MiningReportPDF formats mining data into pdf with given filtering conditions then send to client in stream
-func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportRequest) (*api.MiningReportResponse, error) {
-	response := &api.MiningReportResponse{}
-	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+func (s *Server) MiningReportPDF(req *api.MiningReportRequest, srv api.ReportService_MiningReportPDFServer) error {
+	cred, err := s.auth.GetCredentials(srv.Context(), auth.NewOptions().WithOrgID(req.OrganizationId))
 	if err != nil {
-		return response, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+		return status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 	}
 	if !cred.IsOrgAdmin {
-		return response, status.Errorf(codes.PermissionDenied, "permission denied")
+		return status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 	decimals := req.Decimals
 	if decimals == 0 {
@@ -117,7 +103,7 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 				onlineSecondsUnits * format.contentFontSize,
 			}
 			// get table content
-			res, err := s.financeReportCli.GetMXCMiningReportByDate(ctx, &pb.GetMXCMiningReportByDateRequest{
+			res, err := s.financeReportCli.GetMXCMiningReportByDate(srv.Context(), &pb.GetMXCMiningReportByDateRequest{
 				OrganizationId: req.OrganizationId,
 				Start:          req.Start,
 				End:            req.End,
@@ -125,7 +111,7 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 				Decimals:       decimals,
 			})
 			if err != nil {
-				return response, status.Errorf(codes.Internal, "failed to get MXC mining report : %v", err)
+				return status.Errorf(codes.Internal, "failed to get MXC mining report : %v", err)
 			}
 			for _, v := range res.MiningRecordList {
 				y, m, d := v.DateTime.AsTime().Date()
@@ -140,72 +126,69 @@ func (s *Server) MiningReportPDF(ctx context.Context, req *api.MiningReportReque
 			}
 			// add table content
 			if err = addReportTable(pdf, format, tableContent, cellWidth); err != nil {
-				return response, status.Errorf(codes.Internal, "%v", err)
+				return status.Errorf(codes.Internal, "%v", err)
 			}
 		}
 	}
-	// output to file
-	sy, sm, sd := req.Start.AsTime().Date()
-	ey, em, ed := req.End.AsTime().Date()
-	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.pdf", s.server, req.OrganizationId, req.FiatCurrency,
-		fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd), fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
 	// drawGrid(pdf, format)
-	filePath := filepath.Join("/tmp/mining-report", getRandom())
-	if err = ensureFilePath(filePath); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create file path %s: %v", filePath, err)
-	}
-	fileURI := filepath.Join(filePath, filename)
-	err = pdf.OutputFileAndClose(fileURI)
+	buff := bytes.Buffer{}
+	buff.Reset()
+	err = pdf.Output(&buff)
 	if err != nil {
-		return response, status.Errorf(codes.Internal, "failed to output report content to pdf file: %v", err)
+		return status.Errorf(codes.Internal, "failed to output report content to buffer: %v", err)
 	}
-	response.ReportUri = filepath.Join("/download", fileURI)
-	return response, nil
+
+	return sendStream(buff, srv.Send)
 }
 
-func ensureFilePath(filePath string) error {
-	if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
-		return err
+func sendStream(data bytes.Buffer, send func(response *api.MiningReportResponse) error) (err error) {
+	for {
+		rb := make([]byte, 65535)
+		n, err := io.ReadFull(&data, rb)
+		if err != nil {
+			if err == io.ErrUnexpectedEOF {
+				if err = send(&api.MiningReportResponse{
+					Data:   rb[:n],
+					Finish: true,
+				}); err != nil {
+					return status.Errorf(codes.Internal, "server failed to send report data: %v", err)
+				}
+				break
+			}
+			return status.Errorf(codes.Internal, "failed to read from buffer: %v", err)
+		}
+		if err = send(&api.MiningReportResponse{
+			Data:   rb,
+			Finish: false,
+		}); err != nil {
+			return status.Errorf(codes.Internal, "server failed to send report data: %v", err)
+		}
 	}
 	return nil
-
 }
 
 // MiningReportCSV formats mining data into csv with given filtering conditions then send to client in stream
-func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportRequest) (*api.MiningReportResponse, error) {
-	response := &api.MiningReportResponse{}
-	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+func (s *Server) MiningReportCSV(req *api.MiningReportRequest, srv api.ReportService_MiningReportCSVServer) error {
+	cred, err := s.auth.GetCredentials(srv.Context(), auth.NewOptions().WithOrgID(req.OrganizationId))
 	if err != nil {
-		return response, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+		return status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 	}
 	if !cred.IsOrgAdmin {
-		return response, status.Errorf(codes.PermissionDenied, "permission denied")
+		return status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 	decimals := req.Decimals
 	if decimals == 0 {
 		decimals = 4
 	}
 
-	// write report to csv fileURI
-	sy, sm, sd := req.Start.AsTime().Date()
-	ey, em, ed := req.End.AsTime().Date()
-	filename := fmt.Sprintf("mining_report_%s_org_%d_%s_%s_%s.csv",
-		s.server, req.OrganizationId, req.FiatCurrency, fmt.Sprintf("%04d-%02d-%02d", sy, sm, sd),
-		fmt.Sprintf("%04d-%02d-%02d", ey, em, ed))
-	filePath := filepath.Join("/tmp/mining-report", getRandom())
-	if err = ensureFilePath(filePath); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create fileURI path %s: %v", filePath, err)
-	}
-	fileURI := filepath.Join(filePath, filename)
-	buffFile := bytes.Buffer{}
-	buffFile.Reset()
-
-	wFile := csv.NewWriter(&buffFile)
+	buff := bytes.Buffer{}
+	buff.Reset()
+	wFile := csv.NewWriter(&buff)
 
 	for _, item := range req.Currency {
 		switch item {
 		case "ETH_MXC":
-			res, err := s.financeReportCli.GetMXCMiningReportByDate(ctx, &pb.GetMXCMiningReportByDateRequest{
+			res, err := s.financeReportCli.GetMXCMiningReportByDate(srv.Context(), &pb.GetMXCMiningReportByDateRequest{
 				OrganizationId: req.OrganizationId,
 				Start:          req.Start,
 				End:            req.End,
@@ -213,7 +196,7 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 				Decimals:       decimals,
 			})
 			if err != nil {
-				return response, status.Errorf(codes.Internal, "failed to get MXC mining report : %v", err)
+				return status.Errorf(codes.Internal, "failed to get MXC mining report : %v", err)
 			}
 
 			err = wFile.Write([]string{
@@ -244,13 +227,9 @@ func (s *Server) MiningReportCSV(ctx context.Context, req *api.MiningReportReque
 	if err := wFile.Write([]string{"*This information is provided to the best of our current knowledge & ability. " +
 		"The MXC Foundation takes no legal responsibility for the accuracy or timeliness of this data. " +
 		"On-chain data is used to compile this information"}); err != nil {
-		return response, status.Errorf(codes.Internal, "Error occurs when writing disclaimer to buffer: %v", err)
+		return status.Errorf(codes.Internal, "Error occurs when writing disclaimer to buffer: %v", err)
 	}
 	wFile.Flush()
 
-	if err := ioutil.WriteFile(fileURI, buffFile.Bytes(), os.ModePerm); err != nil {
-		return response, status.Errorf(codes.Internal, "failed to write report content to csv fileURI: %v", err)
-	}
-	response.ReportUri = filepath.Join("/download", fileURI)
-	return response, nil
+	return sendStream(buff, srv.Send)
 }

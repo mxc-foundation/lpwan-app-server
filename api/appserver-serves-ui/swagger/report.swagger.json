@@ -17,9 +17,18 @@
         "operationId": "MiningReportCSV",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiMiningReportResponse"
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/appserver_serves_uiMiningReportResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of appserver_serves_uiMiningReportResponse"
             }
           },
           "default": {
@@ -74,6 +83,12 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "jwt",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -87,9 +102,18 @@
         "operationId": "MiningReportPDF",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiMiningReportResponse"
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/appserver_serves_uiMiningReportResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of appserver_serves_uiMiningReportResponse"
             }
           },
           "default": {
@@ -144,6 +168,12 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "jwt",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -201,8 +231,12 @@
     "appserver_serves_uiMiningReportResponse": {
       "type": "object",
       "properties": {
-        "reportUri": {
-          "type": "string"
+        "data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "finish": {
+          "type": "boolean"
         }
       }
     },
@@ -229,6 +263,31 @@
           "format": "int32"
         },
         "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpcCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "httpCode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "httpStatus": {
           "type": "string"
         },
         "details": {

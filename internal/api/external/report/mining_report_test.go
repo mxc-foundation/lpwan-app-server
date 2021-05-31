@@ -2,6 +2,7 @@ package report
 
 import (
 	"context"
+	"google.golang.org/grpc/metadata"
 
 	"fmt"
 	"testing"
@@ -36,8 +37,38 @@ func (ta *testAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 	return nil, fmt.Errorf("validator is not defined")
 }
 
+type streamServer struct {
+}
+
+func (s *streamServer) Send(response *api.MiningReportResponse) error {
+	return s.SendMsg(response)
+}
+
+func (s *streamServer) SetHeader(md metadata.MD) error {
+	return nil
+}
+
+func (s *streamServer) SendHeader(md metadata.MD) error {
+	return nil
+}
+
+func (s *streamServer) SetTrailer(md metadata.MD) {
+	return
+}
+
+func (s *streamServer) Context() context.Context {
+	return context.Background()
+}
+
+func (s *streamServer) SendMsg(m interface{}) error {
+	return nil
+}
+
+func (s *streamServer) RecvMsg(m interface{}) error {
+	return nil
+}
+
 func TestGetMiningReportCSVFileURI(t *testing.T) {
-	ctx := context.Background()
 	mxpCli := &testMXPCli{}
 	ta := &testAuth{
 		validator: func(opts *auth.Options) (*auth.Credentials, error) {
@@ -67,15 +98,14 @@ func TestGetMiningReportCSVFileURI(t *testing.T) {
 		End:            timestamppb.New(time.Now()),
 		Decimals:       6,
 	}
-	resp, err := server.MiningReportCSV(ctx, &request)
+
+	err := server.MiningReportCSV(&request, &streamServer{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp.ReportUri)
 }
 
 func TestGetMiningReportPDFFileURI(t *testing.T) {
-	ctx := context.Background()
 	mxpCli := &testMXPCli{}
 	ta := &testAuth{
 		validator: func(opts *auth.Options) (*auth.Credentials, error) {
@@ -105,9 +135,8 @@ func TestGetMiningReportPDFFileURI(t *testing.T) {
 		End:            timestamppb.New(time.Now()),
 		Decimals:       6,
 	}
-	resp, err := server.MiningReportPDF(ctx, &request)
+	err := server.MiningReportPDF(&request, &streamServer{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(resp.ReportUri)
 }
