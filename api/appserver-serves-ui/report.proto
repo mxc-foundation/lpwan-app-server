@@ -47,7 +47,6 @@ message MiningReportRequest {
     google.protobuf.Timestamp start = 4;
     google.protobuf.Timestamp end = 5;
     int32 decimals = 6;
-    string jwt = 7;
 }
 
 message MiningReportResponse {
