@@ -53,7 +53,6 @@ func (s *streamServer) SendHeader(md metadata.MD) error {
 }
 
 func (s *streamServer) SetTrailer(md metadata.MD) {
-	return
 }
 
 func (s *streamServer) Context() context.Context {

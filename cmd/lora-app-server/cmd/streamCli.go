@@ -8,14 +8,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 )
 
 var streamCliCmd = &cobra.Command{
@@ -23,8 +22,8 @@ var streamCliCmd = &cobra.Command{
 	Short: "Call API with given URL and save file locally",
 	Run: func(cmd *cobra.Command, args []string) {
 		jwt := args[0]
-		organizationIdStr := args[1]
-		organizationId, err := strconv.ParseInt(organizationIdStr, 10, 64)
+		organizationIDStr := args[1]
+		organizationID, err := strconv.ParseInt(organizationIDStr, 10, 64)
 		if err != nil {
 			logrus.Fatalf("%v", err)
 		}
@@ -58,7 +57,7 @@ var streamCliCmd = &cobra.Command{
 		md := metadata.Pairs("authorization", jwt)
 		ctx := metadata.NewOutgoingContext(context.Background(), md)
 		request := &api.MiningReportRequest{
-			OrganizationId: organizationId,
+			OrganizationId: organizationID,
 			Currency:       []string{currency},
 			FiatCurrency:   fiatCurrency,
 			Start:          timestamppb.New(startTime),
@@ -68,16 +67,15 @@ var streamCliCmd = &cobra.Command{
 		}
 
 		if choice == "pdf" {
-			exportPDF(conn, ctx, request)
+			exportPDF(ctx, api.NewReportServiceClient(conn), request)
 		} else if choice == "csv" {
-			exportCSV(conn, ctx, request)
+			exportCSV(ctx, api.NewReportServiceClient(conn), request)
 		}
 	},
 }
 
-func exportPDF(conn *grpc.ClientConn, ctx context.Context, request *api.MiningReportRequest) {
+func exportPDF(ctx context.Context, cli api.ReportServiceClient, request *api.MiningReportRequest) {
 	fullData := []byte{}
-	cli := api.NewReportServiceClient(conn)
 	resCli, err := cli.MiningReportPDF(ctx, request)
 	if err != nil {
 		logrus.Fatalf("%v", err)
@@ -88,7 +86,7 @@ func exportPDF(conn *grpc.ClientConn, ctx context.Context, request *api.MiningRe
 			logrus.Fatalf("%v", err)
 		}
 		fullData = append(fullData, data.Data...)
-		if data.Finish == true {
+		if data.Finish {
 			log.Println("Stream is over")
 			// save fullData to file
 			if err = ioutil.WriteFile("report.pdf", fullData, os.ModePerm); err != nil {
@@ -99,9 +97,8 @@ func exportPDF(conn *grpc.ClientConn, ctx context.Context, request *api.MiningRe
 	}
 }
 
-func exportCSV(conn *grpc.ClientConn, ctx context.Context, request *api.MiningReportRequest) {
+func exportCSV(ctx context.Context, cli api.ReportServiceClient, request *api.MiningReportRequest) {
 	fullData := []byte{}
-	cli := api.NewReportServiceClient(conn)
 	resCli, err := cli.MiningReportCSV(ctx, request)
 	if err != nil {
 		logrus.Fatalf("%v", err)
@@ -112,7 +109,7 @@ func exportCSV(conn *grpc.ClientConn, ctx context.Context, request *api.MiningRe
 			logrus.Fatalf("%v", err)
 		}
 		fullData = append(fullData, data.Data...)
-		if data.Finish == true {
+		if data.Finish {
 			log.Println("Stream is over")
 			// save fullData to file
 			if err = ioutil.WriteFile("report.csv", fullData, os.ModePerm); err != nil {
