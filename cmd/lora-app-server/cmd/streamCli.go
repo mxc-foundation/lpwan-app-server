@@ -63,7 +63,6 @@ var streamCliCmd = &cobra.Command{
 			Start:          timestamppb.New(startTime),
 			End:            timestamppb.New(endTime),
 			Decimals:       4,
-			Jwt:            jwt,
 		}
 
 		if choice == "pdf" {
