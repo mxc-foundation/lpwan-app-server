@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListOrganizationResponse"
+              "$ref": "#/definitions/extapiListOrganizationResponse"
             }
           },
           "default": {
@@ -65,7 +65,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateOrganizationResponse"
+              "$ref": "#/definitions/extapiCreateOrganizationResponse"
             }
           },
           "default": {
@@ -81,7 +81,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateOrganizationRequest"
+              "$ref": "#/definitions/extapiCreateOrganizationRequest"
             }
           }
         ],
@@ -98,7 +98,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetOrganizationResponse"
+              "$ref": "#/definitions/extapiGetOrganizationResponse"
             }
           },
           "default": {
@@ -186,7 +186,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateOrganizationRequest"
+              "$ref": "#/definitions/extapiUpdateOrganizationRequest"
             }
           }
         ],
@@ -203,7 +203,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListOrganizationUsersResponse"
+              "$ref": "#/definitions/extapiListOrganizationUsersResponse"
             }
           },
           "default": {
@@ -252,7 +252,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetOrganizationUserResponse"
+              "$ref": "#/definitions/extapiGetOrganizationUserResponse"
             }
           },
           "default": {
@@ -356,7 +356,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulAddOrganizationUserRequest"
+              "$ref": "#/definitions/extapiAddOrganizationUserRequest"
             }
           }
         ],
@@ -405,7 +405,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateOrganizationUserRequest"
+              "$ref": "#/definitions/extapiUpdateOrganizationUserRequest"
             }
           }
         ],
@@ -416,37 +416,25 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulAddOrganizationUserRequest": {
+    "extapiAddOrganizationUserRequest": {
       "type": "object",
       "properties": {
         "organizationUser": {
-          "$ref": "#/definitions/restfulOrganizationUser",
+          "$ref": "#/definitions/extapiOrganizationUser",
           "description": "Organization-user object to create."
         }
       }
     },
-    "restfulCreateOrganizationRequest": {
+    "extapiCreateOrganizationRequest": {
       "type": "object",
       "properties": {
         "organization": {
-          "$ref": "#/definitions/restfulOrganization",
+          "$ref": "#/definitions/extapiOrganization",
           "description": "Organization object to create."
         }
       }
     },
-    "restfulCreateOrganizationResponse": {
+    "extapiCreateOrganizationResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -456,11 +444,11 @@
         }
       }
     },
-    "restfulGetOrganizationResponse": {
+    "extapiGetOrganizationResponse": {
       "type": "object",
       "properties": {
         "organization": {
-          "$ref": "#/definitions/restfulOrganization",
+          "$ref": "#/definitions/extapiOrganization",
           "description": "Organization object."
         },
         "createdAt": {
@@ -475,11 +463,11 @@
         }
       }
     },
-    "restfulGetOrganizationUserResponse": {
+    "extapiGetOrganizationUserResponse": {
       "type": "object",
       "properties": {
         "organizationUser": {
-          "$ref": "#/definitions/restfulOrganizationUser",
+          "$ref": "#/definitions/extapiOrganizationUser",
           "description": "Organization-user object."
         },
         "createdAt": {
@@ -495,7 +483,7 @@
       },
       "title": "Response for a user in the organization"
     },
-    "restfulListOrganizationResponse": {
+    "extapiListOrganizationResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -506,12 +494,12 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulOrganizationListItem"
+            "$ref": "#/definitions/extapiOrganizationListItem"
           }
         }
       }
     },
-    "restfulListOrganizationUsersResponse": {
+    "extapiListOrganizationUsersResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -522,12 +510,12 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulOrganizationUserListItem"
+            "$ref": "#/definitions/extapiOrganizationUserListItem"
           }
         }
       }
     },
-    "restfulOrganization": {
+    "extapiOrganization": {
       "type": "object",
       "properties": {
         "id": {
@@ -559,7 +547,7 @@
         }
       }
     },
-    "restfulOrganizationListItem": {
+    "extapiOrganizationListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -591,7 +579,7 @@
         }
       }
     },
-    "restfulOrganizationUser": {
+    "extapiOrganizationUser": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -622,7 +610,7 @@
         }
       }
     },
-    "restfulOrganizationUserListItem": {
+    "extapiOrganizationUserListItem": {
       "type": "object",
       "properties": {
         "userID": {
@@ -658,21 +646,33 @@
         }
       }
     },
-    "restfulUpdateOrganizationRequest": {
+    "extapiUpdateOrganizationRequest": {
       "type": "object",
       "properties": {
         "organization": {
-          "$ref": "#/definitions/restfulOrganization",
+          "$ref": "#/definitions/extapiOrganization",
           "description": "Organization object to update."
         }
       }
     },
-    "restfulUpdateOrganizationUserRequest": {
+    "extapiUpdateOrganizationUserRequest": {
       "type": "object",
       "properties": {
         "organizationUser": {
-          "$ref": "#/definitions/restfulOrganizationUser",
+          "$ref": "#/definitions/extapiOrganizationUser",
           "description": "Organization-user object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

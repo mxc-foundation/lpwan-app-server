@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulBrandingResponse"
+              "$ref": "#/definitions/extapiBrandingResponse"
             }
           },
           "default": {
@@ -41,7 +41,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulPasswordResetResp"
+              "$ref": "#/definitions/extapiPasswordResetResp"
             }
           },
           "default": {
@@ -57,7 +57,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulConfirmPasswordResetReq"
+              "$ref": "#/definitions/extapiConfirmPasswordResetReq"
             }
           }
         ],
@@ -74,7 +74,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulLoginResponse"
+              "$ref": "#/definitions/extapiLoginResponse"
             }
           },
           "default": {
@@ -90,7 +90,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulLoginRequest"
+              "$ref": "#/definitions/extapiLoginRequest"
             }
           }
         ],
@@ -107,7 +107,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulLoginResponse"
+              "$ref": "#/definitions/extapiLoginResponse"
             }
           },
           "default": {
@@ -123,7 +123,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulLogin2FARequest"
+              "$ref": "#/definitions/extapiLogin2FARequest"
             }
           }
         ],
@@ -140,7 +140,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulProfileResponse"
+              "$ref": "#/definitions/extapiProfileResponse"
             }
           },
           "default": {
@@ -178,7 +178,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulRegisterUserRequest"
+              "$ref": "#/definitions/extapiRegisterUserRequest"
             }
           }
         ],
@@ -194,7 +194,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulConfirmRegistrationResponse"
+              "$ref": "#/definitions/extapiConfirmRegistrationResponse"
             }
           },
           "default": {
@@ -210,7 +210,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulConfirmRegistrationRequest"
+              "$ref": "#/definitions/extapiConfirmRegistrationRequest"
             }
           }
         ],
@@ -242,7 +242,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulFinishRegistrationRequest"
+              "$ref": "#/definitions/extapiFinishRegistrationRequest"
             }
           }
         ],
@@ -258,7 +258,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulPasswordResetResp"
+              "$ref": "#/definitions/extapiPasswordResetResp"
             }
           },
           "default": {
@@ -274,7 +274,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulPasswordResetReq"
+              "$ref": "#/definitions/extapiPasswordResetReq"
             }
           }
         ],
@@ -291,7 +291,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGlobalSearchResponse"
+              "$ref": "#/definitions/extapiGlobalSearchResponse"
             }
           },
           "default": {
@@ -338,7 +338,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetTOTPConfigurationResponse"
+              "$ref": "#/definitions/extapiGetTOTPConfigurationResponse"
             }
           },
           "default": {
@@ -354,7 +354,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulGetTOTPConfigurationRequest"
+              "$ref": "#/definitions/extapiGetTOTPConfigurationRequest"
             }
           }
         ],
@@ -370,7 +370,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulTOTPStatusResponse"
+              "$ref": "#/definitions/extapiTOTPStatusResponse"
             }
           },
           "default": {
@@ -386,7 +386,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulTOTPStatusRequest"
+              "$ref": "#/definitions/extapiTOTPStatusRequest"
             }
           }
         ],
@@ -402,7 +402,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulTOTPStatusResponse"
+              "$ref": "#/definitions/extapiTOTPStatusResponse"
             }
           },
           "default": {
@@ -418,7 +418,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulTOTPStatusRequest"
+              "$ref": "#/definitions/extapiTOTPStatusRequest"
             }
           }
         ],
@@ -434,7 +434,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetRecoveryCodesResponse"
+              "$ref": "#/definitions/extapiGetRecoveryCodesResponse"
             }
           },
           "default": {
@@ -450,7 +450,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulGetRecoveryCodesRequest"
+              "$ref": "#/definitions/extapiGetRecoveryCodesRequest"
             }
           }
         ],
@@ -466,7 +466,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulTOTPStatusResponse"
+              "$ref": "#/definitions/extapiTOTPStatusResponse"
             }
           },
           "default": {
@@ -488,7 +488,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGoogleRecaptchaResponse"
+              "$ref": "#/definitions/extapiGoogleRecaptchaResponse"
             }
           },
           "default": {
@@ -504,7 +504,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulGoogleRecaptchaRequest"
+              "$ref": "#/definitions/extapiGoogleRecaptchaRequest"
             }
           }
         ],
@@ -515,19 +515,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulBrandingResponse": {
+    "extapiBrandingResponse": {
       "type": "object",
       "properties": {
         "logo": {
@@ -548,7 +536,7 @@
         }
       }
     },
-    "restfulConfirmPasswordResetReq": {
+    "extapiConfirmPasswordResetReq": {
       "type": "object",
       "properties": {
         "username": {
@@ -565,7 +553,7 @@
         }
       }
     },
-    "restfulConfirmRegistrationRequest": {
+    "extapiConfirmRegistrationRequest": {
       "type": "object",
       "properties": {
         "token": {
@@ -573,7 +561,7 @@
         }
       }
     },
-    "restfulConfirmRegistrationResponse": {
+    "extapiConfirmRegistrationResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -598,7 +586,7 @@
         }
       }
     },
-    "restfulExternalUserAccount": {
+    "extapiExternalUserAccount": {
       "type": "object",
       "properties": {
         "externalUserId": {
@@ -612,7 +600,7 @@
         }
       }
     },
-    "restfulFinishRegistrationRequest": {
+    "extapiFinishRegistrationRequest": {
       "type": "object",
       "properties": {
         "organizationName": {
@@ -630,7 +618,7 @@
         }
       }
     },
-    "restfulGetRecoveryCodesRequest": {
+    "extapiGetRecoveryCodesRequest": {
       "type": "object",
       "properties": {
         "regenerate": {
@@ -639,7 +627,7 @@
         }
       }
     },
-    "restfulGetRecoveryCodesResponse": {
+    "extapiGetRecoveryCodesResponse": {
       "type": "object",
       "properties": {
         "recoveryCode": {
@@ -651,7 +639,7 @@
         }
       }
     },
-    "restfulGetTOTPConfigurationRequest": {
+    "extapiGetTOTPConfigurationRequest": {
       "type": "object",
       "properties": {
         "qrCodeSize": {
@@ -661,7 +649,7 @@
         }
       }
     },
-    "restfulGetTOTPConfigurationResponse": {
+    "extapiGetTOTPConfigurationResponse": {
       "type": "object",
       "properties": {
         "url": {
@@ -685,18 +673,18 @@
         }
       }
     },
-    "restfulGlobalSearchResponse": {
+    "extapiGlobalSearchResponse": {
       "type": "object",
       "properties": {
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulGlobalSearchResult"
+            "$ref": "#/definitions/extapiGlobalSearchResult"
           }
         }
       }
     },
-    "restfulGlobalSearchResult": {
+    "extapiGlobalSearchResult": {
       "type": "object",
       "properties": {
         "kind": {
@@ -744,7 +732,7 @@
         }
       }
     },
-    "restfulGoogleRecaptchaRequest": {
+    "extapiGoogleRecaptchaRequest": {
       "type": "object",
       "properties": {
         "secret": {
@@ -758,7 +746,7 @@
         }
       }
     },
-    "restfulGoogleRecaptchaResponse": {
+    "extapiGoogleRecaptchaResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -775,10 +763,10 @@
         }
       }
     },
-    "restfulLogin2FARequest": {
+    "extapiLogin2FARequest": {
       "type": "object"
     },
-    "restfulLoginRequest": {
+    "extapiLoginRequest": {
       "type": "object",
       "properties": {
         "username": {
@@ -791,7 +779,7 @@
         }
       }
     },
-    "restfulLoginResponse": {
+    "extapiLoginResponse": {
       "type": "object",
       "properties": {
         "jwt": {
@@ -804,7 +792,7 @@
         }
       }
     },
-    "restfulOrganizationLink": {
+    "extapiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -845,7 +833,7 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "restfulPasswordResetReq": {
+    "extapiPasswordResetReq": {
       "type": "object",
       "properties": {
         "username": {
@@ -858,27 +846,27 @@
         }
       }
     },
-    "restfulPasswordResetResp": {
+    "extapiPasswordResetResp": {
       "type": "object"
     },
-    "restfulProfileResponse": {
+    "extapiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/restfulUser",
+          "$ref": "#/definitions/extapiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulOrganizationLink"
+            "$ref": "#/definitions/extapiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "externalUserAccounts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulExternalUserAccount"
+            "$ref": "#/definitions/extapiExternalUserAccount"
           },
           "description": "ExternalUserAccount to which the user is associated."
         },
@@ -887,7 +875,7 @@
         }
       }
     },
-    "restfulRegisterUserRequest": {
+    "extapiRegisterUserRequest": {
       "type": "object",
       "properties": {
         "email": {
@@ -898,10 +886,10 @@
         }
       }
     },
-    "restfulTOTPStatusRequest": {
+    "extapiTOTPStatusRequest": {
       "type": "object"
     },
-    "restfulTOTPStatusResponse": {
+    "extapiTOTPStatusResponse": {
       "type": "object",
       "properties": {
         "enabled": {
@@ -910,7 +898,7 @@
         }
       }
     },
-    "restfulUser": {
+    "extapiUser": {
       "type": "object",
       "properties": {
         "id": {
@@ -942,6 +930,18 @@
         "note": {
           "type": "string",
           "description": "Optional note to store with the user."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

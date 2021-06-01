@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetSettingsResponse"
+              "$ref": "#/definitions/extapiGetSettingsResponse"
             }
           },
           "default": {
@@ -38,7 +38,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulModifySettingsResponse"
+              "$ref": "#/definitions/extapiModifySettingsResponse"
             }
           },
           "default": {
@@ -54,7 +54,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulModifySettingsRequest"
+              "$ref": "#/definitions/extapiModifySettingsRequest"
             }
           }
         ],
@@ -65,19 +65,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulGetSettingsResponse": {
+    "extapiGetSettingsResponse": {
       "type": "object",
       "properties": {
         "lowBalanceWarning": {
@@ -103,7 +91,7 @@
         }
       }
     },
-    "restfulModifySettingsRequest": {
+    "extapiModifySettingsRequest": {
       "type": "object",
       "properties": {
         "lowBalanceWarning": {
@@ -120,11 +108,23 @@
         }
       }
     },
-    "restfulModifySettingsResponse": {
+    "extapiModifySettingsResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "boolean"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

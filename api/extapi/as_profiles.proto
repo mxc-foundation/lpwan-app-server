@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package restful;
+package extapi;
 option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
 
 enum RatePolicy {

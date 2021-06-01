@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListDeviceProfileResponse"
+              "$ref": "#/definitions/extapiListDeviceProfileResponse"
             }
           },
           "default": {
@@ -74,7 +74,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateDeviceProfileResponse"
+              "$ref": "#/definitions/extapiCreateDeviceProfileResponse"
             }
           },
           "default": {
@@ -90,7 +90,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateDeviceProfileRequest"
+              "$ref": "#/definitions/extapiCreateDeviceProfileRequest"
             }
           }
         ],
@@ -130,7 +130,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateDeviceProfileRequest"
+              "$ref": "#/definitions/extapiUpdateDeviceProfileRequest"
             }
           }
         ],
@@ -147,7 +147,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetDeviceProfileResponse"
+              "$ref": "#/definitions/extapiGetDeviceProfileResponse"
             }
           },
           "default": {
@@ -203,28 +203,16 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCreateDeviceProfileRequest": {
+    "extapiCreateDeviceProfileRequest": {
       "type": "object",
       "properties": {
         "deviceProfile": {
-          "$ref": "#/definitions/restfulDeviceProfile",
+          "$ref": "#/definitions/extapiDeviceProfile",
           "description": "Device-profile object to create."
         }
       }
     },
-    "restfulCreateDeviceProfileResponse": {
+    "extapiCreateDeviceProfileResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -233,7 +221,7 @@
         }
       }
     },
-    "restfulDeviceProfile": {
+    "extapiDeviceProfile": {
       "type": "object",
       "properties": {
         "id": {
@@ -376,7 +364,7 @@
         }
       }
     },
-    "restfulDeviceProfileListItem": {
+    "extapiDeviceProfileListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -409,11 +397,11 @@
         }
       }
     },
-    "restfulGetDeviceProfileResponse": {
+    "extapiGetDeviceProfileResponse": {
       "type": "object",
       "properties": {
         "deviceProfile": {
-          "$ref": "#/definitions/restfulDeviceProfile",
+          "$ref": "#/definitions/extapiDeviceProfile",
           "description": "Device-profile object."
         },
         "createdAt": {
@@ -428,7 +416,7 @@
         }
       }
     },
-    "restfulListDeviceProfileResponse": {
+    "extapiListDeviceProfileResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -439,17 +427,29 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulDeviceProfileListItem"
+            "$ref": "#/definitions/extapiDeviceProfileListItem"
           }
         }
       }
     },
-    "restfulUpdateDeviceProfileRequest": {
+    "extapiUpdateDeviceProfileRequest": {
       "type": "object",
       "properties": {
         "deviceProfile": {
-          "$ref": "#/definitions/restfulDeviceProfile",
+          "$ref": "#/definitions/extapiDeviceProfile",
           "description": "Device-profile object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

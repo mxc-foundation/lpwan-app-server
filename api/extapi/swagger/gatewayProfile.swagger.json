@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListGatewayProfilesResponse"
+              "$ref": "#/definitions/extapiListGatewayProfilesResponse"
             }
           },
           "default": {
@@ -66,7 +66,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateGatewayProfileResponse"
+              "$ref": "#/definitions/extapiCreateGatewayProfileResponse"
             }
           },
           "default": {
@@ -82,7 +82,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateGatewayProfileRequest"
+              "$ref": "#/definitions/extapiCreateGatewayProfileRequest"
             }
           }
         ],
@@ -122,7 +122,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateGatewayProfileRequest"
+              "$ref": "#/definitions/extapiUpdateGatewayProfileRequest"
             }
           }
         ],
@@ -139,7 +139,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGatewayProfileResponse"
+              "$ref": "#/definitions/extapiGetGatewayProfileResponse"
             }
           },
           "default": {
@@ -204,28 +204,16 @@
       "default": "LORA",
       "title": "- LORA: LoRa\n - FSK: FSK"
     },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCreateGatewayProfileRequest": {
+    "extapiCreateGatewayProfileRequest": {
       "type": "object",
       "properties": {
         "gatewayProfile": {
-          "$ref": "#/definitions/restfulGatewayProfile",
+          "$ref": "#/definitions/extapiGatewayProfile",
           "description": "Gateway-profile object to create."
         }
       }
     },
-    "restfulCreateGatewayProfileResponse": {
+    "extapiCreateGatewayProfileResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -234,7 +222,7 @@
         }
       }
     },
-    "restfulGatewayProfile": {
+    "extapiGatewayProfile": {
       "type": "object",
       "properties": {
         "id": {
@@ -261,13 +249,13 @@
         "extraChannels": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulGatewayProfileExtraChannel"
+            "$ref": "#/definitions/extapiGatewayProfileExtraChannel"
           },
           "description": "Extra channels added to the channel-configuration (in case the LoRaWAN\nregion supports adding custom channels)."
         }
       }
     },
-    "restfulGatewayProfileExtraChannel": {
+    "extapiGatewayProfileExtraChannel": {
       "type": "object",
       "properties": {
         "modulation": {
@@ -299,7 +287,7 @@
         }
       }
     },
-    "restfulGatewayProfileListItem": {
+    "extapiGatewayProfileListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -331,11 +319,11 @@
         }
       }
     },
-    "restfulGetGatewayProfileResponse": {
+    "extapiGetGatewayProfileResponse": {
       "type": "object",
       "properties": {
         "gatewayProfile": {
-          "$ref": "#/definitions/restfulGatewayProfile",
+          "$ref": "#/definitions/extapiGatewayProfile",
           "description": "Gateway-profile object."
         },
         "createdAt": {
@@ -350,7 +338,7 @@
         }
       }
     },
-    "restfulListGatewayProfilesResponse": {
+    "extapiListGatewayProfilesResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -361,17 +349,29 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulGatewayProfileListItem"
+            "$ref": "#/definitions/extapiGatewayProfileListItem"
           }
         }
       }
     },
-    "restfulUpdateGatewayProfileRequest": {
+    "extapiUpdateGatewayProfileRequest": {
       "type": "object",
       "properties": {
         "gatewayProfile": {
-          "$ref": "#/definitions/restfulGatewayProfile",
+          "$ref": "#/definitions/extapiGatewayProfile",
           "description": "Gateway-profile object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListServiceProfileResponse"
+              "$ref": "#/definitions/extapiListServiceProfileResponse"
             }
           },
           "default": {
@@ -66,7 +66,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateServiceProfileResponse"
+              "$ref": "#/definitions/extapiCreateServiceProfileResponse"
             }
           },
           "default": {
@@ -82,7 +82,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateServiceProfileRequest"
+              "$ref": "#/definitions/extapiCreateServiceProfileRequest"
             }
           }
         ],
@@ -99,7 +99,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetServiceProfileResponse"
+              "$ref": "#/definitions/extapiGetServiceProfileResponse"
             }
           },
           "default": {
@@ -184,7 +184,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateServiceProfileRequest"
+              "$ref": "#/definitions/extapiUpdateServiceProfileRequest"
             }
           }
         ],
@@ -195,28 +195,16 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCreateServiceProfileRequest": {
+    "extapiCreateServiceProfileRequest": {
       "type": "object",
       "properties": {
         "serviceProfile": {
-          "$ref": "#/definitions/restfulServiceProfile",
+          "$ref": "#/definitions/extapiServiceProfile",
           "description": "Service-profile object to create."
         }
       }
     },
-    "restfulCreateServiceProfileResponse": {
+    "extapiCreateServiceProfileResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -225,11 +213,11 @@
         }
       }
     },
-    "restfulGetServiceProfileResponse": {
+    "extapiGetServiceProfileResponse": {
       "type": "object",
       "properties": {
         "serviceProfile": {
-          "$ref": "#/definitions/restfulServiceProfile",
+          "$ref": "#/definitions/extapiServiceProfile",
           "description": "Service-profile object."
         },
         "createdAt": {
@@ -244,7 +232,7 @@
         }
       }
     },
-    "restfulListServiceProfileResponse": {
+    "extapiListServiceProfileResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -255,12 +243,12 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulServiceProfileListItem"
+            "$ref": "#/definitions/extapiServiceProfileListItem"
           }
         }
       }
     },
-    "restfulRatePolicy": {
+    "extapiRatePolicy": {
       "type": "string",
       "enum": [
         "DROP",
@@ -269,7 +257,7 @@
       "default": "DROP",
       "title": "- DROP: Drop\n - MARK: Mark"
     },
-    "restfulServiceProfile": {
+    "extapiServiceProfile": {
       "type": "object",
       "properties": {
         "id": {
@@ -301,7 +289,7 @@
           "description": "Token bucket burst size."
         },
         "ulRatePolicy": {
-          "$ref": "#/definitions/restfulRatePolicy",
+          "$ref": "#/definitions/extapiRatePolicy",
           "description": "Drop or mark when exceeding ULRate."
         },
         "dlRate": {
@@ -315,7 +303,7 @@
           "description": "Token bucket burst size."
         },
         "dlRatePolicy": {
-          "$ref": "#/definitions/restfulRatePolicy",
+          "$ref": "#/definitions/extapiRatePolicy",
           "description": "Drop or mark when exceeding DLRate."
         },
         "addGWMetaData": {
@@ -378,7 +366,7 @@
         }
       }
     },
-    "restfulServiceProfileListItem": {
+    "extapiServiceProfileListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -411,12 +399,24 @@
         }
       }
     },
-    "restfulUpdateServiceProfileRequest": {
+    "extapiUpdateServiceProfileRequest": {
       "type": "object",
       "properties": {
         "serviceProfile": {
-          "$ref": "#/definitions/restfulServiceProfile",
+          "$ref": "#/definitions/extapiServiceProfile",
           "description": "Service-profile object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

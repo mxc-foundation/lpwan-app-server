@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateFUOTADeploymentForDeviceResponse"
+              "$ref": "#/definitions/extapiCreateFUOTADeploymentForDeviceResponse"
             }
           },
           "default": {
@@ -42,7 +42,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateFUOTADeploymentForDeviceRequest"
+              "$ref": "#/definitions/extapiCreateFUOTADeploymentForDeviceRequest"
             }
           }
         ],
@@ -59,7 +59,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListFUOTADeploymentResponse"
+              "$ref": "#/definitions/extapiListFUOTADeploymentResponse"
             }
           },
           "default": {
@@ -115,7 +115,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListFUOTADeploymentDevicesResponse"
+              "$ref": "#/definitions/extapiListFUOTADeploymentDevicesResponse"
             }
           },
           "default": {
@@ -163,7 +163,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetFUOTADeploymentDeviceResponse"
+              "$ref": "#/definitions/extapiGetFUOTADeploymentDeviceResponse"
             }
           },
           "default": {
@@ -202,7 +202,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetFUOTADeploymentResponse"
+              "$ref": "#/definitions/extapiGetFUOTADeploymentResponse"
             }
           },
           "default": {
@@ -228,19 +228,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCreateFUOTADeploymentForDeviceRequest": {
+    "extapiCreateFUOTADeploymentForDeviceRequest": {
       "type": "object",
       "properties": {
         "devEUI": {
@@ -248,12 +236,12 @@
           "description": "Device EUI (HEX encoded)."
         },
         "fuotaDeployment": {
-          "$ref": "#/definitions/restfulFUOTADeployment",
+          "$ref": "#/definitions/extapiFUOTADeployment",
           "description": "FUOTA deployment."
         }
       }
     },
-    "restfulCreateFUOTADeploymentForDeviceResponse": {
+    "extapiCreateFUOTADeploymentForDeviceResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -262,7 +250,7 @@
         }
       }
     },
-    "restfulFUOTADeployment": {
+    "extapiFUOTADeployment": {
       "type": "object",
       "properties": {
         "id": {
@@ -274,7 +262,7 @@
           "description": "Name of the deployment."
         },
         "groupType": {
-          "$ref": "#/definitions/restfulMulticastGroupType",
+          "$ref": "#/definitions/extapiMulticastGroupType",
           "title": "Multicast type.\nCurrently only Class-C is supported!"
         },
         "dr": {
@@ -317,7 +305,7 @@
         }
       }
     },
-    "restfulFUOTADeploymentDeviceListItem": {
+    "extapiFUOTADeploymentDeviceListItem": {
       "type": "object",
       "properties": {
         "devEUI": {
@@ -329,7 +317,7 @@
           "description": "Device name."
         },
         "state": {
-          "$ref": "#/definitions/restfulFUOTADeploymentDeviceState",
+          "$ref": "#/definitions/extapiFUOTADeploymentDeviceState",
           "description": "Device state."
         },
         "errorMessage": {
@@ -348,7 +336,7 @@
         }
       }
     },
-    "restfulFUOTADeploymentDeviceState": {
+    "extapiFUOTADeploymentDeviceState": {
       "type": "string",
       "enum": [
         "PENDING",
@@ -358,7 +346,7 @@
       "default": "PENDING",
       "description": " - PENDING: Pending.\n - SUCCESS: Success.\n - ERROR: Error."
     },
-    "restfulFUOTADeploymentListItem": {
+    "extapiFUOTADeploymentListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -390,19 +378,19 @@
         }
       }
     },
-    "restfulGetFUOTADeploymentDeviceResponse": {
+    "extapiGetFUOTADeploymentDeviceResponse": {
       "type": "object",
       "properties": {
         "deploymentDevice": {
-          "$ref": "#/definitions/restfulFUOTADeploymentDeviceListItem"
+          "$ref": "#/definitions/extapiFUOTADeploymentDeviceListItem"
         }
       }
     },
-    "restfulGetFUOTADeploymentResponse": {
+    "extapiGetFUOTADeploymentResponse": {
       "type": "object",
       "properties": {
         "fuotaDeployment": {
-          "$ref": "#/definitions/restfulFUOTADeployment"
+          "$ref": "#/definitions/extapiFUOTADeployment"
         },
         "createdAt": {
           "type": "string",
@@ -416,7 +404,7 @@
         }
       }
     },
-    "restfulListFUOTADeploymentDevicesResponse": {
+    "extapiListFUOTADeploymentDevicesResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -427,12 +415,12 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulFUOTADeploymentDeviceListItem"
+            "$ref": "#/definitions/extapiFUOTADeploymentDeviceListItem"
           }
         }
       }
     },
-    "restfulListFUOTADeploymentResponse": {
+    "extapiListFUOTADeploymentResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -443,13 +431,13 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulFUOTADeploymentListItem"
+            "$ref": "#/definitions/extapiFUOTADeploymentListItem"
           },
           "description": "Deployments within this result-set."
         }
       }
     },
-    "restfulMulticastGroupType": {
+    "extapiMulticastGroupType": {
       "type": "string",
       "enum": [
         "CLASS_C",
@@ -457,6 +445,18 @@
       ],
       "default": "CLASS_C",
       "description": " - CLASS_C: Class-C.\n - CLASS_B: Class-B."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
     },
     "runtimeError": {
       "type": "object",

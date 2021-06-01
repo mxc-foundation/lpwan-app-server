@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetTopUpDestinationResponse"
+              "$ref": "#/definitions/extapiGetTopUpDestinationResponse"
             }
           },
           "default": {
@@ -55,7 +55,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetTopUpHistoryResponse"
+              "$ref": "#/definitions/extapiGetTopUpHistoryResponse"
             }
           },
           "default": {
@@ -71,7 +71,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulGetTopUpHistoryRequest"
+              "$ref": "#/definitions/extapiGetTopUpHistoryRequest"
             }
           }
         ],
@@ -82,19 +82,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulGetTopUpDestinationResponse": {
+    "extapiGetTopUpDestinationResponse": {
       "type": "object",
       "properties": {
         "activeAccount": {
@@ -102,7 +90,7 @@
         }
       }
     },
-    "restfulGetTopUpHistoryRequest": {
+    "extapiGetTopUpHistoryRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -122,18 +110,18 @@
         }
       }
     },
-    "restfulGetTopUpHistoryResponse": {
+    "extapiGetTopUpHistoryResponse": {
       "type": "object",
       "properties": {
         "topupHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulTopUpHistory"
+            "$ref": "#/definitions/extapiTopUpHistory"
           }
         }
       }
     },
-    "restfulTopUpHistory": {
+    "extapiTopUpHistory": {
       "type": "object",
       "properties": {
         "txHash": {
@@ -145,6 +133,18 @@
         },
         "amount": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

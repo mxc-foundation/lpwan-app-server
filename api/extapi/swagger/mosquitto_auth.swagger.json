@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCheckACLResponse"
+              "$ref": "#/definitions/extapiCheckACLResponse"
             }
           },
           "default": {
@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCheckACLRequest"
+              "$ref": "#/definitions/extapiCheckACLRequest"
             }
           }
         ],
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulJWTAuthenticationResponse"
+              "$ref": "#/definitions/extapiJWTAuthenticationResponse"
             }
           },
           "default": {
@@ -68,7 +68,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulJWTAuthenticationRequest"
+              "$ref": "#/definitions/extapiJWTAuthenticationRequest"
             }
           }
         ],
@@ -85,7 +85,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetJWTResponse"
+              "$ref": "#/definitions/extapiGetJWTResponse"
             }
           },
           "default": {
@@ -101,7 +101,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulGetJWTRequest"
+              "$ref": "#/definitions/extapiGetJWTRequest"
             }
           }
         ],
@@ -112,19 +112,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCheckACLRequest": {
+    "extapiCheckACLRequest": {
       "type": "object",
       "properties": {
         "clientid": {
@@ -139,10 +127,10 @@
         }
       }
     },
-    "restfulCheckACLResponse": {
+    "extapiCheckACLResponse": {
       "type": "object"
     },
-    "restfulGetJWTRequest": {
+    "extapiGetJWTRequest": {
       "type": "object",
       "properties": {
         "organizationId": {
@@ -151,7 +139,7 @@
         }
       }
     },
-    "restfulGetJWTResponse": {
+    "extapiGetJWTResponse": {
       "type": "object",
       "properties": {
         "jwtMqttAuth": {
@@ -160,11 +148,23 @@
         }
       }
     },
-    "restfulJWTAuthenticationRequest": {
+    "extapiJWTAuthenticationRequest": {
       "type": "object"
     },
-    "restfulJWTAuthenticationResponse": {
+    "extapiJWTAuthenticationResponse": {
       "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
     },
     "runtimeError": {
       "type": "object",

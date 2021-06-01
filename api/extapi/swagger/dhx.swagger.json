@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXBondResponse"
+              "$ref": "#/definitions/extapiDHXBondResponse"
             }
           },
           "default": {
@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulDHXBondRequest"
+              "$ref": "#/definitions/extapiDHXBondRequest"
             }
           }
         ],
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXBondInfoResponse"
+              "$ref": "#/definitions/extapiDHXBondInfoResponse"
             }
           },
           "default": {
@@ -68,7 +68,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulDHXBondInfoRequest"
+              "$ref": "#/definitions/extapiDHXBondInfoRequest"
             }
           }
         ],
@@ -85,7 +85,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXCreateCouncilResponse"
+              "$ref": "#/definitions/extapiDHXCreateCouncilResponse"
             }
           },
           "default": {
@@ -101,7 +101,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulDHXCreateCouncilRequest"
+              "$ref": "#/definitions/extapiDHXCreateCouncilRequest"
             }
           }
         ],
@@ -118,7 +118,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXCreateStakeResponse"
+              "$ref": "#/definitions/extapiDHXCreateStakeResponse"
             }
           },
           "default": {
@@ -134,7 +134,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulDHXCreateStakeRequest"
+              "$ref": "#/definitions/extapiDHXCreateStakeRequest"
             }
           }
         ],
@@ -151,7 +151,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXMiningHistoryResponse"
+              "$ref": "#/definitions/extapiDHXMiningHistoryResponse"
             }
           },
           "default": {
@@ -200,7 +200,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXGetLastMiningResponse"
+              "$ref": "#/definitions/extapiDHXGetLastMiningResponse"
             }
           },
           "default": {
@@ -233,7 +233,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXListCouncilsResponse"
+              "$ref": "#/definitions/extapiDHXListCouncilsResponse"
             }
           },
           "default": {
@@ -256,7 +256,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXListStakesResponse"
+              "$ref": "#/definitions/extapiDHXListStakesResponse"
             }
           },
           "default": {
@@ -297,7 +297,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDHXUnbondResponse"
+              "$ref": "#/definitions/extapiDHXUnbondResponse"
             }
           },
           "default": {
@@ -313,7 +313,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulDHXUnbondRequest"
+              "$ref": "#/definitions/extapiDHXUnbondRequest"
             }
           }
         ],
@@ -324,19 +324,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCouncil": {
+    "extapiCouncil": {
       "type": "object",
       "properties": {
         "id": {
@@ -369,7 +357,7 @@
       },
       "title": "Information about the council"
     },
-    "restfulDHXBondInfoRequest": {
+    "extapiDHXBondInfoRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -379,7 +367,7 @@
         }
       }
     },
-    "restfulDHXBondInfoResponse": {
+    "extapiDHXBondInfoResponse": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -398,7 +386,7 @@
         "dhxCoolingOff": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulDHXCoolingOff"
+            "$ref": "#/definitions/extapiDHXCoolingOff"
           },
           "title": "detailed info about amounts in cooling off state"
         },
@@ -409,13 +397,13 @@
         "dhxUnbonding": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulDHXUnbonding"
+            "$ref": "#/definitions/extapiDHXUnbonding"
           },
           "title": "detailed info about unbonding amounts"
         }
       }
     },
-    "restfulDHXBondRequest": {
+    "extapiDHXBondRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -429,10 +417,10 @@
         }
       }
     },
-    "restfulDHXBondResponse": {
+    "extapiDHXBondResponse": {
       "type": "object"
     },
-    "restfulDHXCoolingOff": {
+    "extapiDHXCoolingOff": {
       "type": "object",
       "properties": {
         "amount": {
@@ -447,7 +435,7 @@
       },
       "title": "info about DHX cooling off"
     },
-    "restfulDHXCreateCouncilRequest": {
+    "extapiDHXCreateCouncilRequest": {
       "type": "object",
       "properties": {
         "organizationId": {
@@ -477,7 +465,7 @@
         }
       }
     },
-    "restfulDHXCreateCouncilResponse": {
+    "extapiDHXCreateCouncilResponse": {
       "type": "object",
       "properties": {
         "councilId": {
@@ -492,7 +480,7 @@
         }
       }
     },
-    "restfulDHXCreateStakeRequest": {
+    "extapiDHXCreateStakeRequest": {
       "type": "object",
       "properties": {
         "councilId": {
@@ -521,7 +509,7 @@
         }
       }
     },
-    "restfulDHXCreateStakeResponse": {
+    "extapiDHXCreateStakeResponse": {
       "type": "object",
       "properties": {
         "stakeId": {
@@ -531,7 +519,7 @@
         }
       }
     },
-    "restfulDHXGetLastMiningResponse": {
+    "extapiDHXGetLastMiningResponse": {
       "type": "object",
       "properties": {
         "date": {
@@ -581,29 +569,29 @@
         }
       }
     },
-    "restfulDHXListCouncilsResponse": {
+    "extapiDHXListCouncilsResponse": {
       "type": "object",
       "properties": {
         "council": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulCouncil"
+            "$ref": "#/definitions/extapiCouncil"
           }
         }
       }
     },
-    "restfulDHXListStakesResponse": {
+    "extapiDHXListStakesResponse": {
       "type": "object",
       "properties": {
         "stake": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulDHXStake"
+            "$ref": "#/definitions/extapiDHXStake"
           }
         }
       }
     },
-    "restfulDHXMining": {
+    "extapiDHXMining": {
       "type": "object",
       "properties": {
         "miningDate": {
@@ -630,19 +618,19 @@
         }
       }
     },
-    "restfulDHXMiningHistoryResponse": {
+    "extapiDHXMiningHistoryResponse": {
       "type": "object",
       "properties": {
         "dhxMining": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulDHXMining"
+            "$ref": "#/definitions/extapiDHXMining"
           },
           "title": "DHX mining daily records for the requested period"
         }
       }
     },
-    "restfulDHXStake": {
+    "extapiDHXStake": {
       "type": "object",
       "properties": {
         "id": {
@@ -685,7 +673,7 @@
         }
       }
     },
-    "restfulDHXUnbondRequest": {
+    "extapiDHXUnbondRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -699,10 +687,10 @@
         }
       }
     },
-    "restfulDHXUnbondResponse": {
+    "extapiDHXUnbondResponse": {
       "type": "object"
     },
-    "restfulDHXUnbonding": {
+    "extapiDHXUnbonding": {
       "type": "object",
       "properties": {
         "amount": {
@@ -716,6 +704,18 @@
         }
       },
       "title": "info about DHX unbonding"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
     },
     "runtimeError": {
       "type": "object",

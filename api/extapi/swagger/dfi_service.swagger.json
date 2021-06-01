@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulDFIAuthenticateUserResponse"
+              "$ref": "#/definitions/extapiDFIAuthenticateUserResponse"
             }
           },
           "default": {
@@ -42,7 +42,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulTopUpResponse"
+              "$ref": "#/definitions/extapiTopUpResponse"
             }
           },
           "default": {
@@ -82,7 +82,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulWithdrawResponse"
+              "$ref": "#/definitions/extapiWithdrawResponse"
             }
           },
           "default": {
@@ -120,19 +120,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulDFIAuthenticateUserResponse": {
+    "extapiDFIAuthenticateUserResponse": {
       "type": "object",
       "properties": {
         "userEmail": {
@@ -148,14 +136,26 @@
         }
       }
     },
-    "restfulTopUpResponse": {
+    "extapiTopUpResponse": {
       "type": "object"
     },
-    "restfulWithdrawResponse": {
+    "extapiWithdrawResponse": {
       "type": "object",
       "properties": {
         "msg": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

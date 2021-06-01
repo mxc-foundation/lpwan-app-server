@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListNetworkServerResponse"
+              "$ref": "#/definitions/extapiListNetworkServerResponse"
             }
           },
           "default": {
@@ -66,7 +66,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateNetworkServerResponse"
+              "$ref": "#/definitions/extapiCreateNetworkServerResponse"
             }
           },
           "default": {
@@ -82,7 +82,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateNetworkServerRequest"
+              "$ref": "#/definitions/extapiCreateNetworkServerRequest"
             }
           }
         ],
@@ -99,7 +99,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetNetworkServerResponse"
+              "$ref": "#/definitions/extapiGetNetworkServerResponse"
             }
           },
           "default": {
@@ -187,7 +187,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateNetworkServerRequest"
+              "$ref": "#/definitions/extapiUpdateNetworkServerRequest"
             }
           }
         ],
@@ -198,28 +198,16 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCreateNetworkServerRequest": {
+    "extapiCreateNetworkServerRequest": {
       "type": "object",
       "properties": {
         "networkServer": {
-          "$ref": "#/definitions/restfulNetworkServer",
+          "$ref": "#/definitions/extapiNetworkServer",
           "description": "Network-server object to create."
         }
       }
     },
-    "restfulCreateNetworkServerResponse": {
+    "extapiCreateNetworkServerResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -229,11 +217,11 @@
         }
       }
     },
-    "restfulGetNetworkServerResponse": {
+    "extapiGetNetworkServerResponse": {
       "type": "object",
       "properties": {
         "networkServer": {
-          "$ref": "#/definitions/restfulNetworkServer",
+          "$ref": "#/definitions/extapiNetworkServer",
           "description": "Network-server object."
         },
         "createdAt": {
@@ -256,7 +244,7 @@
         }
       }
     },
-    "restfulListNetworkServerResponse": {
+    "extapiListNetworkServerResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -267,13 +255,13 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulNetworkServerListItem"
+            "$ref": "#/definitions/extapiNetworkServerListItem"
           },
           "description": "Network-servers within the result-set."
         }
       }
     },
-    "restfulNetworkServer": {
+    "extapiNetworkServer": {
       "type": "object",
       "properties": {
         "id": {
@@ -334,7 +322,7 @@
         }
       }
     },
-    "restfulNetworkServerListItem": {
+    "extapiNetworkServerListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -362,12 +350,24 @@
         }
       }
     },
-    "restfulUpdateNetworkServerRequest": {
+    "extapiUpdateNetworkServerRequest": {
       "type": "object",
       "properties": {
         "networkServer": {
-          "$ref": "#/definitions/restfulNetworkServer",
+          "$ref": "#/definitions/extapiNetworkServer",
           "description": "Network-server object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

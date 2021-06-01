@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulManualTriggerUpdateFirmwareResponse"
+              "$ref": "#/definitions/extapiManualTriggerUpdateFirmwareResponse"
             }
           },
           "default": {
@@ -34,7 +34,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulManualTriggerUpdateFirmwareRequest"
+              "$ref": "#/definitions/extapiManualTriggerUpdateFirmwareRequest"
             }
           }
         ],
@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGatewayHistoryResponse"
+              "$ref": "#/definitions/extapiGetGatewayHistoryResponse"
             }
           },
           "default": {
@@ -102,7 +102,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGatewayListResponse"
+              "$ref": "#/definitions/extapiGetGatewayListResponse"
             }
           },
           "default": {
@@ -147,7 +147,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulSetGatewayModeResponse"
+              "$ref": "#/definitions/extapiSetGatewayModeResponse"
             }
           },
           "default": {
@@ -177,7 +177,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulSetGatewayModeRequest"
+              "$ref": "#/definitions/extapiSetGatewayModeRequest"
             }
           }
         ],
@@ -193,7 +193,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGSGatewayProfileResponse"
+              "$ref": "#/definitions/extapiGetGSGatewayProfileResponse"
             }
           },
           "default": {
@@ -246,7 +246,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListGatewayResponse"
+              "$ref": "#/definitions/extapiListGatewayResponse"
             }
           },
           "default": {
@@ -316,7 +316,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateGatewayRequest"
+              "$ref": "#/definitions/extapiCreateGatewayRequest"
             }
           }
         ],
@@ -333,7 +333,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListGatewayLocationsResponse"
+              "$ref": "#/definitions/extapiListGatewayLocationsResponse"
             }
           },
           "default": {
@@ -355,7 +355,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulInsertNewDefaultGatewayConfigResponse"
+              "$ref": "#/definitions/extapiInsertNewDefaultGatewayConfigResponse"
             }
           },
           "default": {
@@ -371,7 +371,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulInsertNewDefaultGatewayConfigRequest"
+              "$ref": "#/definitions/extapiInsertNewDefaultGatewayConfigRequest"
             }
           }
         ],
@@ -387,7 +387,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulBatchResetDefaultGatewatConfigResponse"
+              "$ref": "#/definitions/extapiBatchResetDefaultGatewatConfigResponse"
             }
           },
           "default": {
@@ -403,7 +403,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulBatchResetDefaultGatewatConfigRequest"
+              "$ref": "#/definitions/extapiBatchResetDefaultGatewatConfigRequest"
             }
           }
         ],
@@ -419,7 +419,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetDefaultGatewayConfigResponse"
+              "$ref": "#/definitions/extapiGetDefaultGatewayConfigResponse"
             }
           },
           "default": {
@@ -455,7 +455,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulResetDefaultGatewatConfigByIDResponse"
+              "$ref": "#/definitions/extapiResetDefaultGatewatConfigByIDResponse"
             }
           },
           "default": {
@@ -471,7 +471,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulResetDefaultGatewatConfigByIDRequest"
+              "$ref": "#/definitions/extapiResetDefaultGatewatConfigByIDRequest"
             }
           }
         ],
@@ -487,7 +487,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulUpdateDefaultGatewayConfigResponse"
+              "$ref": "#/definitions/extapiUpdateDefaultGatewayConfigResponse"
             }
           },
           "default": {
@@ -503,7 +503,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateDefaultGatewayConfigRequest"
+              "$ref": "#/definitions/extapiUpdateDefaultGatewayConfigRequest"
             }
           }
         ],
@@ -519,7 +519,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGwConfigResponse"
+              "$ref": "#/definitions/extapiGetGwConfigResponse"
             }
           },
           "default": {
@@ -549,7 +549,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGwPwdResponse"
+              "$ref": "#/definitions/extapiGetGwPwdResponse"
             }
           },
           "default": {
@@ -585,7 +585,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulRegisterResponse"
+              "$ref": "#/definitions/extapiRegisterResponse"
             }
           },
           "default": {
@@ -601,7 +601,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulRegisterRequest"
+              "$ref": "#/definitions/extapiRegisterRequest"
             }
           }
         ],
@@ -617,7 +617,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulRegisterResellerResponse"
+              "$ref": "#/definitions/extapiRegisterResellerResponse"
             }
           },
           "default": {
@@ -633,7 +633,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulRegisterResellerRequest"
+              "$ref": "#/definitions/extapiRegisterResellerRequest"
             }
           }
         ],
@@ -649,7 +649,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulSetAutoUpdateFirmwareResponse"
+              "$ref": "#/definitions/extapiSetAutoUpdateFirmwareResponse"
             }
           },
           "default": {
@@ -671,7 +671,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulSetAutoUpdateFirmwareRequest"
+              "$ref": "#/definitions/extapiSetAutoUpdateFirmwareRequest"
             }
           }
         ],
@@ -687,7 +687,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulUpdateGwConfigResponse"
+              "$ref": "#/definitions/extapiUpdateGwConfigResponse"
             }
           },
           "default": {
@@ -709,7 +709,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateGwConfigRequest"
+              "$ref": "#/definitions/extapiUpdateGwConfigRequest"
             }
           }
         ],
@@ -749,7 +749,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateGatewayRequest"
+              "$ref": "#/definitions/extapiUpdateGatewayRequest"
             }
           }
         ],
@@ -769,13 +769,13 @@
               "type": "object",
               "properties": {
                 "result": {
-                  "$ref": "#/definitions/restfulStreamGatewayFrameLogsResponse"
+                  "$ref": "#/definitions/extapiStreamGatewayFrameLogsResponse"
                 },
                 "error": {
                   "$ref": "#/definitions/runtimeStreamError"
                 }
               },
-              "title": "Stream result of restfulStreamGatewayFrameLogsResponse"
+              "title": "Stream result of extapiStreamGatewayFrameLogsResponse"
             }
           },
           "default": {
@@ -807,7 +807,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetLastPingResponse"
+              "$ref": "#/definitions/extapiGetLastPingResponse"
             }
           },
           "default": {
@@ -839,7 +839,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGatewayStatsResponse"
+              "$ref": "#/definitions/extapiGetGatewayStatsResponse"
             }
           },
           "default": {
@@ -894,7 +894,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetGatewayResponse"
+              "$ref": "#/definitions/extapiGetGatewayResponse"
             }
           },
           "default": {
@@ -956,7 +956,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListGatewayResponse"
+              "$ref": "#/definitions/extapiListGatewayResponse"
             }
           },
           "default": {
@@ -1057,6 +1057,671 @@
       ],
       "default": "LORA",
       "title": "- LORA: LoRa\n - FSK: FSK"
+    },
+    "extapiBatchResetDefaultGatewatConfigRequest": {
+      "type": "object",
+      "properties": {
+        "organizationList": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiBatchResetDefaultGatewatConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiCreateGatewayRequest": {
+      "type": "object",
+      "properties": {
+        "gateway": {
+          "$ref": "#/definitions/extapiGateway",
+          "description": "Gateway object to create."
+        }
+      }
+    },
+    "extapiDownlinkFrameLog": {
+      "type": "object",
+      "properties": {
+        "txInfo": {
+          "$ref": "#/definitions/gwDownlinkTXInfo",
+          "description": "TX information of the downlink."
+        },
+        "phyPayloadJSON": {
+          "type": "string",
+          "description": "LoRaWAN PHYPayload."
+        }
+      }
+    },
+    "extapiGSGatewayProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "mac": {
+          "type": "string"
+        },
+        "fkGwNs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "fkWallet": {
+          "type": "string",
+          "format": "int64"
+        },
+        "mode": {
+          "$ref": "#/definitions/extapiGatewayMode"
+        },
+        "createAt": {
+          "type": "string"
+        },
+        "lastSeenAt": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGateway": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Gateway ID (HEX encoded)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Gateway name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Gateway description."
+        },
+        "location": {
+          "$ref": "#/definitions/commonLocation",
+          "description": "Gateway location."
+        },
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID to which the gateway belongs.\nThis can't be changed after creating the gateway."
+        },
+        "discoveryEnabled": {
+          "type": "boolean",
+          "description": "Set to true to enable gateway discovery."
+        },
+        "networkServerID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Network-server ID on which the gateway is provisioned."
+        },
+        "gatewayProfileID": {
+          "type": "string",
+          "description": "Gateway-profile ID (UUID string, optional)."
+        },
+        "boards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayBoard"
+          },
+          "description": "Gateway boards configuration (optional).\nThis is (currently) only needed when the gateway supports the fine-timestamp\nand you you would like to add the FPGA ID to the gateway meta-data or would\nlike LPWAN Server to decrypt the fine-timestamp."
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Tags (user defined)."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Metadata (provided by the gateway)."
+        }
+      }
+    },
+    "extapiGatewayBoard": {
+      "type": "object",
+      "properties": {
+        "fpgaID": {
+          "type": "string",
+          "description": "FPGA ID of the gateway (HEX encoded) (optional)."
+        },
+        "fineTimestampKey": {
+          "type": "string",
+          "description": "Fine-timestamp AES decryption key (HEX encoded) (optional)."
+        }
+      }
+    },
+    "extapiGatewayListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Gateway ID (HEX encoded)."
+        },
+        "name": {
+          "type": "string",
+          "title": "A name for the gateway"
+        },
+        "description": {
+          "type": "string",
+          "title": "A description for the gateway"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Create timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        },
+        "firstSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "First seen timestamp."
+        },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last seen timestamp."
+        },
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID."
+        },
+        "networkServerID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Network-server ID."
+        },
+        "location": {
+          "$ref": "#/definitions/commonLocation",
+          "description": "Location."
+        }
+      }
+    },
+    "extapiGatewayLocation": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Latitude of the gateway -90.0 to 90.0."
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Longitude of the gateway -180.0 to 180.0."
+        },
+        "altitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Altitude of the gateway in meters."
+        }
+      }
+    },
+    "extapiGatewayLocationListItem": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/extapiGatewayLocation",
+          "description": "Location."
+        }
+      }
+    },
+    "extapiGatewayMode": {
+      "type": "string",
+      "enum": [
+        "GW_INACTIVE",
+        "GW_FREE_GATEWAYS_LIMITED",
+        "GW_WHOLE_NETWORK",
+        "GW_DELETED"
+      ],
+      "default": "GW_INACTIVE"
+    },
+    "extapiGatewayStats": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the (aggregated) measurement."
+        },
+        "rxPacketsReceived": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets received by the gateway."
+        },
+        "rxPacketsReceivedOK": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets received by the gateway that passed the CRC check."
+        },
+        "txPacketsReceived": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets received by the gateway for transmission."
+        },
+        "txPacketsEmitted": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets transmitted by the gateway."
+        }
+      }
+    },
+    "extapiGetDefaultGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "defaultConfig": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetGSGatewayProfileResponse": {
+      "type": "object",
+      "properties": {
+        "gwProfile": {
+          "$ref": "#/definitions/extapiGSGatewayProfile"
+        }
+      }
+    },
+    "extapiGetGatewayHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "gwHistory": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetGatewayListResponse": {
+      "type": "object",
+      "properties": {
+        "gwProfile": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGSGatewayProfile"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiGetGatewayResponse": {
+      "type": "object",
+      "properties": {
+        "gateway": {
+          "$ref": "#/definitions/extapiGateway",
+          "description": "Gateway object."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        },
+        "firstSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "First seen at timestamp."
+        },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last seen at timestamp."
+        }
+      }
+    },
+    "extapiGetGatewayStatsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayStats"
+          }
+        }
+      }
+    },
+    "extapiGetGwConfigResponse": {
+      "type": "object",
+      "properties": {
+        "conf": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetGwPwdResponse": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetLastPingResponse": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "frequency": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Frequency (Hz)."
+        },
+        "dr": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate."
+        },
+        "pingRX": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiPingRX"
+          },
+          "description": "Gateways and meta-data of reception."
+        }
+      }
+    },
+    "extapiInsertNewDefaultGatewayConfigRequest": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "defaultConfig": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiInsertNewDefaultGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiListGatewayLocationsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayLocationListItem"
+          },
+          "description": "Nodes within this result-set."
+        }
+      }
+    },
+    "extapiListGatewayResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of nodes available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayListItem"
+          },
+          "description": "Nodes within this result-set."
+        }
+      }
+    },
+    "extapiManualTriggerUpdateFirmwareRequest": {
+      "type": "object"
+    },
+    "extapiManualTriggerUpdateFirmwareResponse": {
+      "type": "object"
+    },
+    "extapiPingRX": {
+      "type": "object",
+      "properties": {
+        "gatewayID": {
+          "type": "string",
+          "description": "Gateway ID (HEX encoded)."
+        },
+        "rssi": {
+          "type": "integer",
+          "format": "int32",
+          "description": "RSSI."
+        },
+        "loRaSNR": {
+          "type": "number",
+          "format": "double",
+          "description": "LoRa SNR."
+        },
+        "latitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Latitude of the gateway -90.0 to 90.0."
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Longitude of the gateway -180.0 to 180.0."
+        },
+        "altitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Altitude of the gateway in meters."
+        }
+      }
+    },
+    "extapiRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "sn": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiRegisterResellerRequest": {
+      "type": "object",
+      "properties": {
+        "manufacturerNr": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiRegisterResellerResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiResetDefaultGatewatConfigByIDRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiResetDefaultGatewatConfigByIDResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiSetAutoUpdateFirmwareRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayId": {
+          "type": "string"
+        },
+        "autoUpdate": {
+          "type": "boolean"
+        }
+      }
+    },
+    "extapiSetAutoUpdateFirmwareResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiSetGatewayModeRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gwId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gwMode": {
+          "$ref": "#/definitions/extapiGatewayMode"
+        }
+      }
+    },
+    "extapiSetGatewayModeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean"
+        }
+      }
+    },
+    "extapiStreamGatewayFrameLogsResponse": {
+      "type": "object",
+      "properties": {
+        "uplinkFrame": {
+          "$ref": "#/definitions/extapiUplinkFrameLog",
+          "description": "Contains an uplink frame."
+        },
+        "downlinkFrame": {
+          "$ref": "#/definitions/extapiDownlinkFrameLog",
+          "description": "Contains a downlink frame."
+        }
+      }
+    },
+    "extapiUpdateDefaultGatewayConfigRequest": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "defaultConfig": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiUpdateDefaultGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiUpdateGatewayRequest": {
+      "type": "object",
+      "properties": {
+        "gateway": {
+          "$ref": "#/definitions/extapiGateway",
+          "description": "Gateway object to update."
+        }
+      }
+    },
+    "extapiUpdateGwConfigRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayId": {
+          "type": "string"
+        },
+        "conf": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiUpdateGwConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiUplinkFrameLog": {
+      "type": "object",
+      "properties": {
+        "txInfo": {
+          "$ref": "#/definitions/gwUplinkTXInfo",
+          "description": "TX information of the uplink."
+        },
+        "rxInfo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/gwUplinkRXInfo"
+          },
+          "description": "RX information of the uplink."
+        },
+        "phyPayloadJSON": {
+          "type": "string",
+          "description": "LoRaWAN PHYPayload."
+        }
+      }
     },
     "gwCRCStatus": {
       "type": "string",
@@ -1350,671 +2015,6 @@
         "value": {
           "type": "string",
           "format": "byte"
-        }
-      }
-    },
-    "restfulBatchResetDefaultGatewatConfigRequest": {
-      "type": "object",
-      "properties": {
-        "organizationList": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulBatchResetDefaultGatewatConfigResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulCreateGatewayRequest": {
-      "type": "object",
-      "properties": {
-        "gateway": {
-          "$ref": "#/definitions/restfulGateway",
-          "description": "Gateway object to create."
-        }
-      }
-    },
-    "restfulDownlinkFrameLog": {
-      "type": "object",
-      "properties": {
-        "txInfo": {
-          "$ref": "#/definitions/gwDownlinkTXInfo",
-          "description": "TX information of the downlink."
-        },
-        "phyPayloadJSON": {
-          "type": "string",
-          "description": "LoRaWAN PHYPayload."
-        }
-      }
-    },
-    "restfulGSGatewayProfile": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64"
-        },
-        "mac": {
-          "type": "string"
-        },
-        "fkGwNs": {
-          "type": "string",
-          "format": "int64"
-        },
-        "fkWallet": {
-          "type": "string",
-          "format": "int64"
-        },
-        "mode": {
-          "$ref": "#/definitions/restfulGatewayMode"
-        },
-        "createAt": {
-          "type": "string"
-        },
-        "lastSeenAt": {
-          "type": "string"
-        },
-        "orgId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGateway": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Gateway ID (HEX encoded)."
-        },
-        "name": {
-          "type": "string",
-          "description": "Gateway name."
-        },
-        "description": {
-          "type": "string",
-          "description": "Gateway description."
-        },
-        "location": {
-          "$ref": "#/definitions/commonLocation",
-          "description": "Gateway location."
-        },
-        "organizationID": {
-          "type": "string",
-          "format": "int64",
-          "description": "Organization ID to which the gateway belongs.\nThis can't be changed after creating the gateway."
-        },
-        "discoveryEnabled": {
-          "type": "boolean",
-          "description": "Set to true to enable gateway discovery."
-        },
-        "networkServerID": {
-          "type": "string",
-          "format": "int64",
-          "description": "Network-server ID on which the gateway is provisioned."
-        },
-        "gatewayProfileID": {
-          "type": "string",
-          "description": "Gateway-profile ID (UUID string, optional)."
-        },
-        "boards": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/restfulGatewayBoard"
-          },
-          "description": "Gateway boards configuration (optional).\nThis is (currently) only needed when the gateway supports the fine-timestamp\nand you you would like to add the FPGA ID to the gateway meta-data or would\nlike LPWAN Server to decrypt the fine-timestamp."
-        },
-        "tags": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Tags (user defined)."
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Metadata (provided by the gateway)."
-        }
-      }
-    },
-    "restfulGatewayBoard": {
-      "type": "object",
-      "properties": {
-        "fpgaID": {
-          "type": "string",
-          "description": "FPGA ID of the gateway (HEX encoded) (optional)."
-        },
-        "fineTimestampKey": {
-          "type": "string",
-          "description": "Fine-timestamp AES decryption key (HEX encoded) (optional)."
-        }
-      }
-    },
-    "restfulGatewayListItem": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Gateway ID (HEX encoded)."
-        },
-        "name": {
-          "type": "string",
-          "title": "A name for the gateway"
-        },
-        "description": {
-          "type": "string",
-          "title": "A description for the gateway"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Create timestamp."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Last update timestamp."
-        },
-        "firstSeenAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "First seen timestamp."
-        },
-        "lastSeenAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Last seen timestamp."
-        },
-        "organizationID": {
-          "type": "string",
-          "format": "int64",
-          "description": "Organization ID."
-        },
-        "networkServerID": {
-          "type": "string",
-          "format": "int64",
-          "description": "Network-server ID."
-        },
-        "location": {
-          "$ref": "#/definitions/commonLocation",
-          "description": "Location."
-        }
-      }
-    },
-    "restfulGatewayLocation": {
-      "type": "object",
-      "properties": {
-        "latitude": {
-          "type": "number",
-          "format": "double",
-          "description": "Latitude of the gateway -90.0 to 90.0."
-        },
-        "longitude": {
-          "type": "number",
-          "format": "double",
-          "description": "Longitude of the gateway -180.0 to 180.0."
-        },
-        "altitude": {
-          "type": "number",
-          "format": "double",
-          "description": "Altitude of the gateway in meters."
-        }
-      }
-    },
-    "restfulGatewayLocationListItem": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/restfulGatewayLocation",
-          "description": "Location."
-        }
-      }
-    },
-    "restfulGatewayMode": {
-      "type": "string",
-      "enum": [
-        "GW_INACTIVE",
-        "GW_FREE_GATEWAYS_LIMITED",
-        "GW_WHOLE_NETWORK",
-        "GW_DELETED"
-      ],
-      "default": "GW_INACTIVE"
-    },
-    "restfulGatewayStats": {
-      "type": "object",
-      "properties": {
-        "timestamp": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp of the (aggregated) measurement."
-        },
-        "rxPacketsReceived": {
-          "type": "integer",
-          "format": "int32",
-          "description": "Packets received by the gateway."
-        },
-        "rxPacketsReceivedOK": {
-          "type": "integer",
-          "format": "int32",
-          "description": "Packets received by the gateway that passed the CRC check."
-        },
-        "txPacketsReceived": {
-          "type": "integer",
-          "format": "int32",
-          "description": "Packets received by the gateway for transmission."
-        },
-        "txPacketsEmitted": {
-          "type": "integer",
-          "format": "int32",
-          "description": "Packets transmitted by the gateway."
-        }
-      }
-    },
-    "restfulGetDefaultGatewayConfigResponse": {
-      "type": "object",
-      "properties": {
-        "defaultConfig": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGetGSGatewayProfileResponse": {
-      "type": "object",
-      "properties": {
-        "gwProfile": {
-          "$ref": "#/definitions/restfulGSGatewayProfile"
-        }
-      }
-    },
-    "restfulGetGatewayHistoryResponse": {
-      "type": "object",
-      "properties": {
-        "gwHistory": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGetGatewayListResponse": {
-      "type": "object",
-      "properties": {
-        "gwProfile": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/restfulGSGatewayProfile"
-          }
-        },
-        "count": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "restfulGetGatewayResponse": {
-      "type": "object",
-      "properties": {
-        "gateway": {
-          "$ref": "#/definitions/restfulGateway",
-          "description": "Gateway object."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Created at timestamp."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Last update timestamp."
-        },
-        "firstSeenAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "First seen at timestamp."
-        },
-        "lastSeenAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Last seen at timestamp."
-        }
-      }
-    },
-    "restfulGetGatewayStatsResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/restfulGatewayStats"
-          }
-        }
-      }
-    },
-    "restfulGetGwConfigResponse": {
-      "type": "object",
-      "properties": {
-        "conf": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGetGwPwdResponse": {
-      "type": "object",
-      "properties": {
-        "password": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGetLastPingResponse": {
-      "type": "object",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Created at timestamp."
-        },
-        "frequency": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Frequency (Hz)."
-        },
-        "dr": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Data-rate."
-        },
-        "pingRX": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/restfulPingRX"
-          },
-          "description": "Gateways and meta-data of reception."
-        }
-      }
-    },
-    "restfulInsertNewDefaultGatewayConfigRequest": {
-      "type": "object",
-      "properties": {
-        "model": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        },
-        "defaultConfig": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulInsertNewDefaultGatewayConfigResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulListGatewayLocationsResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/restfulGatewayLocationListItem"
-          },
-          "description": "Nodes within this result-set."
-        }
-      }
-    },
-    "restfulListGatewayResponse": {
-      "type": "object",
-      "properties": {
-        "totalCount": {
-          "type": "string",
-          "format": "int64",
-          "description": "Total number of nodes available within the result-set."
-        },
-        "result": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/restfulGatewayListItem"
-          },
-          "description": "Nodes within this result-set."
-        }
-      }
-    },
-    "restfulManualTriggerUpdateFirmwareRequest": {
-      "type": "object"
-    },
-    "restfulManualTriggerUpdateFirmwareResponse": {
-      "type": "object"
-    },
-    "restfulPingRX": {
-      "type": "object",
-      "properties": {
-        "gatewayID": {
-          "type": "string",
-          "description": "Gateway ID (HEX encoded)."
-        },
-        "rssi": {
-          "type": "integer",
-          "format": "int32",
-          "description": "RSSI."
-        },
-        "loRaSNR": {
-          "type": "number",
-          "format": "double",
-          "description": "LoRa SNR."
-        },
-        "latitude": {
-          "type": "number",
-          "format": "double",
-          "description": "Latitude of the gateway -90.0 to 90.0."
-        },
-        "longitude": {
-          "type": "number",
-          "format": "double",
-          "description": "Longitude of the gateway -180.0 to 180.0."
-        },
-        "altitude": {
-          "type": "number",
-          "format": "double",
-          "description": "Altitude of the gateway in meters."
-        }
-      }
-    },
-    "restfulRegisterRequest": {
-      "type": "object",
-      "properties": {
-        "organizationId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "sn": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulRegisterResellerRequest": {
-      "type": "object",
-      "properties": {
-        "manufacturerNr": {
-          "type": "string"
-        },
-        "organizationId": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "restfulRegisterResellerResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulRegisterResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulResetDefaultGatewatConfigByIDRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulResetDefaultGatewatConfigByIDResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulSetAutoUpdateFirmwareRequest": {
-      "type": "object",
-      "properties": {
-        "gatewayId": {
-          "type": "string"
-        },
-        "autoUpdate": {
-          "type": "boolean"
-        }
-      }
-    },
-    "restfulSetAutoUpdateFirmwareResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulSetGatewayModeRequest": {
-      "type": "object",
-      "properties": {
-        "orgId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "gwId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "gwMode": {
-          "$ref": "#/definitions/restfulGatewayMode"
-        }
-      }
-    },
-    "restfulSetGatewayModeResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean"
-        }
-      }
-    },
-    "restfulStreamGatewayFrameLogsResponse": {
-      "type": "object",
-      "properties": {
-        "uplinkFrame": {
-          "$ref": "#/definitions/restfulUplinkFrameLog",
-          "description": "Contains an uplink frame."
-        },
-        "downlinkFrame": {
-          "$ref": "#/definitions/restfulDownlinkFrameLog",
-          "description": "Contains a downlink frame."
-        }
-      }
-    },
-    "restfulUpdateDefaultGatewayConfigRequest": {
-      "type": "object",
-      "properties": {
-        "model": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        },
-        "defaultConfig": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulUpdateDefaultGatewayConfigResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulUpdateGatewayRequest": {
-      "type": "object",
-      "properties": {
-        "gateway": {
-          "$ref": "#/definitions/restfulGateway",
-          "description": "Gateway object to update."
-        }
-      }
-    },
-    "restfulUpdateGwConfigRequest": {
-      "type": "object",
-      "properties": {
-        "gatewayId": {
-          "type": "string"
-        },
-        "conf": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulUpdateGwConfigResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulUplinkFrameLog": {
-      "type": "object",
-      "properties": {
-        "txInfo": {
-          "$ref": "#/definitions/gwUplinkTXInfo",
-          "description": "TX information of the uplink."
-        },
-        "rxInfo": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/gwUplinkRXInfo"
-          },
-          "description": "RX information of the uplink."
-        },
-        "phyPayloadJSON": {
-          "type": "string",
-          "description": "LoRaWAN PHYPayload."
         }
       }
     },

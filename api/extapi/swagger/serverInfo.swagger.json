@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetAppserverVersionResponse"
+              "$ref": "#/definitions/extapiGetAppserverVersionResponse"
             }
           },
           "default": {
@@ -41,7 +41,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetMxprotocolServerVersionResponse"
+              "$ref": "#/definitions/extapiGetMxprotocolServerVersionResponse"
             }
           },
           "default": {
@@ -63,7 +63,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetServerRegionResponse"
+              "$ref": "#/definitions/extapiGetServerRegionResponse"
             }
           },
           "default": {
@@ -80,6 +80,30 @@
     }
   },
   "definitions": {
+    "extapiGetAppserverVersionResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetMxprotocolServerVersionResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetServerRegionResponse": {
+      "type": "object",
+      "properties": {
+        "serverRegion": {
+          "type": "string"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -89,30 +113,6 @@
         "value": {
           "type": "string",
           "format": "byte"
-        }
-      }
-    },
-    "restfulGetAppserverVersionResponse": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGetMxprotocolServerVersionResponse": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string"
-        }
-      }
-    },
-    "restfulGetServerRegionResponse": {
-      "type": "object",
-      "properties": {
-        "serverRegion": {
-          "type": "string"
         }
       }
     },

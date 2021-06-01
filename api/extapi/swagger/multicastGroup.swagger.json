@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListMulticastGroupResponse"
+              "$ref": "#/definitions/extapiListMulticastGroupResponse"
             }
           },
           "default": {
@@ -87,7 +87,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateMulticastGroupResponse"
+              "$ref": "#/definitions/extapiCreateMulticastGroupResponse"
             }
           },
           "default": {
@@ -103,7 +103,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateMulticastGroupRequest"
+              "$ref": "#/definitions/extapiCreateMulticastGroupRequest"
             }
           }
         ],
@@ -120,7 +120,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetMulticastGroupResponse"
+              "$ref": "#/definitions/extapiGetMulticastGroupResponse"
             }
           },
           "default": {
@@ -205,7 +205,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateMulticastGroupRequest"
+              "$ref": "#/definitions/extapiUpdateMulticastGroupRequest"
             }
           }
         ],
@@ -245,7 +245,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulAddDeviceToMulticastGroupRequest"
+              "$ref": "#/definitions/extapiAddDeviceToMulticastGroupRequest"
             }
           }
         ],
@@ -301,7 +301,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListMulticastGroupQueueItemsResponse"
+              "$ref": "#/definitions/extapiListMulticastGroupQueueItemsResponse"
             }
           },
           "default": {
@@ -363,7 +363,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulEnqueueMulticastQueueItemResponse"
+              "$ref": "#/definitions/extapiEnqueueMulticastQueueItemResponse"
             }
           },
           "default": {
@@ -386,7 +386,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulEnqueueMulticastQueueItemRequest"
+              "$ref": "#/definitions/extapiEnqueueMulticastQueueItemRequest"
             }
           }
         ],
@@ -397,19 +397,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulAddDeviceToMulticastGroupRequest": {
+    "extapiAddDeviceToMulticastGroupRequest": {
       "type": "object",
       "properties": {
         "multicastGroupID": {
@@ -422,16 +410,16 @@
         }
       }
     },
-    "restfulCreateMulticastGroupRequest": {
+    "extapiCreateMulticastGroupRequest": {
       "type": "object",
       "properties": {
         "multicastGroup": {
-          "$ref": "#/definitions/restfulMulticastGroup",
+          "$ref": "#/definitions/extapiMulticastGroup",
           "description": "Multicast-group object to create."
         }
       }
     },
-    "restfulCreateMulticastGroupResponse": {
+    "extapiCreateMulticastGroupResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -440,16 +428,16 @@
         }
       }
     },
-    "restfulEnqueueMulticastQueueItemRequest": {
+    "extapiEnqueueMulticastQueueItemRequest": {
       "type": "object",
       "properties": {
         "multicastQueueItem": {
-          "$ref": "#/definitions/restfulMulticastQueueItem",
+          "$ref": "#/definitions/extapiMulticastQueueItem",
           "description": "Multicast queue-item object to enqueue."
         }
       }
     },
-    "restfulEnqueueMulticastQueueItemResponse": {
+    "extapiEnqueueMulticastQueueItemResponse": {
       "type": "object",
       "properties": {
         "fCnt": {
@@ -459,11 +447,11 @@
         }
       }
     },
-    "restfulGetMulticastGroupResponse": {
+    "extapiGetMulticastGroupResponse": {
       "type": "object",
       "properties": {
         "multicastGroup": {
-          "$ref": "#/definitions/restfulMulticastGroup",
+          "$ref": "#/definitions/extapiMulticastGroup",
           "description": "Multicast-group object."
         },
         "createdAt": {
@@ -478,18 +466,18 @@
         }
       }
     },
-    "restfulListMulticastGroupQueueItemsResponse": {
+    "extapiListMulticastGroupQueueItemsResponse": {
       "type": "object",
       "properties": {
         "multicastQueueItems": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulMulticastQueueItem"
+            "$ref": "#/definitions/extapiMulticastQueueItem"
           }
         }
       }
     },
-    "restfulListMulticastGroupResponse": {
+    "extapiListMulticastGroupResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -500,12 +488,12 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulMulticastGroupListItem"
+            "$ref": "#/definitions/extapiMulticastGroupListItem"
           }
         }
       }
     },
-    "restfulMulticastGroup": {
+    "extapiMulticastGroup": {
       "type": "object",
       "properties": {
         "id": {
@@ -534,7 +522,7 @@
           "description": "Frame-counter."
         },
         "groupType": {
-          "$ref": "#/definitions/restfulMulticastGroupType",
+          "$ref": "#/definitions/extapiMulticastGroupType",
           "description": "Multicast type."
         },
         "dr": {
@@ -558,7 +546,7 @@
         }
       }
     },
-    "restfulMulticastGroupListItem": {
+    "extapiMulticastGroupListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -579,7 +567,7 @@
         }
       }
     },
-    "restfulMulticastGroupType": {
+    "extapiMulticastGroupType": {
       "type": "string",
       "enum": [
         "CLASS_C",
@@ -588,7 +576,7 @@
       "default": "CLASS_C",
       "description": " - CLASS_C: Class-C.\n - CLASS_B: Class-B."
     },
-    "restfulMulticastQueueItem": {
+    "extapiMulticastQueueItem": {
       "type": "object",
       "properties": {
         "multicastGroupID": {
@@ -612,12 +600,24 @@
         }
       }
     },
-    "restfulUpdateMulticastGroupRequest": {
+    "extapiUpdateMulticastGroupRequest": {
       "type": "object",
       "properties": {
         "multicastGroup": {
-          "$ref": "#/definitions/restfulMulticastGroup",
+          "$ref": "#/definitions/extapiMulticastGroup",
           "description": "Multicast-group object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

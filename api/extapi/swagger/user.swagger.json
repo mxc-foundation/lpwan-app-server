@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListUserResponse"
+              "$ref": "#/definitions/extapiListUserResponse"
             }
           },
           "default": {
@@ -58,7 +58,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateUserResponse"
+              "$ref": "#/definitions/extapiCreateUserResponse"
             }
           },
           "default": {
@@ -74,7 +74,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateUserRequest"
+              "$ref": "#/definitions/extapiCreateUserRequest"
             }
           }
         ],
@@ -90,7 +90,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetUserEmailResponse"
+              "$ref": "#/definitions/extapiGetUserEmailResponse"
             }
           },
           "default": {
@@ -120,7 +120,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetOTPCodeResponse"
+              "$ref": "#/definitions/extapiGetOTPCodeResponse"
             }
           },
           "default": {
@@ -151,7 +151,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetUserResponse"
+              "$ref": "#/definitions/extapiGetUserResponse"
             }
           },
           "default": {
@@ -215,7 +215,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulUpdateUserResponse"
+              "$ref": "#/definitions/extapiUpdateUserResponse"
             }
           },
           "default": {
@@ -239,7 +239,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateUserRequest"
+              "$ref": "#/definitions/extapiUpdateUserRequest"
             }
           }
         ],
@@ -280,7 +280,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateUserPasswordRequest"
+              "$ref": "#/definitions/extapiUpdateUserPasswordRequest"
             }
           }
         ],
@@ -291,23 +291,11 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulCreateUserRequest": {
+    "extapiCreateUserRequest": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/restfulUser",
+          "$ref": "#/definitions/extapiUser",
           "description": "User object to create."
         },
         "password": {
@@ -317,13 +305,13 @@
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulUserOrganization"
+            "$ref": "#/definitions/extapiUserOrganization"
           },
           "description": "Add the user to the following organizations."
         }
       }
     },
-    "restfulCreateUserResponse": {
+    "extapiCreateUserResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -333,7 +321,7 @@
         }
       }
     },
-    "restfulGetOTPCodeResponse": {
+    "extapiGetOTPCodeResponse": {
       "type": "object",
       "properties": {
         "otpCode": {
@@ -341,7 +329,7 @@
         }
       }
     },
-    "restfulGetUserEmailResponse": {
+    "extapiGetUserEmailResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -349,11 +337,11 @@
         }
       }
     },
-    "restfulGetUserResponse": {
+    "extapiGetUserResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/restfulUser",
+          "$ref": "#/definitions/extapiUser",
           "description": "User object."
         },
         "createdAt": {
@@ -368,7 +356,7 @@
         }
       }
     },
-    "restfulListUserResponse": {
+    "extapiListUserResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -379,13 +367,13 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulUserListItem"
+            "$ref": "#/definitions/extapiUserListItem"
           },
           "description": "Result-set."
         }
       }
     },
-    "restfulUpdateUserPasswordRequest": {
+    "extapiUpdateUserPasswordRequest": {
       "type": "object",
       "properties": {
         "userId": {
@@ -399,16 +387,16 @@
         }
       }
     },
-    "restfulUpdateUserRequest": {
+    "extapiUpdateUserRequest": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/restfulUser",
+          "$ref": "#/definitions/extapiUser",
           "description": "User object to update."
         }
       }
     },
-    "restfulUpdateUserResponse": {
+    "extapiUpdateUserResponse": {
       "type": "object",
       "properties": {
         "jwt": {
@@ -417,7 +405,7 @@
         }
       }
     },
-    "restfulUser": {
+    "extapiUser": {
       "type": "object",
       "properties": {
         "id": {
@@ -452,7 +440,7 @@
         }
       }
     },
-    "restfulUserListItem": {
+    "extapiUserListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -489,7 +477,7 @@
         }
       }
     },
-    "restfulUserOrganization": {
+    "extapiUserOrganization": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -508,6 +496,18 @@
         "isGatewayAdmin": {
           "type": "boolean",
           "description": "User is able to modify gateways."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

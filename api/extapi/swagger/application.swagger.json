@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListApplicationResponse"
+              "$ref": "#/definitions/extapiListApplicationResponse"
             }
           },
           "default": {
@@ -73,7 +73,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulCreateApplicationResponse"
+              "$ref": "#/definitions/extapiCreateApplicationResponse"
             }
           },
           "default": {
@@ -89,7 +89,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateApplicationRequest"
+              "$ref": "#/definitions/extapiCreateApplicationRequest"
             }
           }
         ],
@@ -130,7 +130,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateApplicationRequest"
+              "$ref": "#/definitions/extapiUpdateApplicationRequest"
             }
           }
         ],
@@ -147,7 +147,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListIntegrationResponse"
+              "$ref": "#/definitions/extapiListIntegrationResponse"
             }
           },
           "default": {
@@ -180,7 +180,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetHTTPIntegrationResponse"
+              "$ref": "#/definitions/extapiGetHTTPIntegrationResponse"
             }
           },
           "default": {
@@ -244,7 +244,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetInfluxDBIntegrationResponse"
+              "$ref": "#/definitions/extapiGetInfluxDBIntegrationResponse"
             }
           },
           "default": {
@@ -308,7 +308,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetLoRaCloudIntegrationResponse"
+              "$ref": "#/definitions/extapiGetLoRaCloudIntegrationResponse"
             }
           },
           "default": {
@@ -372,7 +372,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetMyDevicesIntegrationResponse"
+              "$ref": "#/definitions/extapiGetMyDevicesIntegrationResponse"
             }
           },
           "default": {
@@ -436,7 +436,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetThingsBoardIntegrationResponse"
+              "$ref": "#/definitions/extapiGetThingsBoardIntegrationResponse"
             }
           },
           "default": {
@@ -500,7 +500,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetApplicationResponse"
+              "$ref": "#/definitions/extapiGetApplicationResponse"
             }
           },
           "default": {
@@ -588,7 +588,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateHTTPIntegrationRequest"
+              "$ref": "#/definitions/extapiCreateHTTPIntegrationRequest"
             }
           }
         ],
@@ -627,7 +627,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateHTTPIntegrationRequest"
+              "$ref": "#/definitions/extapiUpdateHTTPIntegrationRequest"
             }
           }
         ],
@@ -668,7 +668,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateInfluxDBIntegrationRequest"
+              "$ref": "#/definitions/extapiCreateInfluxDBIntegrationRequest"
             }
           }
         ],
@@ -707,7 +707,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateInfluxDBIntegrationRequest"
+              "$ref": "#/definitions/extapiUpdateInfluxDBIntegrationRequest"
             }
           }
         ],
@@ -748,7 +748,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateLoRaCloudIntegrationRequest"
+              "$ref": "#/definitions/extapiCreateLoRaCloudIntegrationRequest"
             }
           }
         ],
@@ -787,7 +787,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateLoRaCloudIntegrationRequest"
+              "$ref": "#/definitions/extapiUpdateLoRaCloudIntegrationRequest"
             }
           }
         ],
@@ -828,7 +828,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateMyDevicesIntegrationRequest"
+              "$ref": "#/definitions/extapiCreateMyDevicesIntegrationRequest"
             }
           }
         ],
@@ -867,7 +867,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateMyDevicesIntegrationRequest"
+              "$ref": "#/definitions/extapiUpdateMyDevicesIntegrationRequest"
             }
           }
         ],
@@ -908,7 +908,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulCreateThingsBoardIntegrationRequest"
+              "$ref": "#/definitions/extapiCreateThingsBoardIntegrationRequest"
             }
           }
         ],
@@ -947,7 +947,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUpdateThingsBoardIntegrationRequest"
+              "$ref": "#/definitions/extapiUpdateThingsBoardIntegrationRequest"
             }
           }
         ],
@@ -958,19 +958,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulApplication": {
+    "extapiApplication": {
       "type": "object",
       "properties": {
         "id": {
@@ -1009,7 +997,7 @@
         }
       }
     },
-    "restfulApplicationListItem": {
+    "extapiApplicationListItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -1040,16 +1028,16 @@
         }
       }
     },
-    "restfulCreateApplicationRequest": {
+    "extapiCreateApplicationRequest": {
       "type": "object",
       "properties": {
         "application": {
-          "$ref": "#/definitions/restfulApplication",
+          "$ref": "#/definitions/extapiApplication",
           "description": "Application object to create."
         }
       }
     },
-    "restfulCreateApplicationResponse": {
+    "extapiCreateApplicationResponse": {
       "type": "object",
       "properties": {
         "id": {
@@ -1059,106 +1047,106 @@
         }
       }
     },
-    "restfulCreateHTTPIntegrationRequest": {
+    "extapiCreateHTTPIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulHTTPIntegration",
+          "$ref": "#/definitions/extapiHTTPIntegration",
           "description": "Integration object to create."
         }
       }
     },
-    "restfulCreateInfluxDBIntegrationRequest": {
+    "extapiCreateInfluxDBIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulInfluxDBIntegration",
+          "$ref": "#/definitions/extapiInfluxDBIntegration",
           "description": "Integration object to create."
         }
       }
     },
-    "restfulCreateLoRaCloudIntegrationRequest": {
+    "extapiCreateLoRaCloudIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulLoRaCloudIntegration",
+          "$ref": "#/definitions/extapiLoRaCloudIntegration",
           "description": "Integration object to create."
         }
       }
     },
-    "restfulCreateMyDevicesIntegrationRequest": {
+    "extapiCreateMyDevicesIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulMyDevicesIntegration",
+          "$ref": "#/definitions/extapiMyDevicesIntegration",
           "description": "Integration object to create."
         }
       }
     },
-    "restfulCreateThingsBoardIntegrationRequest": {
+    "extapiCreateThingsBoardIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulThingsBoardIntegration",
+          "$ref": "#/definitions/extapiThingsBoardIntegration",
           "description": "Integration object to create."
         }
       }
     },
-    "restfulGetApplicationResponse": {
+    "extapiGetApplicationResponse": {
       "type": "object",
       "properties": {
         "application": {
-          "$ref": "#/definitions/restfulApplication",
+          "$ref": "#/definitions/extapiApplication",
           "description": "Application object."
         }
       }
     },
-    "restfulGetHTTPIntegrationResponse": {
+    "extapiGetHTTPIntegrationResponse": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulHTTPIntegration",
+          "$ref": "#/definitions/extapiHTTPIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulGetInfluxDBIntegrationResponse": {
+    "extapiGetInfluxDBIntegrationResponse": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulInfluxDBIntegration",
+          "$ref": "#/definitions/extapiInfluxDBIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulGetLoRaCloudIntegrationResponse": {
+    "extapiGetLoRaCloudIntegrationResponse": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulLoRaCloudIntegration",
+          "$ref": "#/definitions/extapiLoRaCloudIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulGetMyDevicesIntegrationResponse": {
+    "extapiGetMyDevicesIntegrationResponse": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulMyDevicesIntegration",
+          "$ref": "#/definitions/extapiMyDevicesIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulGetThingsBoardIntegrationResponse": {
+    "extapiGetThingsBoardIntegrationResponse": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulThingsBoardIntegration",
+          "$ref": "#/definitions/extapiThingsBoardIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulHTTPIntegration": {
+    "extapiHTTPIntegration": {
       "type": "object",
       "properties": {
         "applicationID": {
@@ -1169,7 +1157,7 @@
         "headers": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulHTTPIntegrationHeader"
+            "$ref": "#/definitions/extapiHTTPIntegrationHeader"
           },
           "description": "The headers to use when making HTTP callbacks."
         },
@@ -1207,7 +1195,7 @@
         }
       }
     },
-    "restfulHTTPIntegrationHeader": {
+    "extapiHTTPIntegrationHeader": {
       "type": "object",
       "properties": {
         "key": {
@@ -1220,7 +1208,7 @@
         }
       }
     },
-    "restfulInfluxDBIntegration": {
+    "extapiInfluxDBIntegration": {
       "type": "object",
       "properties": {
         "applicationID": {
@@ -1249,12 +1237,12 @@
           "description": "InfluxDB retention policy name."
         },
         "precision": {
-          "$ref": "#/definitions/restfulInfluxDBPrecision",
+          "$ref": "#/definitions/extapiInfluxDBPrecision",
           "description": "InfluxDB timestamp precision."
         }
       }
     },
-    "restfulInfluxDBPrecision": {
+    "extapiInfluxDBPrecision": {
       "type": "string",
       "enum": [
         "NS",
@@ -1266,7 +1254,7 @@
       ],
       "default": "NS"
     },
-    "restfulIntegrationKind": {
+    "extapiIntegrationKind": {
       "type": "string",
       "enum": [
         "HTTP",
@@ -1277,16 +1265,16 @@
       ],
       "default": "HTTP"
     },
-    "restfulIntegrationListItem": {
+    "extapiIntegrationListItem": {
       "type": "object",
       "properties": {
         "kind": {
-          "$ref": "#/definitions/restfulIntegrationKind",
+          "$ref": "#/definitions/extapiIntegrationKind",
           "description": "Integration kind."
         }
       }
     },
-    "restfulListApplicationResponse": {
+    "extapiListApplicationResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -1297,13 +1285,13 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulApplicationListItem"
+            "$ref": "#/definitions/extapiApplicationListItem"
           },
           "description": "Applications within this result-set."
         }
       }
     },
-    "restfulListIntegrationResponse": {
+    "extapiListIntegrationResponse": {
       "type": "object",
       "properties": {
         "totalCount": {
@@ -1314,13 +1302,13 @@
         "result": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulIntegrationListItem"
+            "$ref": "#/definitions/extapiIntegrationListItem"
           },
           "description": "Integrations within result-set."
         }
       }
     },
-    "restfulLoRaCloudIntegration": {
+    "extapiLoRaCloudIntegration": {
       "type": "object",
       "properties": {
         "applicationID": {
@@ -1389,7 +1377,7 @@
         }
       }
     },
-    "restfulMyDevicesIntegration": {
+    "extapiMyDevicesIntegration": {
       "type": "object",
       "properties": {
         "applicationID": {
@@ -1403,7 +1391,7 @@
         }
       }
     },
-    "restfulThingsBoardIntegration": {
+    "extapiThingsBoardIntegration": {
       "type": "object",
       "properties": {
         "applicationID": {
@@ -1417,57 +1405,69 @@
         }
       }
     },
-    "restfulUpdateApplicationRequest": {
+    "extapiUpdateApplicationRequest": {
       "type": "object",
       "properties": {
         "application": {
-          "$ref": "#/definitions/restfulApplication",
+          "$ref": "#/definitions/extapiApplication",
           "description": "Application object to update."
         }
       }
     },
-    "restfulUpdateHTTPIntegrationRequest": {
+    "extapiUpdateHTTPIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulHTTPIntegration",
+          "$ref": "#/definitions/extapiHTTPIntegration",
           "description": "Integration object to update."
         }
       }
     },
-    "restfulUpdateInfluxDBIntegrationRequest": {
+    "extapiUpdateInfluxDBIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulInfluxDBIntegration",
+          "$ref": "#/definitions/extapiInfluxDBIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulUpdateLoRaCloudIntegrationRequest": {
+    "extapiUpdateLoRaCloudIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulLoRaCloudIntegration",
+          "$ref": "#/definitions/extapiLoRaCloudIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulUpdateMyDevicesIntegrationRequest": {
+    "extapiUpdateMyDevicesIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulMyDevicesIntegration",
+          "$ref": "#/definitions/extapiMyDevicesIntegration",
           "description": "Integration object."
         }
       }
     },
-    "restfulUpdateThingsBoardIntegrationRequest": {
+    "extapiUpdateThingsBoardIntegrationRequest": {
       "type": "object",
       "properties": {
         "integration": {
-          "$ref": "#/definitions/restfulThingsBoardIntegration",
+          "$ref": "#/definitions/extapiThingsBoardIntegration",
           "description": "Integration object."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

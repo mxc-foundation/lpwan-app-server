@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulConfirmBindingEmailResponse"
+              "$ref": "#/definitions/extapiConfirmBindingEmailResponse"
             }
           },
           "default": {
@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulConfirmBindingEmailRequest"
+              "$ref": "#/definitions/extapiConfirmBindingEmailRequest"
             }
           }
         ],
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulAuthenticateWeChatUserResponse"
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserResponse"
             }
           },
           "default": {
@@ -68,7 +68,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulAuthenticateWeChatUserRequest"
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserRequest"
             }
           }
         ],
@@ -85,7 +85,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulBindExternalUserResponse"
+              "$ref": "#/definitions/extapiBindExternalUserResponse"
             }
           },
           "default": {
@@ -101,7 +101,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulBindExternalUserRequest"
+              "$ref": "#/definitions/extapiBindExternalUserRequest"
             }
           }
         ],
@@ -118,7 +118,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulAuthenticateWeChatUserResponse"
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserResponse"
             }
           },
           "default": {
@@ -134,7 +134,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulAuthenticateWeChatUserRequest"
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserRequest"
             }
           }
         ],
@@ -151,7 +151,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulRegisterExternalUserResponse"
+              "$ref": "#/definitions/extapiRegisterExternalUserResponse"
             }
           },
           "default": {
@@ -167,7 +167,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulRegisterExternalUserRequest"
+              "$ref": "#/definitions/extapiRegisterExternalUserRequest"
             }
           }
         ],
@@ -184,7 +184,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulUnbindExternalUserResponse"
+              "$ref": "#/definitions/extapiUnbindExternalUserResponse"
             }
           },
           "default": {
@@ -200,7 +200,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUnbindExternalUserRequest"
+              "$ref": "#/definitions/extapiUnbindExternalUserRequest"
             }
           }
         ],
@@ -217,7 +217,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulVerifyEmailResponse"
+              "$ref": "#/definitions/extapiVerifyEmailResponse"
             }
           },
           "default": {
@@ -233,7 +233,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulVerifyEmailRequest"
+              "$ref": "#/definitions/extapiVerifyEmailRequest"
             }
           }
         ],
@@ -244,19 +244,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulAuthenticateWeChatUserRequest": {
+    "extapiAuthenticateWeChatUserRequest": {
       "type": "object",
       "properties": {
         "code": {
@@ -264,7 +252,7 @@
         }
       }
     },
-    "restfulAuthenticateWeChatUserResponse": {
+    "extapiAuthenticateWeChatUserResponse": {
       "type": "object",
       "properties": {
         "jwt": {
@@ -275,7 +263,7 @@
         }
       }
     },
-    "restfulBindExternalUserRequest": {
+    "extapiBindExternalUserRequest": {
       "type": "object",
       "properties": {
         "email": {
@@ -286,7 +274,7 @@
         }
       }
     },
-    "restfulBindExternalUserResponse": {
+    "extapiBindExternalUserResponse": {
       "type": "object",
       "properties": {
         "jwt": {
@@ -294,7 +282,7 @@
         }
       }
     },
-    "restfulConfirmBindingEmailRequest": {
+    "extapiConfirmBindingEmailRequest": {
       "type": "object",
       "properties": {
         "token": {
@@ -307,10 +295,10 @@
         }
       }
     },
-    "restfulConfirmBindingEmailResponse": {
+    "extapiConfirmBindingEmailResponse": {
       "type": "object"
     },
-    "restfulRegisterExternalUserRequest": {
+    "extapiRegisterExternalUserRequest": {
       "type": "object",
       "properties": {
         "email": {
@@ -321,7 +309,7 @@
         }
       }
     },
-    "restfulRegisterExternalUserResponse": {
+    "extapiRegisterExternalUserResponse": {
       "type": "object",
       "properties": {
         "jwt": {
@@ -329,7 +317,7 @@
         }
       }
     },
-    "restfulUnbindExternalUserRequest": {
+    "extapiUnbindExternalUserRequest": {
       "type": "object",
       "properties": {
         "service": {
@@ -341,7 +329,7 @@
         }
       }
     },
-    "restfulUnbindExternalUserResponse": {
+    "extapiUnbindExternalUserResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -349,7 +337,7 @@
         }
       }
     },
-    "restfulVerifyEmailRequest": {
+    "extapiVerifyEmailRequest": {
       "type": "object",
       "properties": {
         "email": {
@@ -365,11 +353,23 @@
         }
       }
     },
-    "restfulVerifyEmailResponse": {
+    "extapiVerifyEmailResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

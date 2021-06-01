@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulStakingPercentageResponse"
+              "$ref": "#/definitions/extapiStakingPercentageResponse"
             }
           },
           "default": {
@@ -51,7 +51,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetActiveStakesResponse"
+              "$ref": "#/definitions/extapiGetActiveStakesResponse"
             }
           },
           "default": {
@@ -88,7 +88,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulStakingHistoryResponse"
+              "$ref": "#/definitions/extapiStakingHistoryResponse"
             }
           },
           "default": {
@@ -139,7 +139,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulStakingRevenueResponse"
+              "$ref": "#/definitions/extapiStakingRevenueResponse"
             }
           },
           "default": {
@@ -191,7 +191,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulStakeResponse"
+              "$ref": "#/definitions/extapiStakeResponse"
             }
           },
           "default": {
@@ -214,7 +214,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulStakeRequest"
+              "$ref": "#/definitions/extapiStakeRequest"
             }
           }
         ],
@@ -231,7 +231,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulStakeInfoResponse"
+              "$ref": "#/definitions/extapiStakeInfoResponse"
             }
           },
           "default": {
@@ -272,7 +272,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulUnstakeResponse"
+              "$ref": "#/definitions/extapiUnstakeResponse"
             }
           },
           "default": {
@@ -295,7 +295,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulUnstakeRequest"
+              "$ref": "#/definitions/extapiUnstakeRequest"
             }
           }
         ],
@@ -306,19 +306,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulBoost": {
+    "extapiBoost": {
       "type": "object",
       "properties": {
         "lockPeriods": {
@@ -333,18 +321,18 @@
       },
       "title": "information about boost for locking the stake"
     },
-    "restfulGetActiveStakesResponse": {
+    "extapiGetActiveStakesResponse": {
       "type": "object",
       "properties": {
         "actStake": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulStake"
+            "$ref": "#/definitions/extapiStake"
           }
         }
       }
     },
-    "restfulStake": {
+    "extapiStake": {
       "type": "object",
       "properties": {
         "id": {
@@ -384,23 +372,23 @@
         }
       }
     },
-    "restfulStakeInfoResponse": {
+    "extapiStakeInfoResponse": {
       "type": "object",
       "properties": {
         "stake": {
-          "$ref": "#/definitions/restfulStake",
+          "$ref": "#/definitions/extapiStake",
           "title": "information about the stake"
         },
         "revenues": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulStakeRevenue"
+            "$ref": "#/definitions/extapiStakeRevenue"
           },
           "title": "all the revenues that were paid for this stake"
         }
       }
     },
-    "restfulStakeRequest": {
+    "extapiStakeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -424,7 +412,7 @@
         }
       }
     },
-    "restfulStakeResponse": {
+    "extapiStakeResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -432,7 +420,7 @@
         }
       }
     },
-    "restfulStakeRevenue": {
+    "extapiStakeRevenue": {
       "type": "object",
       "properties": {
         "time": {
@@ -444,7 +432,7 @@
         }
       }
     },
-    "restfulStakingHistory": {
+    "extapiStakingHistory": {
       "type": "object",
       "properties": {
         "timestamp": {
@@ -458,22 +446,22 @@
           "type": "string"
         },
         "stake": {
-          "$ref": "#/definitions/restfulStake"
+          "$ref": "#/definitions/extapiStake"
         }
       }
     },
-    "restfulStakingHistoryResponse": {
+    "extapiStakingHistoryResponse": {
       "type": "object",
       "properties": {
         "stakingHist": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulStakingHistory"
+            "$ref": "#/definitions/extapiStakingHistory"
           }
         }
       }
     },
-    "restfulStakingPercentageResponse": {
+    "extapiStakingPercentageResponse": {
       "type": "object",
       "properties": {
         "stakingInterest": {
@@ -484,14 +472,14 @@
         "lockBoosts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulBoost"
+            "$ref": "#/definitions/extapiBoost"
           },
           "title": "list of boosts for locking stake for different periods"
         }
       },
       "title": "information about staking share and boosts"
     },
-    "restfulStakingRevenueResponse": {
+    "extapiStakingRevenueResponse": {
       "type": "object",
       "properties": {
         "amount": {
@@ -499,7 +487,7 @@
         }
       }
     },
-    "restfulUnstakeRequest": {
+    "extapiUnstakeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -513,11 +501,23 @@
         }
       }
     },
-    "restfulUnstakeResponse": {
+    "extapiUnstakeResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

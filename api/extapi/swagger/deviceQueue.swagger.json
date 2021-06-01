@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulListDeviceQueueItemsResponse"
+              "$ref": "#/definitions/extapiListDeviceQueueItemsResponse"
             }
           },
           "default": {
@@ -81,7 +81,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulEnqueueDeviceQueueItemResponse"
+              "$ref": "#/definitions/extapiEnqueueDeviceQueueItemResponse"
             }
           },
           "default": {
@@ -104,7 +104,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulEnqueueDeviceQueueItemRequest"
+              "$ref": "#/definitions/extapiEnqueueDeviceQueueItemRequest"
             }
           }
         ],
@@ -115,19 +115,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulDeviceQueueItem": {
+    "extapiDeviceQueueItem": {
       "type": "object",
       "properties": {
         "devEUI": {
@@ -159,16 +147,16 @@
         }
       }
     },
-    "restfulEnqueueDeviceQueueItemRequest": {
+    "extapiEnqueueDeviceQueueItemRequest": {
       "type": "object",
       "properties": {
         "deviceQueueItem": {
-          "$ref": "#/definitions/restfulDeviceQueueItem",
+          "$ref": "#/definitions/extapiDeviceQueueItem",
           "description": "Queue-item object to enqueue."
         }
       }
     },
-    "restfulEnqueueDeviceQueueItemResponse": {
+    "extapiEnqueueDeviceQueueItemResponse": {
       "type": "object",
       "properties": {
         "fCnt": {
@@ -178,14 +166,26 @@
         }
       }
     },
-    "restfulListDeviceQueueItemsResponse": {
+    "extapiListDeviceQueueItemsResponse": {
       "type": "object",
       "properties": {
         "deviceQueueItems": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulDeviceQueueItem"
+            "$ref": "#/definitions/extapiDeviceQueueItem"
           }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

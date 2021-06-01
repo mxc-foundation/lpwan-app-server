@@ -19,7 +19,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetWithdrawFeeResponse"
+              "$ref": "#/definitions/extapiGetWithdrawFeeResponse"
             }
           },
           "default": {
@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetWithdrawHistoryResponse"
+              "$ref": "#/definitions/extapiGetWithdrawHistoryResponse"
             }
           },
           "default": {
@@ -101,7 +101,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulModifyWithdrawFeeResponse"
+              "$ref": "#/definitions/extapiModifyWithdrawFeeResponse"
             }
           },
           "default": {
@@ -117,7 +117,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulModifyWithdrawFeeRequest"
+              "$ref": "#/definitions/extapiModifyWithdrawFeeRequest"
             }
           }
         ],
@@ -134,7 +134,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/restfulGetWithdrawResponse"
+              "$ref": "#/definitions/extapiGetWithdrawResponse"
             }
           },
           "default": {
@@ -150,7 +150,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/restfulGetWithdrawRequest"
+              "$ref": "#/definitions/extapiGetWithdrawRequest"
             }
           }
         ],
@@ -161,19 +161,7 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "restfulGetWithdrawFeeResponse": {
+    "extapiGetWithdrawFeeResponse": {
       "type": "object",
       "properties": {
         "withdrawFee": {
@@ -186,18 +174,18 @@
         }
       }
     },
-    "restfulGetWithdrawHistoryResponse": {
+    "extapiGetWithdrawHistoryResponse": {
       "type": "object",
       "properties": {
         "withdrawHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/restfulWithdrawHistory"
+            "$ref": "#/definitions/extapiWithdrawHistory"
           }
         }
       }
     },
-    "restfulGetWithdrawRequest": {
+    "extapiGetWithdrawRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -215,7 +203,7 @@
         }
       }
     },
-    "restfulGetWithdrawResponse": {
+    "extapiGetWithdrawResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -223,7 +211,7 @@
         }
       }
     },
-    "restfulModifyWithdrawFeeRequest": {
+    "extapiModifyWithdrawFeeRequest": {
       "type": "object",
       "properties": {
         "currency": {
@@ -237,7 +225,7 @@
         }
       }
     },
-    "restfulModifyWithdrawFeeResponse": {
+    "extapiModifyWithdrawFeeResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -245,7 +233,7 @@
         }
       }
     },
-    "restfulWithdrawHistory": {
+    "extapiWithdrawHistory": {
       "type": "object",
       "properties": {
         "txStatus": {
@@ -266,6 +254,18 @@
         },
         "withdrawFee": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },
