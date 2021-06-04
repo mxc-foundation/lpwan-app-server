@@ -170,7 +170,7 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		return err
 	}
 	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(
-		h,
+		h.PgStore,
 		grpcAuth,
 		GwConfig{
 			ApplicationServerID: rpID,

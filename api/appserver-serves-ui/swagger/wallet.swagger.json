@@ -55,6 +55,49 @@
         ]
       }
     },
+    "/api/wallet/mining_health": {
+      "get": {
+        "operationId": "GetGatewayMiningHealth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningHealthResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization_id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gatewayMac",
+            "description": "list of gateways for which the health should be returned. If empty, then\nhealth of all the gateways of the organization will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/mining_income": {
       "get": {
         "operationId": "GetWalletMiningIncome",
@@ -236,6 +279,38 @@
         ]
       }
     },
+    "/api/wallet/top-up-mining-fuel": {
+      "post": {
+        "operationId": "TopUpGatewayMiningFuel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTopUpGatewayMiningFuelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTopUpGatewayMiningFuelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/tx-history": {
       "get": {
         "operationId": "GetTransactionHistory",
@@ -294,6 +369,38 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/withdraw-mining-fuel": {
+      "post": {
+        "operationId": "WithdrawGatewayMiningFuel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawGatewayMiningFuelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawGatewayMiningFuelRequest"
+            }
           }
         ],
         "tags": [
@@ -430,12 +537,88 @@
     }
   },
   "definitions": {
+    "appserver_serves_uiGatewayMiningFuelChange": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount that is to be added or withdrawn"
+        }
+      },
+      "title": "information about the gateway mining fuel"
+    },
+    "appserver_serves_uiGatewayMiningHealth": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "MAC of the gateway, called \"id\" for consistency with /api/gateways call"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that owns the gateway"
+        },
+        "health": {
+          "type": "number",
+          "format": "float",
+          "title": "overall health score"
+        },
+        "miningFuel": {
+          "type": "string",
+          "title": "mining fuel bonded to the gw by the org"
+        },
+        "miningFuelMax": {
+          "type": "string",
+          "title": "mining fuel required for full mining efficiency"
+        },
+        "miningFuelHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "mining fuel health score"
+        },
+        "ageSeconds": {
+          "type": "string",
+          "format": "int64",
+          "title": "gateway's age, total online seconds"
+        },
+        "totalMined": {
+          "type": "string",
+          "title": "gateway's total mining"
+        },
+        "uptimeHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "uptime percentage in the last 7 calendar days"
+        }
+      }
+    },
     "appserver_serves_uiGetDownLinkPriceResponse": {
       "type": "object",
       "properties": {
         "downLinkPrice": {
           "type": "number",
           "format": "double"
+        }
+      }
+    },
+    "appserver_serves_uiGetGatewayMiningHealthResponse": {
+      "type": "object",
+      "properties": {
+        "gatewayHealth": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGatewayMiningHealth"
+          },
+          "title": "list of health records for every gateway that was requested"
+        },
+        "miningHealthAverage": {
+          "$ref": "#/definitions/appserver_serves_uiMiningHealthAverage",
+          "title": "\"average\" health numbers for the gateways in response"
         }
       }
     },
@@ -545,6 +728,26 @@
         }
       }
     },
+    "appserver_serves_uiMiningHealthAverage": {
+      "type": "object",
+      "properties": {
+        "overall": {
+          "type": "number",
+          "format": "float",
+          "title": "overall health of the gateways"
+        },
+        "miningFuelHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "average mining fuel health"
+        },
+        "uptimeHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "average uptime"
+        }
+      }
+    },
     "appserver_serves_uiMiningStats": {
       "type": "object",
       "properties": {
@@ -556,6 +759,16 @@
         "amount": {
           "type": "string",
           "title": "amount mined on the specified day"
+        },
+        "onlineSeconds": {
+          "type": "string",
+          "format": "int64",
+          "title": "gateway's online time on the date"
+        },
+        "health": {
+          "type": "number",
+          "format": "float",
+          "title": "average gateway's health on the date"
         }
       },
       "title": "Mining stats for a single date"
@@ -604,6 +817,31 @@
         }
       }
     },
+    "appserver_serves_uiTopUpGatewayMiningFuelRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization id"
+        },
+        "currency": {
+          "type": "string",
+          "title": "currency"
+        },
+        "topUps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGatewayMiningFuelChange"
+          },
+          "title": "gateways and amounts that should be added to them"
+        }
+      },
+      "title": "top up amount bonded to a gateway"
+    },
+    "appserver_serves_uiTopUpGatewayMiningFuelResponse": {
+      "type": "object"
+    },
     "appserver_serves_uiTransaction": {
       "type": "object",
       "properties": {
@@ -649,6 +887,31 @@
           "type": "string"
         }
       }
+    },
+    "appserver_serves_uiWithdrawGatewayMiningFuelRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "what organization owns the fuel"
+        },
+        "currency": {
+          "type": "string",
+          "title": "token that is bonded to the gateway"
+        },
+        "withdrawals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGatewayMiningFuelChange"
+          },
+          "title": "gateways and amounts that should be withdrawn from them"
+        }
+      },
+      "title": "withdraw amount from the gateway mining fuel"
+    },
+    "appserver_serves_uiWithdrawGatewayMiningFuelResponse": {
+      "type": "object"
     },
     "protobufAny": {
       "type": "object",
