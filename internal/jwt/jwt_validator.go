@@ -22,7 +22,7 @@ type Claims struct {
 	Service string `json:"service"`
 	// ExternalCred defines key credentials to verify a wechat user
 	ExternalCred string `json:"externalCred"`
-	// OrganizationID is used when organization id is required for signing JWT and with audience "specific-org"
+	// OrganizationID is used when organization id is required for signing JWT and with audience "mosquitto-auth"
 	OrganizationID int64 `json:"organizationId"`
 }
 
