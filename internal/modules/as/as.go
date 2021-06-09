@@ -1,7 +1,6 @@
 package as
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"net"
 
 	"github.com/pkg/errors"
@@ -13,6 +12,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
 )
 

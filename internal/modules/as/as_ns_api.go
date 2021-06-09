@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"math"
 	"time"
 
@@ -23,6 +22,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/events/uplink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	dev "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
