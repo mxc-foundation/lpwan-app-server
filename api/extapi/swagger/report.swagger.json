@@ -22,13 +22,13 @@
               "type": "object",
               "properties": {
                 "result": {
-                  "$ref": "#/definitions/appserver_serves_uiMiningReportResponse"
+                  "$ref": "#/definitions/extapiMiningReportResponse"
                 },
                 "error": {
                   "$ref": "#/definitions/runtimeStreamError"
                 }
               },
-              "title": "Stream result of appserver_serves_uiMiningReportResponse"
+              "title": "Stream result of extapiMiningReportResponse"
             }
           },
           "default": {
@@ -101,13 +101,13 @@
               "type": "object",
               "properties": {
                 "result": {
-                  "$ref": "#/definitions/appserver_serves_uiMiningReportResponse"
+                  "$ref": "#/definitions/extapiMiningReportResponse"
                 },
                 "error": {
                   "$ref": "#/definitions/runtimeStreamError"
                 }
               },
-              "title": "Stream result of appserver_serves_uiMiningReportResponse"
+              "title": "Stream result of extapiMiningReportResponse"
             }
           },
           "default": {
@@ -177,7 +177,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetFiatCurrencyListResponse"
+              "$ref": "#/definitions/extapiGetFiatCurrencyListResponse"
             }
           },
           "default": {
@@ -194,7 +194,7 @@
     }
   },
   "definitions": {
-    "appserver_serves_uiFiatCurrency": {
+    "extapiFiatCurrency": {
       "type": "object",
       "properties": {
         "id": {
@@ -205,18 +205,18 @@
         }
       }
     },
-    "appserver_serves_uiGetFiatCurrencyListResponse": {
+    "extapiGetFiatCurrencyListResponse": {
       "type": "object",
       "properties": {
         "fiatCurrencyList": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiFiatCurrency"
+            "$ref": "#/definitions/extapiFiatCurrency"
           }
         }
       }
     },
-    "appserver_serves_uiMiningReportResponse": {
+    "extapiMiningReportResponse": {
       "type": "object",
       "properties": {
         "data": {

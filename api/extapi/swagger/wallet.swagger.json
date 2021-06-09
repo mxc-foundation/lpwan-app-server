@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetWalletBalanceResponse"
+              "$ref": "#/definitions/extapiGetWalletBalanceResponse"
             }
           },
           "default": {
@@ -62,7 +62,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningHealthResponse"
+              "$ref": "#/definitions/extapiGetGatewayMiningHealthResponse"
             }
           },
           "default": {
@@ -105,7 +105,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetWalletMiningIncomeResponse"
+              "$ref": "#/definitions/extapiGetWalletMiningIncomeResponse"
             }
           },
           "default": {
@@ -157,7 +157,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningIncomeResponse"
+              "$ref": "#/definitions/extapiGetGatewayMiningIncomeResponse"
             }
           },
           "default": {
@@ -211,7 +211,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetMiningInfoResponse"
+              "$ref": "#/definitions/extapiGetMiningInfoResponse"
             }
           },
           "default": {
@@ -242,7 +242,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetMXCpriceResponse"
+              "$ref": "#/definitions/extapiGetMXCpriceResponse"
             }
           },
           "default": {
@@ -286,7 +286,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiTopUpGatewayMiningFuelResponse"
+              "$ref": "#/definitions/extapiTopUpGatewayMiningFuelResponse"
             }
           },
           "default": {
@@ -302,7 +302,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiTopUpGatewayMiningFuelRequest"
+              "$ref": "#/definitions/extapiTopUpGatewayMiningFuelRequest"
             }
           }
         ],
@@ -318,7 +318,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetTransactionHistoryResponse"
+              "$ref": "#/definitions/extapiGetTransactionHistoryResponse"
             }
           },
           "default": {
@@ -383,7 +383,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiWithdrawGatewayMiningFuelResponse"
+              "$ref": "#/definitions/extapiWithdrawGatewayMiningFuelResponse"
             }
           },
           "default": {
@@ -399,7 +399,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiWithdrawGatewayMiningFuelRequest"
+              "$ref": "#/definitions/extapiWithdrawGatewayMiningFuelRequest"
             }
           }
         ],
@@ -415,7 +415,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetDownLinkPriceResponse"
+              "$ref": "#/definitions/extapiGetDownLinkPriceResponse"
             }
           },
           "default": {
@@ -446,7 +446,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetVmxcTxHistoryResponse"
+              "$ref": "#/definitions/extapiGetVmxcTxHistoryResponse"
             }
           },
           "default": {
@@ -491,7 +491,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetNetworkUsageHistResponse"
+              "$ref": "#/definitions/extapiGetNetworkUsageHistResponse"
             }
           },
           "default": {
@@ -537,7 +537,7 @@
     }
   },
   "definitions": {
-    "appserver_serves_uiGatewayMiningFuelChange": {
+    "extapiGatewayMiningFuelChange": {
       "type": "object",
       "properties": {
         "gatewayMac": {
@@ -551,7 +551,7 @@
       },
       "title": "information about the gateway mining fuel"
     },
-    "appserver_serves_uiGatewayMiningHealth": {
+    "extapiGatewayMiningHealth": {
       "type": "object",
       "properties": {
         "id": {
@@ -597,7 +597,7 @@
         }
       }
     },
-    "appserver_serves_uiGetDownLinkPriceResponse": {
+    "extapiGetDownLinkPriceResponse": {
       "type": "object",
       "properties": {
         "downLinkPrice": {
@@ -606,29 +606,29 @@
         }
       }
     },
-    "appserver_serves_uiGetGatewayMiningHealthResponse": {
+    "extapiGetGatewayMiningHealthResponse": {
       "type": "object",
       "properties": {
         "gatewayHealth": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiGatewayMiningHealth"
+            "$ref": "#/definitions/extapiGatewayMiningHealth"
           },
           "title": "list of health records for every gateway that was requested"
         },
         "miningHealthAverage": {
-          "$ref": "#/definitions/appserver_serves_uiMiningHealthAverage",
+          "$ref": "#/definitions/extapiMiningHealthAverage",
           "title": "\"average\" health numbers for the gateways in response"
         }
       }
     },
-    "appserver_serves_uiGetGatewayMiningIncomeResponse": {
+    "extapiGetGatewayMiningIncomeResponse": {
       "type": "object",
       "properties": {
         "dailyStats": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiMiningStats"
+            "$ref": "#/definitions/extapiMiningStats"
           },
           "title": "daily mining stats for each day the mining happened"
         },
@@ -638,7 +638,7 @@
         }
       }
     },
-    "appserver_serves_uiGetMXCpriceResponse": {
+    "extapiGetMXCpriceResponse": {
       "type": "object",
       "properties": {
         "mxcPrice": {
@@ -646,7 +646,7 @@
         }
       }
     },
-    "appserver_serves_uiGetMiningInfoResponse": {
+    "extapiGetMiningInfoResponse": {
       "type": "object",
       "properties": {
         "todayRev": {
@@ -655,18 +655,18 @@
         "data": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiMiningData"
+            "$ref": "#/definitions/extapiMiningData"
           }
         }
       }
     },
-    "appserver_serves_uiGetNetworkUsageHistResponse": {
+    "extapiGetNetworkUsageHistResponse": {
       "type": "object",
       "properties": {
         "networkUsage": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiNetworkUsage"
+            "$ref": "#/definitions/extapiNetworkUsage"
           }
         },
         "count": {
@@ -675,18 +675,18 @@
         }
       }
     },
-    "appserver_serves_uiGetTransactionHistoryResponse": {
+    "extapiGetTransactionHistoryResponse": {
       "type": "object",
       "properties": {
         "tx": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiTransaction"
+            "$ref": "#/definitions/extapiTransaction"
           }
         }
       }
     },
-    "appserver_serves_uiGetVmxcTxHistoryResponse": {
+    "extapiGetVmxcTxHistoryResponse": {
       "type": "object",
       "properties": {
         "count": {
@@ -696,12 +696,12 @@
         "txHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiVmxcTxHistory"
+            "$ref": "#/definitions/extapiVmxcTxHistory"
           }
         }
       }
     },
-    "appserver_serves_uiGetWalletBalanceResponse": {
+    "extapiGetWalletBalanceResponse": {
       "type": "object",
       "properties": {
         "balance": {
@@ -709,7 +709,7 @@
         }
       }
     },
-    "appserver_serves_uiGetWalletMiningIncomeResponse": {
+    "extapiGetWalletMiningIncomeResponse": {
       "type": "object",
       "properties": {
         "miningIncome": {
@@ -717,7 +717,7 @@
         }
       }
     },
-    "appserver_serves_uiMiningData": {
+    "extapiMiningData": {
       "type": "object",
       "properties": {
         "month": {
@@ -728,7 +728,7 @@
         }
       }
     },
-    "appserver_serves_uiMiningHealthAverage": {
+    "extapiMiningHealthAverage": {
       "type": "object",
       "properties": {
         "overall": {
@@ -748,7 +748,7 @@
         }
       }
     },
-    "appserver_serves_uiMiningStats": {
+    "extapiMiningStats": {
       "type": "object",
       "properties": {
         "date": {
@@ -773,7 +773,7 @@
       },
       "title": "Mining stats for a single date"
     },
-    "appserver_serves_uiNetworkUsage": {
+    "extapiNetworkUsage": {
       "type": "object",
       "properties": {
         "timestamp": {
@@ -817,7 +817,7 @@
         }
       }
     },
-    "appserver_serves_uiTopUpGatewayMiningFuelRequest": {
+    "extapiTopUpGatewayMiningFuelRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -832,17 +832,17 @@
         "topUps": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiGatewayMiningFuelChange"
+            "$ref": "#/definitions/extapiGatewayMiningFuelChange"
           },
           "title": "gateways and amounts that should be added to them"
         }
       },
       "title": "top up amount bonded to a gateway"
     },
-    "appserver_serves_uiTopUpGatewayMiningFuelResponse": {
+    "extapiTopUpGatewayMiningFuelResponse": {
       "type": "object"
     },
-    "appserver_serves_uiTransaction": {
+    "extapiTransaction": {
       "type": "object",
       "properties": {
         "id": {
@@ -867,7 +867,7 @@
         }
       }
     },
-    "appserver_serves_uiVmxcTxHistory": {
+    "extapiVmxcTxHistory": {
       "type": "object",
       "properties": {
         "from": {
@@ -888,7 +888,7 @@
         }
       }
     },
-    "appserver_serves_uiWithdrawGatewayMiningFuelRequest": {
+    "extapiWithdrawGatewayMiningFuelRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -903,14 +903,14 @@
         "withdrawals": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiGatewayMiningFuelChange"
+            "$ref": "#/definitions/extapiGatewayMiningFuelChange"
           },
           "title": "gateways and amounts that should be withdrawn from them"
         }
       },
       "title": "withdraw amount from the gateway mining fuel"
     },
-    "appserver_serves_uiWithdrawGatewayMiningFuelResponse": {
+    "extapiWithdrawGatewayMiningFuelResponse": {
       "type": "object"
     },
     "protobufAny": {
