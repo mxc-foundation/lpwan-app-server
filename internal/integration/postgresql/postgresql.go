@@ -22,7 +22,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 )
 
 // Integration implements a PostgreSQL integration.
@@ -31,7 +31,7 @@ type Integration struct {
 }
 
 // New creates a new PostgreSQL integration.
-func New(conf IntegrationPostgreSQLConfig) (*Integration, error) {
+func New(conf types.IntegrationPostgreSQLConfig) (*Integration, error) {
 	log.Info("integration/postgresql: connecting to PostgreSQL database")
 	d, err := sqlx.Open("postgres", conf.DSN)
 	if err != nil {

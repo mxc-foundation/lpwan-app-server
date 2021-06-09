@@ -22,6 +22,8 @@ type Claims struct {
 	Service string `json:"service"`
 	// ExternalCred defines key credentials to verify a wechat user
 	ExternalCred string `json:"externalCred"`
+	// OrganizationID is used when organization id is required for signing JWT and with audience "specific-org"
+	OrganizationID int64 `json:"organizationId"`
 }
 
 // Validator validates JWT tokens.
@@ -61,6 +63,7 @@ func (v Validator) SignToken(claims Claims, ttl int64, audience []string) (strin
 	_ = t.Set("userId", claims.UserID)
 	_ = t.Set("service", claims.Service)
 	_ = t.Set("externalCred", claims.ExternalCred)
+	_ = t.Set("organizationId", claims.OrganizationID)
 
 	token, err := jwt.Sign(t, v.algorithm, v.secret)
 	if err != nil {
@@ -119,6 +122,15 @@ func (v Validator) GetClaims(tokenEncoded, audience string) (*Claims, error) {
 			return nil, fmt.Errorf("externalCred is not a string")
 		}
 		claims.ExternalCred = externalCredStr
+	}
+
+	organizationID, ok := token.Get("orgnizationId")
+	if ok {
+		organizationIDFloat, ok := organizationID.(float64)
+		if !ok {
+			return nil, fmt.Errorf("organizationId is not a number")
+		}
+		claims.OrganizationID = int64(organizationIDFloat)
 	}
 
 	return claims, nil

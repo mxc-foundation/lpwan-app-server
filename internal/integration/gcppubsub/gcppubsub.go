@@ -22,7 +22,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 )
 
 type publishRequest struct {
@@ -45,7 +45,7 @@ type Integration struct {
 }
 
 // New creates a new Pub/Sub integration.
-func New(m marshaler.Type, conf IntegrationGCPConfig) (*Integration, error) {
+func New(m marshaler.Type, conf types.IntegrationGCPConfig) (*Integration, error) {
 	if conf.Marshaler != "" {
 		switch conf.Marshaler {
 		case "PROTOBUF":

@@ -21,7 +21,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 )
 
 // Integration implements the AWS SNS integration.
@@ -32,7 +32,7 @@ type Integration struct {
 }
 
 // New creates a new AWS SNS integration.
-func New(m marshaler.Type, conf IntegrationAWSSNSConfig) (*Integration, error) {
+func New(m marshaler.Type, conf types.IntegrationAWSSNSConfig) (*Integration, error) {
 	if conf.Marshaler != "" {
 		switch conf.Marshaler {
 		case "PROTOBUF":

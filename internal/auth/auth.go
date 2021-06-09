@@ -15,6 +15,8 @@ type Options struct {
 	AllowNonExisting bool
 	OrgID            int64
 
+	// when GetOrgIDFromToken is true, extract organization id from jwt then assign it to user's credential
+	GetOrgIDFromToken bool
 	// external auth
 	ExternalLimited bool
 }
@@ -23,6 +25,12 @@ func NewOptions() *Options {
 	return &Options{
 		Audience: "lora-app-server",
 	}
+}
+
+// ExtractOrgIDFromToken sets GetOrgIDFromToken = true
+func (o *Options) ExtractOrgIDFromToken() *Options {
+	o.GetOrgIDFromToken = true
+	return o
 }
 
 func (o *Options) WithAudience(audience string) *Options {

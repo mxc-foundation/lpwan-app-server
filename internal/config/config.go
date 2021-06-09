@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/download"
 	external "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
@@ -12,7 +11,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
-	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/data"
+	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js/data"
 	as "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
 	gws "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
@@ -69,8 +68,6 @@ type Config struct {
 		APIForGateway gws.GatewayBindStruct `mapstructure:"api_for_gateway"`
 
 		ExternalAPI external.ExternalAPIStruct `mapstructure:"external_api"`
-
-		DownloadServiceAPI download.Config `mapstructure:"download_api"`
 
 		RemoteMulticastSetup multicastsetup.MulticastStruct `mapstructure:"remote_multicast_setup"`
 

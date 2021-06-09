@@ -3,15 +3,10 @@ package downlink
 import (
 	"fmt"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 
@@ -20,45 +15,30 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
-}
-
-const moduleName = "downlink"
-
 type controller struct {
-	moduleUp bool
+	h             *store.Handler
+	gIntegrations []models.IntegrationHandler
 }
 
-var ctrl *controller
-
-func SettingsSetup(name string, conf config.Config) error {
-	ctrl = &controller{}
-	return nil
-}
-
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
-		return nil
+// Setup sets up downlink service, starts HandleDataDownPayloads which handles received downlink payloads to be emitted to the
+// devices.
+func Setup(h *store.Handler, gIntegrations []models.IntegrationHandler) {
+	ctrl := &controller{
+		h:             h,
+		gIntegrations: gIntegrations,
 	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
-
-	downChan := integration.ForApplicationID(0).DataDownChan()
-	go HandleDataDownPayloads(downChan, h)
-
-	return nil
+	go ctrl.HandleDataDownPayloads()
 }
 
 // HandleDataDownPayloads handles received downlink payloads to be emitted to the
 // devices.
-func HandleDataDownPayloads(downChan chan models.DataDownPayload, handler *store.Handler) {
+func (c *controller) HandleDataDownPayloads() {
+	downChan := integration.ForApplicationID(0, c.gIntegrations).DataDownChan()
 	for pl := range downChan {
 		go func(pl models.DataDownPayload) {
 			ctxID, err := uuid.NewV4()
@@ -70,7 +50,7 @@ func HandleDataDownPayloads(downChan chan models.DataDownPayload, handler *store
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-			if err := handleDataDownPayload(ctx, pl, handler); err != nil {
+			if err := c.handleDataDownPayload(ctx, pl); err != nil {
 				log.WithFields(log.Fields{
 					"dev_eui":        pl.DevEUI,
 					"application_id": pl.ApplicationID,
@@ -80,8 +60,8 @@ func HandleDataDownPayloads(downChan chan models.DataDownPayload, handler *store
 	}
 }
 
-func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload, handler *store.Handler) error {
-	return handler.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {
+	return c.h.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		// lock the device so that a concurrent Enqueue action will block
 		// until this transaction has been completed
 		d, err := handler.GetDevice(ctx, pl.DevEUI, true)
@@ -122,7 +102,7 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload, handl
 
 			pl.Data, err = codec.JSONToBinary(codec.Type(payloadCodec), pl.FPort, d.Variables, payloadEncoderScript, pl.Object)
 			if err != nil {
-				logCodecError(ctx, app, d, err)
+				c.logCodecError(ctx, app, d, err)
 				return errors.Wrap(err, "encode object error")
 			}
 		}
@@ -135,7 +115,7 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload, handl
 	})
 }
 
-func logCodecError(ctx context.Context, a apps.Application, d ds.Device, err error) {
+func (c *controller) logCodecError(ctx context.Context, a apps.Application, d ds.Device, err error) {
 	errEvent := pb.ErrorEvent{
 		ApplicationId:   uint64(a.ID),
 		ApplicationName: a.Name,
@@ -159,7 +139,7 @@ func logCodecError(ctx context.Context, a apps.Application, d ds.Device, err err
 		}
 	}
 
-	if err := integration.ForApplicationID(a.ID).HandleErrorEvent(ctx, vars, errEvent); err != nil {
+	if err := integration.ForApplicationID(a.ID, c.gIntegrations).HandleErrorEvent(ctx, vars, errEvent); err != nil {
 		log.WithError(err).WithField("ctx_id", ctx.Value(logging.ContextIDKey)).Error("send error event to integration error")
 	}
 }

@@ -17,7 +17,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/amqp/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 )
 
 // Integration implements an AMQP integration.
@@ -29,7 +29,7 @@ type Integration struct {
 }
 
 // New creates a new AMQP integration.
-func New(m marshaler.Type, conf IntegrationAMQPConfig) (*Integration, error) {
+func New(m marshaler.Type, conf types.IntegrationAMQPConfig) (*Integration, error) {
 	var err error
 	i := Integration{
 		marshaler: m,

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"text/template"
 	"time"
 
 	"golang.org/x/net/context"
@@ -252,7 +253,26 @@ func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server)
 		srv.ServerAddr,
 	))
 
-	api.RegisterMosquittoAuthServiceServer(grpcServer, mqttauth.NewServer(pgs, grpcAuth, jwtValidator))
+	eventTopicTemplate, err := template.New("event").Parse(mqttauth.EventTopicTemplate)
+	if err != nil {
+		return fmt.Errorf("parse command template error: %v", err)
+	}
+	commandTopicTemplate, err := template.New("command").Parse(mqttauth.CommandTopicTemplate)
+	if err != nil {
+		return fmt.Errorf("parse command template error: %v", err)
+	}
+	allEventsTopicTemplate, err := template.New("allEvents").Parse(mqttauth.AllEventsTopicTemplate)
+	if err != nil {
+		return fmt.Errorf("parse all events template error: %v", err)
+	}
+	api.RegisterMosquittoAuthServiceServer(grpcServer, mqttauth.NewServer(
+		pgs,
+		grpcAuth,
+		jwtValidator,
+		eventTopicTemplate,
+		commandTopicTemplate,
+		allEventsTopicTemplate,
+	))
 	return nil
 }
 
