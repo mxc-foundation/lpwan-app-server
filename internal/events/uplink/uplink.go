@@ -26,6 +26,7 @@ import (
 	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
@@ -42,8 +43,9 @@ type uplinkContext struct {
 	application   apps.Application
 	deviceProfile dps.DeviceProfile
 
-	data       []byte
-	objectJSON string
+	data          []byte
+	objectJSON    string
+	gIntegrations []models.IntegrationHandler
 }
 
 var tasks = []func(*uplinkContext) error{
@@ -59,11 +61,13 @@ var tasks = []func(*uplinkContext) error{
 }
 
 // Handle handles the uplink event.
-func Handle(ctx context.Context, req as.HandleUplinkDataRequest, handler *store.Handler) error {
+func Handle(ctx context.Context, req as.HandleUplinkDataRequest, handler *store.Handler,
+	gIntegrations []models.IntegrationHandler) error {
 	uc := uplinkContext{
 		handler:       handler,
 		ctx:           ctx,
 		uplinkDataReq: req,
+		gIntegrations: gIntegrations,
 	}
 
 	for _, f := range tasks {
@@ -175,7 +179,7 @@ func updateDeviceActivation(ctx *uplinkContext) error {
 		}
 	}
 
-	err = integration.ForApplicationID(ctx.device.ApplicationID).HandleJoinEvent(ctx.ctx, vars, pl)
+	err = integration.ForApplicationID(ctx.device.ApplicationID, ctx.gIntegrations).HandleJoinEvent(ctx.ctx, vars, pl)
 	if err != nil {
 		return errors.Wrap(err, "send join notification error")
 	}
@@ -297,7 +301,7 @@ func handleCodec(ctx *uplinkContext) error {
 			}
 		}
 
-		if err := integration.ForApplicationID(ctx.device.ApplicationID).HandleErrorEvent(ctx.ctx, vars, errEvent); err != nil {
+		if err := integration.ForApplicationID(ctx.device.ApplicationID, ctx.gIntegrations).HandleErrorEvent(ctx.ctx, vars, errEvent); err != nil {
 			log.WithError(err).Error("send error event to integration error")
 		}
 	}
@@ -351,7 +355,7 @@ func handleIntegrations(ctx *uplinkContext) error {
 	// Handle the actual integration handling in a Go-routine so that the
 	// as.HandleUplinkData api can return.
 	go func() {
-		err := integration.ForApplicationID(ctx.device.ApplicationID).HandleUplinkEvent(bgCtx, vars, pl)
+		err := integration.ForApplicationID(ctx.device.ApplicationID, ctx.gIntegrations).HandleUplinkEvent(bgCtx, vars, pl)
 		if err != nil {
 			log.WithError(err).Error("send uplink event error")
 		}

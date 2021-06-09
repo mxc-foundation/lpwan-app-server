@@ -1,9 +1,8 @@
 package as
 
 import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"net"
-
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -15,67 +14,30 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
-}
-
-const moduleName = "appserver"
-
-type controller struct {
-	name string
-	st   *store.Handler
-	s    AppserverStruct
-
-	moduleUp bool
-}
-
-var ctrl *controller
-
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, conf config.Config) error {
-
-	ctrl = &controller{
-		name: moduleName,
-		s:    conf.ApplicationServer.API,
-	}
-	return nil
-}
-
 // Setup configures the package.
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
-		return nil
-	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
-
-	ctrl.st = h
+func Setup(h *store.Handler, config AppserverStruct, gIntegrations []models.IntegrationHandler) error {
 
 	log.WithFields(log.Fields{
-		"bind":     ctrl.s.Bind,
-		"ca_cert":  ctrl.s.CACert,
-		"tls_cert": ctrl.s.TLSCert,
-		"tls_key":  ctrl.s.TLSKey,
+		"bind":     config.Bind,
+		"ca_cert":  config.CACert,
+		"tls_cert": config.TLSCert,
+		"tls_key":  config.TLSKey,
 	}).Info("api/as: starting application-server api")
 
 	grpcOpts := helpers.GetgRPCServerOptions()
-	if ctrl.s.CACert != "" && ctrl.s.TLSCert != "" && ctrl.s.TLSKey != "" {
-		creds, err := helpers.GetTransportCredentials(ctrl.s.CACert, ctrl.s.TLSCert, ctrl.s.TLSKey, true)
+	if config.CACert != "" && config.TLSCert != "" && config.TLSKey != "" {
+		creds, err := helpers.GetTransportCredentials(config.CACert, config.TLSCert, config.TLSKey, true)
 		if err != nil {
 			return errors.Wrap(err, "get transport credentials error")
 		}
 		grpcOpts = append(grpcOpts, grpc.Creds(creds))
 	}
 	server := grpc.NewServer(grpcOpts...)
-	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI())
+	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI(h, gIntegrations))
 
-	ln, err := net.Listen("tcp", ctrl.s.Bind)
+	ln, err := net.Listen("tcp", config.Bind)
 	if err != nil {
 		return errors.Wrap(err, "start application-server api listener error")
 	}

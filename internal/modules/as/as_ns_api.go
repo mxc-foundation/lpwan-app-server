@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"math"
 	"time"
 
@@ -29,19 +30,21 @@ import (
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.
 type ApplicationServerAPI struct {
-	st *store.Handler
+	st            *store.Handler
+	gIntegrations []models.IntegrationHandler
 }
 
 // NewApplicationServerAPI returns a new ApplicationServerAPI.
-func NewApplicationServerAPI() *ApplicationServerAPI {
+func NewApplicationServerAPI(h *store.Handler, gIntegrations []models.IntegrationHandler) *ApplicationServerAPI {
 	return &ApplicationServerAPI{
-		st: ctrl.st,
+		st:            h,
+		gIntegrations: gIntegrations,
 	}
 }
 
 // HandleUplinkData handles incoming (uplink) data.
 func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.HandleUplinkDataRequest) (*empty.Empty, error) {
-	if err := uplink.Handle(ctx, *req, a.st); err != nil {
+	if err := uplink.Handle(ctx, *req, a.st, a.gIntegrations); err != nil {
 		return nil, grpc.Errorf(codes.Internal, "handle uplink data error: %s", err)
 	}
 
@@ -94,7 +97,7 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 		}
 	}
 
-	err = integration.ForApplicationID(app.ID).HandleAckEvent(ctx, vars, pl)
+	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleAckEvent(ctx, vars, pl)
 	if err != nil {
 		log.WithError(err).Error("send ack event error")
 	}
@@ -147,7 +150,7 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 		}
 	}
 
-	err = integration.ForApplicationID(app.ID).HandleTxAckEvent(ctx, vars, pl)
+	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleTxAckEvent(ctx, vars, pl)
 	if err != nil {
 		log.WithError(err).Error("send tx ack event error")
 	}
@@ -222,7 +225,7 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 		}
 	}
 
-	err = integration.ForApplicationID(app.ID).HandleErrorEvent(ctx, vars, pl)
+	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleErrorEvent(ctx, vars, pl)
 	if err != nil {
 		errStr := fmt.Sprintf("send error notification to integration error: %s", err)
 		log.Error(errStr)
@@ -317,7 +320,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 		}
 	}
 
-	err = integration.ForApplicationID(app.ID).HandleStatusEvent(ctx, vars, pl)
+	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleStatusEvent(ctx, vars, pl)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "send status notification to handler error"))
 	}
@@ -386,7 +389,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		}
 	}
 
-	err = integration.ForApplicationID(app.ID).HandleLocationEvent(ctx, vars, pl)
+	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleLocationEvent(ctx, vars, pl)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "send location notification to handler error"))
 	}

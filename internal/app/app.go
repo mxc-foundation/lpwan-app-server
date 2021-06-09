@@ -4,6 +4,9 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 
 	"github.com/sirupsen/logrus"
 
@@ -33,6 +36,8 @@ type App struct {
 	mxpSrv *mxpapisrv.MXPAPIServer
 	// shopify service
 	shopify *shopify.Service
+	// integration handlers
+	integrations []models.IntegrationHandler
 	// smtp service
 	mailer *email.Mailer
 }
@@ -112,6 +117,12 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
+	// integration service clients
+	app.integrations, err = integration.SetupGlobalIntegrations(cfg.ApplicationServer.Integration)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -159,6 +170,10 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 // the gRPC servers
 func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	var err error
+	// API for network-server
+	if err = as.Setup(store.NewStore(), cfg.ApplicationServer.API, app.integrations); err != nil {
+		return err
+	}
 	// API for mxprotocol server
 	if app.mxpSrv, err = mxpapisrv.Start(app.pgstore, cfg.ApplicationServer.APIForM2M, app.mailer); err != nil {
 		return err

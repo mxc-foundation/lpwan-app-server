@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	"github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 )
 
@@ -56,7 +56,7 @@ var streamCliCmd = &cobra.Command{
 
 		md := metadata.Pairs("authorization", jwt)
 		ctx := metadata.NewOutgoingContext(context.Background(), md)
-		request := &api.MiningReportRequest{
+		request := &extapi.MiningReportRequest{
 			OrganizationId: organizationID,
 			Currency:       []string{currency},
 			FiatCurrency:   fiatCurrency,
@@ -66,14 +66,14 @@ var streamCliCmd = &cobra.Command{
 		}
 
 		if choice == "pdf" {
-			exportPDF(ctx, api.NewReportServiceClient(conn), request)
+			exportPDF(ctx, extapi.NewReportServiceClient(conn), request)
 		} else if choice == "csv" {
-			exportCSV(ctx, api.NewReportServiceClient(conn), request)
+			exportCSV(ctx, extapi.NewReportServiceClient(conn), request)
 		}
 	},
 }
 
-func exportPDF(ctx context.Context, cli api.ReportServiceClient, request *api.MiningReportRequest) {
+func exportPDF(ctx context.Context, cli extapi.ReportServiceClient, request *extapi.MiningReportRequest) {
 	fullData := []byte{}
 	resCli, err := cli.MiningReportPDF(ctx, request)
 	if err != nil {
@@ -96,7 +96,7 @@ func exportPDF(ctx context.Context, cli api.ReportServiceClient, request *api.Mi
 	}
 }
 
-func exportCSV(ctx context.Context, cli api.ReportServiceClient, request *api.MiningReportRequest) {
+func exportCSV(ctx context.Context, cli extapi.ReportServiceClient, request *extapi.MiningReportRequest) {
 	fullData := []byte{}
 	resCli, err := cli.MiningReportCSV(ctx, request)
 	if err != nil {
