@@ -143,7 +143,7 @@ func (s *Server) MiningReportPDF(req *api.MiningReportRequest, srv api.ReportSer
 
 func sendStream(data bytes.Buffer, send func(response *api.MiningReportResponse) error) (err error) {
 	for {
-		rb := make([]byte, 1000)
+		rb := make([]byte, 100)
 		n, err := io.ReadFull(&data, rb)
 		if err != nil {
 			if err == io.ErrUnexpectedEOF {
