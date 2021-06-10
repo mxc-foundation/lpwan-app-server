@@ -96,7 +96,7 @@ func addReportBanner(pdf *gofpdf.Fpdf, f pdfFormat, supernode, username string) 
 	pdf.SetTextColor(255, 255, 255)
 	pdf.MoveTo(f.pageWidth-f.indentationRight-1.5*infoCellWidth, 0.5*f.gridHeight)
 	pdf.MultiCell(infoCellWidth, f.contentFontSize+f.lineSpacing, fmt.Sprintf("Supernode: %s\n User: %s",
-		"supernode.iot-ducapital.net", username), gofpdf.BorderNone, gofpdf.AlignCenter, false)
+		supernode, username), gofpdf.BorderNone, gofpdf.AlignCenter, false)
 
 	/* add company info
 	MXC Foundation Ltd.
