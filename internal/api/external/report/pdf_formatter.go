@@ -37,7 +37,7 @@ func defaultPDFConfiguration(pdf *gofpdf.Fpdf) pdfFormat {
 	format.indentationLeft = format.gridWidth * 2
 	format.indentationRight = format.indentationLeft
 	format.lineSpacing = format.gridHeight / 2
-	format.titleFontSize = format.gridHeight
+	format.titleFontSize = format.gridHeight / 1.5
 	format.contentFontSize = format.gridHeight / 2
 	format.charSpacing = format.contentFontSize / 2
 	format.disclaimerFontSize = format.contentFontSize * 0.8
@@ -94,9 +94,26 @@ func addReportBanner(pdf *gofpdf.Fpdf, f pdfFormat, supernode, username string) 
 	infoCellWidth := 10 * f.gridWidth
 	pdf.SetFont("arial", "", f.contentFontSize)
 	pdf.SetTextColor(255, 255, 255)
-	pdf.MoveTo(f.pageWidth-f.indentationRight-infoCellWidth, 0.5*f.gridHeight)
+	pdf.MoveTo(f.pageWidth-f.indentationRight-1.5*infoCellWidth, 0.5*f.gridHeight)
 	pdf.MultiCell(infoCellWidth, f.contentFontSize+f.lineSpacing, fmt.Sprintf("Supernode: %s\n User: %s",
-		supernode, username), gofpdf.BorderNone, gofpdf.AlignRight, false)
+		supernode, username), gofpdf.BorderNone, gofpdf.AlignCenter, false)
+
+	/* add company info
+	MXC Foundation Ltd.
+	10 ANSON ROAD #12-08
+	INTERNATIONAL PLAZA
+	SINGAPORE 079903
+	UEN: 201817203G
+	*/
+	pdf.SetFont("courier", "", f.contentFontSize/1.5)
+	pdf.SetTextColor(255, 255, 255)
+	pdf.MoveTo(f.pageWidth-f.indentationRight-infoCellWidth/1.5, f.gridHeight/3)
+	pdf.MultiCell(infoCellWidth, f.contentFontSize/1.5+f.lineSpacing/3,
+		"MXC Foundation Ltd.\n"+
+			"10 ANSON ROAD #12-08\n"+
+			"INTERNATIONAL PLAZA\n"+
+			"SINGAPORE 079903\n"+
+			"UEN: 201817203G", gofpdf.BorderNone, gofpdf.AlignCenter, false)
 }
 
 func addReportTable(pdf *gofpdf.Fpdf, f pdfFormat, table [][]string, cellWidth []float64) error {
