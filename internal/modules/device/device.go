@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
-	"github.com/apex/log"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
@@ -177,7 +177,7 @@ func DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 			DevEui: devEUI.String(),
 		})
 		if err != nil && status.Code(err) != codes.NotFound {
-			log.WithError(err).Error("m2m-server delete device api error")
+			logrus.WithError(err).Error("m2m-server delete device api error")
 			return err
 		}
 
@@ -264,7 +264,7 @@ func EnqueueDownlinkPayload(ctx context.Context, h *store.Handler, devEUI lorawa
 		return 0, errors.Wrap(err, "create device-queue item error")
 	}
 
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"f_cnt":     resp.FCnt,
 		"dev_eui":   devEUI,
 		"confirmed": confirmed,
