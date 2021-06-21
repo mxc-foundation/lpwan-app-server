@@ -1,0 +1,276 @@
+syntax = "proto3";
+
+package extapi;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service DHXServcie {
+    // Request to lockdrop for DHX pre-mining
+    rpc DHXCreateStake (DHXCreateStakeRequest) returns (DHXCreateStakeResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/create-stake"
+            body: "*"
+        };
+    }
+
+    // Request to create a new council
+    rpc DHXCreateCouncil (DHXCreateCouncilRequest) returns (DHXCreateCouncilResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/create-council"
+            body: "*"
+        };
+    }
+
+    // List all existing councils
+    rpc DHXListCouncils (DHXListCouncilsRequest) returns (DHXListCouncilsResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/list-councils"
+        };
+    }
+
+    // List all dhx stakes for the organization
+    rpc DHXListStakes (DHXListStakesRequest) returns (DHXListStakesResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/list-stakes"
+        };
+    }
+
+    // Return info about the last paid day of DHX mining
+    rpc DHXGetLastMining (DHXGetLastMiningRequest) returns (DHXGetLastMiningResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/last-mining"
+        };
+    }
+
+    // Return info about DHX mining during the specified period
+    rpc DHXMiningHistory (DHXMiningHistoryRequest) returns (DHXMiningHistoryResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/history"
+        };
+    }
+
+    // Bond DHX to mine DHX
+    rpc DHXBond (DHXBondRequest) returns (DHXBondResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/bond"
+            body: "*"
+        };
+    }
+
+    // Unbond bonded DHX
+    rpc DHXUnbond (DHXUnbondRequest) returns (DHXUnbondResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/unbond"
+            body: "*"
+        };
+    }
+
+    // Get info about bonded, cooling off and unbonding DHX
+    rpc DHXBondInfo (DHXBondInfoRequest) returns (DHXBondInfoResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/bond-info"
+            body: "*"
+        };
+    }
+}
+
+message DHXGetLastMiningRequest {
+    // organization id. If specified return details for the given organization and the council it chairs
+    int64 org_id = 1;
+}
+
+message DHXGetLastMiningResponse {
+    // the last date for which mining has been paid
+    google.protobuf.Timestamp date = 1;
+    // the calculated mining power of the supernode for this day
+    string mining_power = 2;
+    // the amount of DHX that supernode could distribute between users based on mpower
+    string dhx_allocated = 12;
+    // the amount of DHX that supernode actually distributed
+    string dhx_amount = 3;
+    // organization id, mining power, mining limit and revenue (if requested)
+    int64 org_id = 4;
+    string org_mining_power = 5;
+    string org_dhx_limit = 11;
+    string org_dhx_amount = 6;
+    // council id, name, mining power and revenue (if the org chairs one)
+    int64 council_id = 7;
+    string council_name = 8;
+    string council_mining_power = 9;
+    string council_dhx_amount = 10;
+}
+
+message DHXCreateStakeRequest {
+    // in which council to create the lockdrop
+    int64 council_id = 1;
+    string amount = 2;
+    string currency = 3;
+    // for how many months the stake should be locked
+    int64 lock_months = 4;
+    // the boost that user expects
+    string boost = 5;
+    int64 organization_id = 6;
+}
+
+message DHXCreateStakeResponse {
+    // ID of the created stake
+    int64 stake_id = 1;
+}
+
+message DHXCreateCouncilRequest {
+    // organization that will chair the council
+    int64 organization_id = 1;
+    // amount that shall be staked then the council is created
+    string amount = 2;
+    string currency = 3;
+    // for how many months the stake should be locked
+    int64 lock_months = 4;
+    // the boost that user expects
+    string boost = 5;
+    // the name of the council
+    string name = 6;
+}
+
+message DHXCreateCouncilResponse {
+    // id of the council create request in the table
+    int64 council_id = 1;
+    // id of the stake that was created while creating the council
+    int64 stake_id = 2;
+}
+
+message DHXListCouncilsRequest {
+}
+
+// Information about the council
+message Council {
+    // numerical council ID
+    int64 id = 1;
+    // ID of the organization that chaires the council
+    int64 chair_org_id = 2;
+    // name of the council unique on this supernode
+    string name = 3;
+    // the date when council was last paid revenues
+    google.protobuf.Timestamp last_paid_date = 4;
+    // councils mpower when it was paid last time
+    string last_mpower = 5;
+    // councils DHX revenue when it was paid last time
+    string last_dhx_revenue = 6;
+}
+
+message DHXListCouncilsResponse {
+    repeated Council council = 1;
+}
+
+// chair_org_id or organization_id must be set. Only supernode admin should be able to
+// request with both set to 0
+message DHXListStakesRequest {
+    // if not 0 then return stakes for the council chaired by the specified
+    // org. Only the council chair should be able to request this
+    int64 chair_org_id = 1;
+    // if not 0 then return stakes of the given organization. Only the org user
+    // should be able to request this
+    int64 organization_id = 2;
+}
+
+message DHXStake {
+    int64 id = 1;
+    int64 organization_id = 2;
+    string amount = 3;
+    string currency = 4;
+    int64 council_id = 5;
+    string council_name = 6;
+    google.protobuf.Timestamp created = 7;
+    google.protobuf.Timestamp lock_till = 8;
+    string boost = 9;
+    bool closed = 10;
+    string dhx_mined = 11;
+}
+
+message DHXListStakesResponse {
+    repeated DHXStake stake = 1;
+}
+
+message DHXBondRequest {
+    // organization that wants to bond DHX
+    int64 org_id = 1;
+    // amount of DHX that should be bonded
+    string amount = 2;
+}
+
+message DHXBondResponse {
+}
+
+message DHXUnbondRequest {
+    // organization that wants to unbond DHX
+    int64 org_id = 1;
+    // amount of DHX that should be unbonded
+    string amount = 2;
+}
+
+message DHXUnbondResponse {
+}
+
+message DHXBondInfoRequest {
+    // organization for which the info should be returned
+    int64 org_id = 1;
+}
+
+// info about DHX cooling off
+message DHXCoolingOff {
+    // amount that is cooling off
+    string amount = 1;
+    // the date when cooling off has started
+    google.protobuf.Timestamp created = 2;
+}
+
+// info about DHX unbonding
+message DHXUnbonding {
+    // amount that is unbonding
+    string amount = 1;
+    // the date when unbonding has started
+    google.protobuf.Timestamp created = 2;
+}
+
+message DHXBondInfoResponse {
+    // organization for which the info is returned
+    int64 org_id = 1;
+    // the amount of DHX bonded
+    string dhx_bonded = 2;
+    // the total amount that is cooling off
+    string dhx_cooling_off_total = 3;
+    // detailed info about amounts in cooling off state
+    repeated DHXCoolingOff dhx_cooling_off = 4;
+    // the total amount in unbonding state
+    string dhx_unbonding_total = 5;
+    // detailed info about unbonding amounts
+    repeated DHXUnbonding dhx_unbonding = 6;
+}
+
+message DHXMiningHistoryRequest {
+    // organization for which the history is returned
+    int64 org_id = 1;
+    // the first day of the period
+    google.protobuf.Timestamp from = 2;
+    // the last day of the period
+    google.protobuf.Timestamp till = 3;
+}
+
+message DHXMining {
+    // mining date
+    google.protobuf.Timestamp mining_date = 1;
+    // organization ID
+    int64 org_id = 2;
+    // mining power of the organization on the given date
+    string org_mining_power = 3;
+    // amount of DHX the org had bonded on the date
+    string org_dhx_bonded = 4;
+    // amount of DHX that was mined by the org on the date
+    string org_dhx_mined = 5;
+}
+
+message DHXMiningHistoryResponse {
+    // DHX mining daily records for the requested period
+    repeated DHXMining dhx_mining = 1;
+}

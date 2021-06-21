@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package extapi;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service TopUpService {
+    rpc GetTopUpHistory (GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse) {
+        option (google.api.http) = {
+			post: "/api/top-up/history"
+                        body: "*"
+		};
+    }
+
+    rpc GetTopUpDestination (GetTopUpDestinationRequest) returns (GetTopUpDestinationResponse) {
+        option (google.api.http) = {
+			get: "/api/top-up/account"
+		};
+    }
+}
+
+message GetTopUpHistoryRequest {
+    int64 org_id = 1;
+    string currency = 4;
+    google.protobuf.Timestamp from = 5;
+    google.protobuf.Timestamp till = 6;
+}
+
+message TopUpHistory {
+    string tx_hash = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    string amount = 5;
+}
+
+message GetTopUpHistoryResponse {
+    repeated TopUpHistory topup_history = 2;
+}
+
+message GetTopUpDestinationRequest {
+    int64 org_id = 1;
+    string currency = 2;
+}
+
+message GetTopUpDestinationResponse {
+    string active_account = 1;
+}

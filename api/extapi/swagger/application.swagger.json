@@ -1,0 +1,1496 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "application.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/applications": {
+      "get": {
+        "summary": "List lists the available applications.",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiListApplicationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "description": "Max number of applications to return in the result-test.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset in the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "organizationID",
+            "description": "ID of the organization to filter on.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "search",
+            "description": "Search on name (optional).",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "post": {
+        "summary": "Create creates the given application.",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiCreateApplicationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateApplicationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{application.id}": {
+      "put": {
+        "summary": "Update updates the given application.",
+        "operationId": "Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "application.id",
+            "description": "Application ID.\nThis will be automatically assigned on create.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUpdateApplicationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations": {
+      "get": {
+        "summary": "ListIntegrations lists all configured integrations.",
+        "operationId": "ListIntegrations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiListIntegrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "The id of the application.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations/http": {
+      "get": {
+        "summary": "GetHTTPIntegration returns the HTTP application-integration.",
+        "operationId": "GetHTTPIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetHTTPIntegrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteIntegration deletes the HTTP application-integration.",
+        "operationId": "DeleteHTTPIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "The id of the application.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations/influxdb": {
+      "get": {
+        "summary": "GetInfluxDBIntegration returns the InfluxDB application-integration.",
+        "operationId": "GetInfluxDBIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetInfluxDBIntegrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteInfluxDBIntegration deletes the InfluxDB application-integration.",
+        "operationId": "DeleteInfluxDBIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations/loracloud": {
+      "get": {
+        "summary": "GetLoRaCloudIntegration returns the LoRaCloud application-integration.",
+        "operationId": "GetLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetLoRaCloudIntegrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteLoRaCloudIntegration deletes the LoRaCloud application-integration.",
+        "operationId": "DeleteLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations/mydevices": {
+      "get": {
+        "summary": "GetMyDevicesIntegration returns the MyDevices application-integration.",
+        "operationId": "GetMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetMyDevicesIntegrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteMyDevicesIntegration deletes the MyDevices application-integration.",
+        "operationId": "DeleteMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations/thingsboard": {
+      "get": {
+        "summary": "GetThingsBoardIntegration returns the ThingsBoard application-integration.",
+        "operationId": "GetThingsBoardIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetThingsBoardIntegrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteThingsBoardIntegration deletes the ThingsBoard application-integration.",
+        "operationId": "DeleteThingsBoardIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{id}": {
+      "get": {
+        "summary": "Get returns the requested application.",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetApplicationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete deletes the given application.",
+        "operationId": "Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{integration.applicationID}/integrations/http": {
+      "post": {
+        "summary": "CreateHTTPIntegration creates a HTTP application-integration.",
+        "operationId": "CreateHTTPIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "The id of the application.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateHTTPIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateHTTPIntegration updates the HTTP application-integration.",
+        "operationId": "UpdateHTTPIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "The id of the application.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUpdateHTTPIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{integration.applicationID}/integrations/influxdb": {
+      "post": {
+        "summary": "CreateInfluxDBIntegration create an InfluxDB application-integration.",
+        "operationId": "CreateInfluxDBIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateInfluxDBIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateInfluxDBIntegration updates the InfluxDB application-integration.",
+        "operationId": "UpdateInfluxDBIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUpdateInfluxDBIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{integration.applicationID}/integrations/loracloud": {
+      "post": {
+        "summary": "CreateLoRaCloudIntegration creates A LoRaCloud application-integration.",
+        "operationId": "CreateLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateLoRaCloudIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateLoRaCloudIntegration updates the LoRaCloud application-integration.",
+        "operationId": "UpdateLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUpdateLoRaCloudIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{integration.applicationID}/integrations/mydevices": {
+      "post": {
+        "summary": "CreateMyDevicesIntegration creates a MyDevices application-integration.",
+        "operationId": "CreateMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateMyDevicesIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateMyDevicesIntegration updates the MyDevices application-integration.",
+        "operationId": "UpdateMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUpdateMyDevicesIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{integration.applicationID}/integrations/thingsboard": {
+      "post": {
+        "summary": "CreateThingsBoardIntegration creates a ThingsBoard application-integration.",
+        "operationId": "CreateThingsBoardIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateThingsBoardIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateThingsBoardIntegration updates the ThingsBoard application-integration.",
+        "operationId": "UpdateThingsBoardIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUpdateThingsBoardIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "extapiApplication": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID.\nThis will be automatically assigned on create."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the application (must be unique)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the application."
+        },
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the organization to which the application belongs.\nAfter create, this can not be modified."
+        },
+        "serviceProfileID": {
+          "type": "string",
+          "description": "ID of the service profile."
+        },
+        "payloadCodec": {
+          "type": "string",
+          "description": "Payload codec.\nNOTE: These field have moved to the device-profile and will be removed\nin the next major release. When set, the device-profile payload_ fields\nhave priority over the application payload_ fields."
+        },
+        "payloadEncoderScript": {
+          "type": "string",
+          "description": "Payload encoder script.\nNOTE: These field have moved to the device-profile and will be removed\nin the next major release. When set, the device-profile payload_ fields\nhave priority over the application payload_ fields."
+        },
+        "payloadDecoderScript": {
+          "type": "string",
+          "description": "Payload decoder script.\nNOTE: These field have moved to the device-profile and will be removed\nin the next major release. When set, the device-profile payload_ fields\nhave priority over the application payload_ fields."
+        }
+      }
+    },
+    "extapiApplicationListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the application."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the application."
+        },
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the organization to which the application belongs."
+        },
+        "serviceProfileID": {
+          "type": "string",
+          "description": "ID of the service profile."
+        },
+        "serviceProfileName": {
+          "type": "string",
+          "description": "Service-profile name."
+        }
+      }
+    },
+    "extapiCreateApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "$ref": "#/definitions/extapiApplication",
+          "description": "Application object to create."
+        }
+      }
+    },
+    "extapiCreateApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        }
+      }
+    },
+    "extapiCreateHTTPIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiHTTPIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
+    "extapiCreateInfluxDBIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiInfluxDBIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
+    "extapiCreateLoRaCloudIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiLoRaCloudIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
+    "extapiCreateMyDevicesIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiMyDevicesIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
+    "extapiCreateThingsBoardIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiThingsBoardIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
+    "extapiGetApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "$ref": "#/definitions/extapiApplication",
+          "description": "Application object."
+        }
+      }
+    },
+    "extapiGetHTTPIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiHTTPIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiGetInfluxDBIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiInfluxDBIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiGetLoRaCloudIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiLoRaCloudIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiGetMyDevicesIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiMyDevicesIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiGetThingsBoardIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiThingsBoardIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiHTTPIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "The id of the application."
+        },
+        "headers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiHTTPIntegrationHeader"
+          },
+          "description": "The headers to use when making HTTP callbacks."
+        },
+        "uplinkDataURL": {
+          "type": "string",
+          "description": "The URL to call for uplink data."
+        },
+        "joinNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for join notifications."
+        },
+        "ackNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for ACK notifications (for confirmed downlink data)."
+        },
+        "errorNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for error notifications."
+        },
+        "statusNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for device-status notifications."
+        },
+        "locationNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for location notifications."
+        },
+        "txAckNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for tx ack notifications (downlink acknowledged by gateway for transmission)."
+        },
+        "integrationNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for integration notifications."
+        }
+      }
+    },
+    "extapiHTTPIntegrationHeader": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "Key"
+        },
+        "value": {
+          "type": "string",
+          "title": "Value"
+        }
+      }
+    },
+    "extapiInfluxDBIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "InfluxDB API write endpoint (e.g. http://localhost:8086/write)."
+        },
+        "db": {
+          "type": "string",
+          "description": "InfluxDB database name."
+        },
+        "username": {
+          "type": "string",
+          "description": "InfluxDB username."
+        },
+        "password": {
+          "type": "string",
+          "description": "InfluxDB password."
+        },
+        "retentionPolicyName": {
+          "type": "string",
+          "description": "InfluxDB retention policy name."
+        },
+        "precision": {
+          "$ref": "#/definitions/extapiInfluxDBPrecision",
+          "description": "InfluxDB timestamp precision."
+        }
+      }
+    },
+    "extapiInfluxDBPrecision": {
+      "type": "string",
+      "enum": [
+        "NS",
+        "U",
+        "MS",
+        "S",
+        "M",
+        "H"
+      ],
+      "default": "NS"
+    },
+    "extapiIntegrationKind": {
+      "type": "string",
+      "enum": [
+        "HTTP",
+        "INFLUXDB",
+        "THINGSBOARD",
+        "MYDEVICES",
+        "LORACLOUD"
+      ],
+      "default": "HTTP"
+    },
+    "extapiIntegrationListItem": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/extapiIntegrationKind",
+          "description": "Integration kind."
+        }
+      }
+    },
+    "extapiListApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of applications available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiApplicationListItem"
+          },
+          "description": "Applications within this result-set."
+        }
+      }
+    },
+    "extapiListIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of integrations available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiIntegrationListItem"
+          },
+          "description": "Integrations within result-set."
+        }
+      }
+    },
+    "extapiLoRaCloudIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "geolocation": {
+          "type": "boolean",
+          "description": "Geolocation enabled."
+        },
+        "geolocationToken": {
+          "type": "string",
+          "description": "Geolocation token.\nThis token can be obtained from the LoRa Cloud console."
+        },
+        "geolocationBufferTTL": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Geolocation buffer TTL (in seconds).\nWhen \u003e 0, uplink RX meta-data will be stored in a buffer so that\nthe meta-data of multiple uplinks can be used for geolocation."
+        },
+        "geolocationMinBufferSize": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Geolocation minimum buffer size.\nWhen \u003e 0, geolocation will only be performed when the buffer has\nat least the given size."
+        },
+        "geolocationTDOA": {
+          "type": "boolean",
+          "description": "TDOA based geolocation is enabled."
+        },
+        "geolocationRSSI": {
+          "type": "boolean",
+          "description": "RSSI based geolocation is enabled."
+        },
+        "geolocationGNSS": {
+          "type": "boolean",
+          "description": "GNSS based geolocation is enabled (LR1110)."
+        },
+        "geolocationGNSSPayloadField": {
+          "type": "string",
+          "description": "GNSS payload field.\nThis holds the name of the field in the decoded payload object which\ncontains the GNSS payload bytes."
+        },
+        "geolocationGNSSUseRxTime": {
+          "type": "boolean",
+          "description": "GNSS use RX time.\nIn case this is set to true, the resolver will use the RX time of the\nnetwork instead of the timestamp included in the LR1110 payload."
+        },
+        "geolocationWifi": {
+          "type": "boolean",
+          "description": "Wifi based geolocation is enabled."
+        },
+        "geolocationWifiPayloadField": {
+          "type": "string",
+          "title": "Wifi payload field.\nThis holds the name of the field in the decoded payload object which\ncontains an array of objects with the following fields:\n* macAddress - e.g. 01:23:45:67:89:ab\n* signalStrength - e.g. -51 (optional)"
+        },
+        "das": {
+          "type": "boolean",
+          "description": "Device Application Services enabled."
+        },
+        "dasToken": {
+          "type": "string",
+          "description": "Device Application Services token.\nThis token can be obtained from the LoRa Cloud console."
+        },
+        "dasModemPort": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Device Application Services modem port (FPort).\nChirpStack Application Server will only forward the FRMPayload to DAS\nwhen the uplink FPort is equal to this value."
+        }
+      }
+    },
+    "extapiMyDevicesIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "MyDevices API endpoint."
+        }
+      }
+    },
+    "extapiThingsBoardIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "server": {
+          "type": "string",
+          "title": "ThingsBoard server endpoint, e.g. https://example.com"
+        }
+      }
+    },
+    "extapiUpdateApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "$ref": "#/definitions/extapiApplication",
+          "description": "Application object to update."
+        }
+      }
+    },
+    "extapiUpdateHTTPIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiHTTPIntegration",
+          "description": "Integration object to update."
+        }
+      }
+    },
+    "extapiUpdateInfluxDBIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiInfluxDBIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiUpdateLoRaCloudIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiLoRaCloudIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiUpdateMyDevicesIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiMyDevicesIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "extapiUpdateThingsBoardIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/extapiThingsBoardIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

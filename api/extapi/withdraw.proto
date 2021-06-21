@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package extapi;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// WithdrawService is the service managing the withdraw access.
+service WithdrawService {
+    // GetWithdrawFee data for current withdraw fee
+    rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/get-withdraw-fee"
+		};
+    }
+
+    rpc GetWithdrawHistory (GetWithdrawHistoryRequest) returns (GetWithdrawHistoryResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/history"
+		};
+    }
+
+    rpc ModifyWithdrawFee (ModifyWithdrawFeeRequest) returns (ModifyWithdrawFeeResponse) {
+        option (google.api.http) = {
+			put: "/api/withdraw/modify-withdraw-fee"
+			body: "*"
+		};
+    }
+
+    // after user clicks withdraw, send withdraw request to cobo directly
+    rpc GetWithdraw (GetWithdrawRequest) returns (GetWithdrawResponse) {
+        option (google.api.http) = {
+			post: "/api/withdraw/req"
+			body: "*"
+		};
+    }
+}
+
+message GetWithdrawFeeRequest {
+    // type of crypto currency
+    string currency = 1;
+
+}
+
+message GetWithdrawFeeResponse {
+    // Withdraw object.
+    string withdrawFee = 1;
+    // actual currency of the withdraw fee
+    // for BTC, withdraw fee should be in MXC
+    string currency = 2;
+}
+
+message GetWithdrawHistoryRequest {
+    int64 org_id = 1;
+    string currency = 5;
+    google.protobuf.Timestamp from = 6;
+    google.protobuf.Timestamp till = 7;
+}
+
+message WithdrawHistory {
+    string tx_status = 3;
+    string tx_hash = 4;
+    string deny_comment = 5;
+    string amount = 6;
+    google.protobuf.Timestamp timestamp = 7;
+    string withdraw_fee = 8;
+}
+
+message GetWithdrawHistoryResponse {
+    repeated WithdrawHistory withdraw_history = 2;
+}
+
+message ModifyWithdrawFeeRequest {
+    string currency = 1;
+    string withdraw_fee = 2;
+    string password = 3;
+}
+
+message ModifyWithdrawFeeResponse {
+    bool status = 1;
+}
+
+message GetWithdrawRequest {
+    int64 org_id = 1;
+    string eth_address = 3;
+    string currency = 5;
+    string amount = 6;
+}
+
+message GetWithdrawResponse {
+    bool status = 1;
+}
