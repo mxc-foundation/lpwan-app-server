@@ -3,10 +3,10 @@ package mqttauth
 import (
 	"context"
 	"fmt"
-	"github.com/brocaar/lorawan"
 	"regexp"
 	"strconv"
 
+	"github.com/brocaar/lorawan"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

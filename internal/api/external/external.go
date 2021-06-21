@@ -54,8 +54,8 @@ type ExtAPIServer struct {
 	gs *grpc.Server
 }
 
-// Config defines all attributes for ext api service
-type Config struct {
+// ExtAPIConfig defines all attributes for ext api service
+type ExtAPIConfig struct {
 	S                      ExternalAPIStruct
 	ApplicationServerID    string
 	ServerAddr             string
@@ -77,7 +77,7 @@ func (srv *ExtAPIServer) Stop() {
 }
 
 // Start configures the API endpoints.
-func Start(h *store.Handler, conf Config) (*ExtAPIServer, error) {
+func Start(h *store.Handler, conf ExtAPIConfig) (*ExtAPIServer, error) {
 	var err error
 	// Bind external api port to listen to requests to all services
 	grpcOpts := helpers.GetgRPCServerOptions()
@@ -152,7 +152,7 @@ func Start(h *store.Handler, conf Config) (*ExtAPIServer, error) {
 }
 
 // SetupCusAPI registers all ext api services
-func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf Config) error {
+func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error {
 	jwtSecret := conf.S.JWTSecret
 	if jwtSecret == "" {
 		return errors.New("jwt_secret must be set")
@@ -290,7 +290,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf Config) error {
 	return nil
 }
 
-func (srv *ExtAPIServer) setupHTTPAPI(conf Config) (http.Handler, error) {
+func (srv *ExtAPIServer) setupHTTPAPI(conf ExtAPIConfig) (http.Handler, error) {
 	r := mux.NewRouter()
 
 	// setup json api handler
@@ -326,7 +326,7 @@ func (srv *ExtAPIServer) setupHTTPAPI(conf Config) (http.Handler, error) {
 	return wsproxy.WebsocketProxy(r), nil
 }
 
-func (srv *ExtAPIServer) getJSONGateway(ctx context.Context, conf Config) (http.Handler, error) {
+func (srv *ExtAPIServer) getJSONGateway(ctx context.Context, conf ExtAPIConfig) (http.Handler, error) {
 	// dial options for the grpc-gateway
 	var grpcDialOpts []grpc.DialOption
 

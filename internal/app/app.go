@@ -37,7 +37,7 @@ type App struct {
 	// network server API
 	nsSrv *as.NetworkServerAPIServer
 	// external API server
-	extApiSrv *external.ExtAPIServer
+	extAPISrv *external.ExtAPIServer
 	// shopify service
 	shopify *shopify.Service
 	// integration handlers
@@ -82,8 +82,8 @@ func (app *App) Close() error {
 	if app.nsSrv != nil {
 		app.nsSrv.Stop()
 	}
-	if app.extApiSrv != nil {
-		app.extApiSrv.Stop()
+	if app.extAPISrv != nil {
+		app.extAPISrv.Stop()
 	}
 	if app.mxpCli != nil {
 		if err := app.mxpCli.Close(); err != nil {
@@ -189,7 +189,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	// API for external clients
-	if app.extApiSrv, err = external.Start(store.NewStore(), external.Config{
+	if app.extAPISrv, err = external.Start(store.NewStore(), external.ExtAPIConfig{
 		S:                      cfg.ApplicationServer.ExternalAPI,
 		ApplicationServerID:    cfg.ApplicationServer.ID,
 		ServerAddr:             cfg.General.ServerAddr,
