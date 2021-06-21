@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package extapi;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service ReportService {
+    // Get support fiat currency list
+    rpc GetFiatCurrencyList (GetFiatCurrencyListRequest) returns (GetFiatCurrencyListResponse) {
+        option (google.api.http) = {
+            get: "/api/report/supported-fiat-currencies"
+        };
+    }
+    // Request to download miningReport in csv format filtered by date
+    rpc MiningReportCSV (MiningReportRequest) returns (stream MiningReportResponse) {
+        option (google.api.http) = {
+            get: "/api/report/mining-income/csv"
+        };
+    }
+    // Request to download miningReport in pdf filtered by date
+    rpc MiningReportPDF (MiningReportRequest) returns (stream MiningReportResponse) {
+        option (google.api.http) = {
+            get: "/api/report/mining-income/pdf"
+        };
+    }
+}
+
+message GetFiatCurrencyListRequest {
+}
+
+message FiatCurrency {
+    string id = 1;
+    string description = 2;
+}
+
+message GetFiatCurrencyListResponse {
+    repeated FiatCurrency fiat_currency_list = 1;
+}
+
+message MiningReportRequest {
+    int64 organization_id = 1;
+    // accept string array for example: ETH_MXC or ETH_MXC\nDHX or DHX
+    repeated string currency = 2;
+    string fiat_currency = 3;
+    google.protobuf.Timestamp start = 4;
+    google.protobuf.Timestamp end = 5;
+    int32 decimals = 6;
+}
+
+message MiningReportResponse {
+    bytes data = 1;
+    bool finish = 2;
+}

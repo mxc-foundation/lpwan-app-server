@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 )

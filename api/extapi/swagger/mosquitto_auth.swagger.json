@@ -1,0 +1,191 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "mosquitto_auth.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/mosquitto-auth/acl-check": {
+      "post": {
+        "summary": "This will be called by mosquitto auth plugin JWT backend, request and response are also defined there",
+        "operationId": "CheckACL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiCheckACLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCheckACLRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    },
+    "/api/mosquitto-auth/get-user": {
+      "post": {
+        "summary": "This will be called by mosquitto auth plugin JWT backend, request and response are also defined there",
+        "operationId": "JWTAuthentication",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiJWTAuthenticationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiJWTAuthenticationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    },
+    "/api/mosquitto-auth/login": {
+      "post": {
+        "summary": "Get JWT for mosquitto auth with given org id\nOnly accessible for authenticated supernode user",
+        "operationId": "GetJWT",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetJWTResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiGetJWTRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "extapiCheckACLRequest": {
+      "type": "object",
+      "properties": {
+        "clientid": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "acc": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "extapiCheckACLResponse": {
+      "type": "object"
+    },
+    "extapiGetJWTRequest": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiGetJWTResponse": {
+      "type": "object",
+      "properties": {
+        "jwtMqttAuth": {
+          "type": "string",
+          "title": "jwt generated and used for authenticate mosquitto client"
+        }
+      }
+    },
+    "extapiJWTAuthenticationRequest": {
+      "type": "object"
+    },
+    "extapiJWTAuthenticationResponse": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

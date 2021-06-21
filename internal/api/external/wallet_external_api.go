@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
 

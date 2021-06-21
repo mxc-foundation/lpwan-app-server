@@ -57,8 +57,8 @@ api:
 	@echo "Generating API code from .proto files"
 	@rm -rf /tmp/chirpstack-api
 	@git clone https://github.com/brocaar/chirpstack-api.git /tmp/chirpstack-api
-	@cp -rf /tmp/chirpstack-api/protobuf/* api/appserver-serves-ui/
-	@go generate api/appserver-serves-ui/api.go
+	@cp -rf /tmp/chirpstack-api/protobuf/* api/extapi/
+	@go generate api/extapi/api.go
 	@go generate api/appserver-serves-gateway/api.go
 	@go generate api/appserver-serves-m2m/api.go
 
@@ -70,8 +70,8 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
-	@GOOS="" GOARCH="" go run api/appserver-serves-ui/swagger/main.go api/appserver-serves-ui/swagger > static/swagger/api.swagger.json
-	@cp api/appserver-serves-ui/swagger/*.json static/swagger
+	@GOOS="" GOARCH="" go run api/extapi/swagger/main.go api/extapi/swagger > static/swagger/api.swagger.json
+	@cp api/extapi/swagger/*.json static/swagger
 
 
 # shortcuts for development

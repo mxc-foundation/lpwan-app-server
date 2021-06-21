@@ -7,7 +7,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/download"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -183,7 +182,5 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
-	// download API
-	download.Setup(cfg.ApplicationServer.DownloadServiceAPI)
 	return nil
 }

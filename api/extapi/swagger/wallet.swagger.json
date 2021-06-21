@@ -1,0 +1,950 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "wallet.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/wallet/balance": {
+      "get": {
+        "operationId": "GetWalletBalance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetWalletBalanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mining_health": {
+      "get": {
+        "operationId": "GetGatewayMiningHealth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetGatewayMiningHealthResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization_id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gatewayMac",
+            "description": "list of gateways for which the health should be returned. If empty, then\nhealth of all the gateways of the organization will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mining_income": {
+      "get": {
+        "operationId": "GetWalletMiningIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetWalletMiningIncomeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mining_income_gw": {
+      "get": {
+        "summary": "return daily and total mining amounts for the given gateway and period of time",
+        "operationId": "GetGatewayMiningIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetGatewayMiningIncomeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayMac",
+            "description": "MAC address of the gateway.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "description": "Organization ID.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "fromDate",
+            "description": "Return mining stats for the period starting at from_date and ending at\ntill_date inclusive.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "tillDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mining_info": {
+      "get": {
+        "operationId": "GetMiningInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetMiningInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mxc_price": {
+      "get": {
+        "operationId": "GetMXCprice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetMXCpriceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "mxcPrice",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/top-up-mining-fuel": {
+      "post": {
+        "operationId": "TopUpGatewayMiningFuel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiTopUpGatewayMiningFuelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiTopUpGatewayMiningFuelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/tx-history": {
+      "get": {
+        "operationId": "GetTransactionHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetTransactionHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "description": "currency.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "period for which transactions should be returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "paymentType",
+            "description": "if non-empty list of payment types is given only transactions of these\ntypes will be returned.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/withdraw-mining-fuel": {
+      "post": {
+        "operationId": "WithdrawGatewayMiningFuel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiWithdrawGatewayMiningFuelResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiWithdrawGatewayMiningFuelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/{orgId}/downlink_price": {
+      "get": {
+        "operationId": "GetDlPrice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetDownLinkPriceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/{orgId}/tx-history": {
+      "get": {
+        "operationId": "GetVmxcTxHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetVmxcTxHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/{orgId}/usage-history": {
+      "get": {
+        "operationId": "GetNetworkUsageHist",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiGetNetworkUsageHistResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "extapiGatewayMiningFuelChange": {
+      "type": "object",
+      "properties": {
+        "gatewayMac": {
+          "type": "string",
+          "title": "mac address of the gateway as a sequence of hex digits without any\nseparators, for example 70b3d5fffeabcdef"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount that is to be added or withdrawn"
+        }
+      },
+      "title": "information about the gateway mining fuel"
+    },
+    "extapiGatewayMiningHealth": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "MAC of the gateway, called \"id\" for consistency with /api/gateways call"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that owns the gateway"
+        },
+        "health": {
+          "type": "number",
+          "format": "float",
+          "title": "overall health score"
+        },
+        "miningFuel": {
+          "type": "string",
+          "title": "mining fuel bonded to the gw by the org"
+        },
+        "miningFuelMax": {
+          "type": "string",
+          "title": "mining fuel required for full mining efficiency"
+        },
+        "miningFuelHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "mining fuel health score"
+        },
+        "ageSeconds": {
+          "type": "string",
+          "format": "int64",
+          "title": "gateway's age, total online seconds"
+        },
+        "totalMined": {
+          "type": "string",
+          "title": "gateway's total mining"
+        },
+        "uptimeHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "uptime percentage in the last 7 calendar days"
+        }
+      }
+    },
+    "extapiGetDownLinkPriceResponse": {
+      "type": "object",
+      "properties": {
+        "downLinkPrice": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "extapiGetGatewayMiningHealthResponse": {
+      "type": "object",
+      "properties": {
+        "gatewayHealth": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayMiningHealth"
+          },
+          "title": "list of health records for every gateway that was requested"
+        },
+        "miningHealthAverage": {
+          "$ref": "#/definitions/extapiMiningHealthAverage",
+          "title": "\"average\" health numbers for the gateways in response"
+        }
+      }
+    },
+    "extapiGetGatewayMiningIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "dailyStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiMiningStats"
+          },
+          "title": "daily mining stats for each day the mining happened"
+        },
+        "total": {
+          "type": "string",
+          "title": "total amount mined by gateway during the requested period"
+        }
+      }
+    },
+    "extapiGetMXCpriceResponse": {
+      "type": "object",
+      "properties": {
+        "mxcPrice": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetMiningInfoResponse": {
+      "type": "object",
+      "properties": {
+        "todayRev": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiMiningData"
+          }
+        }
+      }
+    },
+    "extapiGetNetworkUsageHistResponse": {
+      "type": "object",
+      "properties": {
+        "networkUsage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiNetworkUsage"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiGetTransactionHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "tx": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiTransaction"
+          }
+        }
+      }
+    },
+    "extapiGetVmxcTxHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "txHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiVmxcTxHistory"
+          }
+        }
+      }
+    },
+    "extapiGetWalletBalanceResponse": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiGetWalletMiningIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "miningIncome": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiMiningData": {
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiMiningHealthAverage": {
+      "type": "object",
+      "properties": {
+        "overall": {
+          "type": "number",
+          "format": "float",
+          "title": "overall health of the gateways"
+        },
+        "miningFuelHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "average mining fuel health"
+        },
+        "uptimeHealth": {
+          "type": "number",
+          "format": "float",
+          "title": "average uptime"
+        }
+      }
+    },
+    "extapiMiningStats": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "title": "date on which the mining happened"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount mined on the specified day"
+        },
+        "onlineSeconds": {
+          "type": "string",
+          "format": "int64",
+          "title": "gateway's online time on the date"
+        },
+        "health": {
+          "type": "number",
+          "format": "float",
+          "title": "average gateway's health on the date"
+        }
+      },
+      "title": "Mining stats for a single date"
+    },
+    "extapiNetworkUsage": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "dlCntDev": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dlCntDevFree": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntDev": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntDevFree": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dlCntGw": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dlCntGwFree": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntGw": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntGwFree": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiTopUpGatewayMiningFuelRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization id"
+        },
+        "currency": {
+          "type": "string",
+          "title": "currency"
+        },
+        "topUps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayMiningFuelChange"
+          },
+          "title": "gateways and amounts that should be added to them"
+        }
+      },
+      "title": "top up amount bonded to a gateway"
+    },
+    "extapiTopUpGatewayMiningFuelResponse": {
+      "type": "object"
+    },
+    "extapiTransaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount, decimal number with up to 18 decimal digits"
+        },
+        "paymentType": {
+          "type": "string",
+          "title": "payment type as a string"
+        },
+        "detailsJson": {
+          "type": "string",
+          "title": "transaction details encoded as JSON"
+        }
+      }
+    },
+    "extapiVmxcTxHistory": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "txType": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiWithdrawGatewayMiningFuelRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "what organization owns the fuel"
+        },
+        "currency": {
+          "type": "string",
+          "title": "token that is bonded to the gateway"
+        },
+        "withdrawals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extapiGatewayMiningFuelChange"
+          },
+          "title": "gateways and amounts that should be withdrawn from them"
+        }
+      },
+      "title": "withdraw amount from the gateway mining fuel"
+    },
+    "extapiWithdrawGatewayMiningFuelResponse": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	inpb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"

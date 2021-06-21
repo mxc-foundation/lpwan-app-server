@@ -1,0 +1,398 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "external_user.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/confirm-external-email": {
+      "post": {
+        "summary": "ConfirmBindingEmail checks given token and bind",
+        "operationId": "ConfirmBindingEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiConfirmBindingEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiConfirmBindingEmailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
+    "/api/external-login/authenticate-wechat-user": {
+      "post": {
+        "summary": "AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user\nthen check binding status of this wechat user",
+        "operationId": "AuthenticateWeChatUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
+    "/api/external-login/bind-external-user": {
+      "post": {
+        "summary": "BindExternalUser binds external user id to supernode user",
+        "operationId": "BindExternalUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiBindExternalUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiBindExternalUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
+    "/api/external-login/debug-authenticate-wechat-user": {
+      "post": {
+        "summary": "DebugAuthenticateWeChatUser will only be called by debug mode",
+        "operationId": "DebugAuthenticateWeChatUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiAuthenticateWeChatUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
+    "/api/external-login/register-external-user": {
+      "post": {
+        "summary": "RegisterExternalUser creates new supernode account then bind it with external user id",
+        "operationId": "RegisterExternalUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiRegisterExternalUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiRegisterExternalUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
+    "/api/external-login/unbind-external-user": {
+      "post": {
+        "summary": "UnbindExternalUser unbinds external user and supernode user account",
+        "operationId": "UnbindExternalUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiUnbindExternalUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiUnbindExternalUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
+    "/api/verify-external-email": {
+      "post": {
+        "summary": "VerifyEmail sends email with confirmation message to given address",
+        "operationId": "VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiVerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiVerifyEmailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "extapiAuthenticateWeChatUserRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiAuthenticateWeChatUserResponse": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "type": "string"
+        },
+        "bindingIsRequired": {
+          "type": "boolean"
+        }
+      }
+    },
+    "extapiBindExternalUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiBindExternalUserResponse": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiConfirmBindingEmailRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "token sent to user in VerifyEmail"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiConfirmBindingEmailResponse": {
+      "type": "object"
+    },
+    "extapiRegisterExternalUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "organizationName": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiRegisterExternalUserResponse": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiUnbindExternalUserRequest": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiUnbindExternalUserResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiVerifyEmailRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "title": "user will receive confirmation message on given email address"
+        },
+        "language": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "extapiVerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

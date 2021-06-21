@@ -10,7 +10,7 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/golang/protobuf/ptypes/empty"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	gwp "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
