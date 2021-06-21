@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"sync"
 	"text/template"
 	"time"
@@ -36,13 +37,13 @@ const (
 
 // Integration implements a MQTT integration.
 type Integration struct {
-	marshaler            marshaler.Type
-	conn                 mqtt.Client
-	dataDownChan         chan models.DataDownPayload
-	wg                   sync.WaitGroup
-	config               types.IntegrationMQTTConfig
-	eventTopicTemplate   *template.Template
-	commandTopicTemplate *template.Template
+	marshaler          marshaler.Type
+	conn               mqtt.Client
+	dataDownChan       chan models.DataDownPayload
+	wg                 sync.WaitGroup
+	config             types.IntegrationMQTTConfig
+	eventTopicRegexp   *regexp.Regexp
+	commandTopicRegexp *regexp.Regexp
 
 	downlinkTopic string
 	retainEvents  bool
@@ -58,20 +59,17 @@ func New(m marshaler.Type, conf types.IntegrationMQTTConfig) (*Integration, erro
 	}
 
 	i.retainEvents = i.config.RetainEvents
-	i.eventTopicTemplate, err = template.New("event").Parse(mqttauth.EventTopicTemplate)
+	i.eventTopicRegexp, err = regexp.Compile(mqttauth.EventTopicTemplate)
 	if err != nil {
 		return nil, errors.Wrap(err, "parse event template error")
 	}
-	i.commandTopicTemplate, err = template.New("command").Parse(mqttauth.CommandTopicTemplate)
+	i.commandTopicRegexp, err = regexp.Compile(mqttauth.CommandTopicTemplate)
 	if err != nil {
 		return nil, errors.Wrap(err, "parse command template error")
 	}
 
 	// generate downlink topic matching all applications and devices
-	i.downlinkTopic, err = i.getDownlinkTopic()
-	if err != nil {
-		return nil, errors.Wrap(err, "get downlink topic error")
-	}
+	i.downlinkTopic = "application/+/device/+/command/down"
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(i.config.Server)
@@ -242,7 +240,7 @@ func (i *Integration) txPayloadHandler(mqttc mqtt.Client, msg mqtt.Message) {
 	defer i.wg.Done()
 
 	log.WithField("topic", msg.Topic()).Info("integration/mqtt: downlink event received")
-	topicApplicationID, topicDevEUI, err := mqttauth.GetTopicVariables(i.commandTopicTemplate, msg.Topic())
+	topicApplicationID, topicDevEUI, err := mqttauth.GetTopicVariables(i.commandTopicRegexp, msg.Topic())
 	if err != nil {
 		log.WithError(err).Warning("integration/mqtt: get variables from topic error")
 		return
@@ -307,21 +305,6 @@ func (i *Integration) onConnected(mqttc mqtt.Client) {
 
 func (i *Integration) onConnectionLost(mqttc mqtt.Client, reason error) {
 	log.Errorf("integration/mqtt: mqtt connection error: %s", reason)
-}
-
-func (i *Integration) getDownlinkTopic() (string, error) {
-	topic := bytes.NewBuffer(nil)
-	topicTemplate := i.commandTopicTemplate
-
-	err := topicTemplate.Execute(topic, struct {
-		ApplicationID string
-		DevEUI        string
-		CommandType   string
-	}{"+", "+", "down"})
-	if err != nil {
-		return "", errors.Wrap(err, "execute template error")
-	}
-	return topic.String(), nil
 }
 
 func (i *Integration) getTopic(applicationID uint64, devEUI lorawan.EUI64, eventType string) (string, error) {

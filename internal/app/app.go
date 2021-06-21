@@ -4,9 +4,6 @@ package app
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 
 	"github.com/sirupsen/logrus"
 
@@ -14,7 +11,10 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
@@ -34,6 +34,10 @@ type App struct {
 	mxpCli *mxpcli.Client
 	// mxprotocol server API
 	mxpSrv *mxpapisrv.MXPAPIServer
+	// network server API
+	nsSrv *as.NetworkServerAPIServer
+	// external API server
+	extApiSrv *external.ExtAPIServer
 	// shopify service
 	shopify *shopify.Service
 	// integration handlers
@@ -74,6 +78,12 @@ func Start(ctx context.Context, cfg config.Config) (*App, error) {
 func (app *App) Close() error {
 	if app.mxpSrv != nil {
 		app.mxpSrv.Stop()
+	}
+	if app.nsSrv != nil {
+		app.nsSrv.Stop()
+	}
+	if app.extApiSrv != nil {
+		app.extApiSrv.Stop()
 	}
 	if app.mxpCli != nil {
 		if err := app.mxpCli.Close(); err != nil {
@@ -171,7 +181,7 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	var err error
 	// API for network-server
-	if err = as.Setup(store.NewStore(), cfg.ApplicationServer.API, app.integrations); err != nil {
+	if app.nsSrv, err = as.Start(store.NewStore(), cfg.ApplicationServer.API, app.integrations); err != nil {
 		return err
 	}
 	// API for mxprotocol server
@@ -179,7 +189,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	// API for external clients
-	if err = external.Start(store.NewStore(), external.RESTApiServer{
+	if app.extApiSrv, err = external.Start(store.NewStore(), external.Config{
 		S:                      cfg.ApplicationServer.ExternalAPI,
 		ApplicationServerID:    cfg.ApplicationServer.ID,
 		ServerAddr:             cfg.General.ServerAddr,

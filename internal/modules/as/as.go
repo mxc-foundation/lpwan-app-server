@@ -16,9 +16,13 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
 )
 
-// Setup configures the package.
-func Setup(h *store.Handler, config AppserverStruct, gIntegrations []models.IntegrationHandler) error {
+// NetworkServerAPIServer represents gRPC server serving network server
+type NetworkServerAPIServer struct {
+	gs *grpc.Server
+}
 
+// Start configures the package.
+func Start(h *store.Handler, config AppserverStruct, gIntegrations []models.IntegrationHandler) (*NetworkServerAPIServer, error) {
 	log.WithFields(log.Fields{
 		"bind":     config.Bind,
 		"ca_cert":  config.CACert,
@@ -30,7 +34,7 @@ func Setup(h *store.Handler, config AppserverStruct, gIntegrations []models.Inte
 	if config.CACert != "" && config.TLSCert != "" && config.TLSKey != "" {
 		creds, err := helpers.GetTransportCredentials(config.CACert, config.TLSCert, config.TLSKey, true)
 		if err != nil {
-			return errors.Wrap(err, "get transport credentials error")
+			return nil, errors.Wrap(err, "get transport credentials error")
 		}
 		grpcOpts = append(grpcOpts, grpc.Creds(creds))
 	}
@@ -39,11 +43,16 @@ func Setup(h *store.Handler, config AppserverStruct, gIntegrations []models.Inte
 
 	ln, err := net.Listen("tcp", config.Bind)
 	if err != nil {
-		return errors.Wrap(err, "start application-server api listener error")
+		return nil, errors.Wrap(err, "start application-server api listener error")
 	}
 	go func() {
 		_ = server.Serve(ln)
 	}()
 
-	return nil
+	return &NetworkServerAPIServer{gs: server}, nil
+}
+
+// Stop gracefully stops gRPC server
+func (srv *NetworkServerAPIServer) Stop() {
+	srv.gs.GracefulStop()
 }

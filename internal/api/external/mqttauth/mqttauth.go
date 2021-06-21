@@ -1,14 +1,11 @@
 package mqttauth
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"github.com/brocaar/lorawan"
 	"regexp"
 	"strconv"
-	"text/template"
-
-	"github.com/brocaar/lorawan"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,30 +13,37 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+	app "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	device "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 )
 
 // Server defines the MosquittoAuth Service Server API structure
 type Server struct {
 	auth auth.Authenticator
-	st   *pgstore.PgStore
+	st   Store
 	jwtv *jwt.Validator
 
-	eventTopicTemplate     *template.Template
-	commandTopicTemplate   *template.Template
-	allEventsTopicTemplate *template.Template
+	eventTopicRegexp     *regexp.Regexp
+	commandTopicRegexp   *regexp.Regexp
+	allEventsTopicRegexp *regexp.Regexp
+}
+
+// Store defines set of db APIs used in mqttauth service
+type Store interface {
+	GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (device.Device, error)
+	GetApplicationWithIDAndOrganizationID(ctx context.Context, id, orgID int64) (app.Application, error)
 }
 
 // NewServer returns a new MosquittoAuth Service Server
-func NewServer(st *pgstore.PgStore, auth auth.Authenticator, jwtv *jwt.Validator,
-	eventTopicTemp, commandTopicTemp, allEventsTopicTemp *template.Template) *Server {
+func NewServer(st Store, auth auth.Authenticator, jwtv *jwt.Validator,
+	eventTopic, commandTopic, allEventsTopic *regexp.Regexp) *Server {
 	return &Server{
-		auth:                   auth,
-		st:                     st,
-		jwtv:                   jwtv,
-		eventTopicTemplate:     eventTopicTemp,
-		commandTopicTemplate:   commandTopicTemp,
-		allEventsTopicTemplate: allEventsTopicTemp,
+		auth:                 auth,
+		st:                   st,
+		jwtv:                 jwtv,
+		eventTopicRegexp:     eventTopic,
+		commandTopicRegexp:   commandTopic,
+		allEventsTopicRegexp: allEventsTopic,
 	}
 }
 
@@ -78,44 +82,19 @@ func (s *Server) JWTAuthentication(ctx context.Context, req *pb.JWTAuthenticatio
 
 const (
 	// EventTopicTemplate defines topic template which will be published by appserver, read by user
-	EventTopicTemplate = "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .EventType }}"
+	EventTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/event/(?P<type>\\w)"
 	// AllEventsTopicTemplate defines topic that can be subscribed by user
-	AllEventsTopicTemplate = "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/#"
+	AllEventsTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/event/#"
 
 	// CommandTopicTemplate defines topic template which will be published by user, read by appserver
-	CommandTopicTemplate = "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/command/{{ .CommandType }}"
+	CommandTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/command/(?P<type>\\w)"
 )
 
-func getTopicRegexp(topicTemplate *template.Template) (*regexp.Regexp, error) {
-	topic := bytes.NewBuffer(nil)
-
-	err := topicTemplate.Execute(topic, struct {
-		ApplicationID string
-		DevEUI        string
-		Type          string
-	}{`(?P<application_id>\w+)`, `(?P<dev_eui>\w+)`, `(?P<type>\w)`})
-	if err != nil {
-		return nil, fmt.Errorf("execute template error: %v", err)
-	}
-
-	r, err := regexp.Compile(topic.String())
-	if err != nil {
-		return nil, fmt.Errorf("compile regexp error: %v", err)
-	}
-
-	return r, nil
-}
-
 // GetTopicVariables parses given topic string and extract variables from it
-func GetTopicVariables(topicTemplate *template.Template, topic string) (int64, lorawan.EUI64, error) {
+func GetTopicVariables(topicRegexp *regexp.Regexp, topic string) (int64, lorawan.EUI64, error) {
 	var applicationID int64
 	var devEUI lorawan.EUI64
 	var err error
-
-	topicRegexp, err := getTopicRegexp(topicTemplate)
-	if err != nil {
-		return applicationID, devEUI, fmt.Errorf("get topic regex error: %v", err)
-	}
 
 	match := topicRegexp.FindStringSubmatch(topic)
 	if len(match) != len(topicRegexp.SubexpNames()) {
@@ -168,12 +147,12 @@ func (s *Server) verifyTopicVariables(ctx context.Context, applicationID, organi
 
 // CheckACL will be called by mosquitto auth plugin JWT backend, request and response are also defined there
 func (s *Server) CheckACL(ctx context.Context, req *pb.CheckACLRequest) (*pb.CheckACLResponse, error) {
-	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().ExtractOrgIDFromToken().WithAudience("mosquitto-auth"))
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgIDFromToken().WithAudience("mosquitto-auth"))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 	}
 
-	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin && !cred.IsDeviceAdmin {
+	if !cred.IsDeviceAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
@@ -199,12 +178,12 @@ func (s *Server) checkACLForSubscribe(ctx context.Context, topic string, orgID i
 	var err error
 
 	// check topic application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .EventType }}
-	applicationID, devEUI, err = GetTopicVariables(s.eventTopicTemplate, topic)
+	applicationID, devEUI, err = GetTopicVariables(s.eventTopicRegexp, topic)
 	if err == nil {
 		return s.verifyTopicVariables(ctx, applicationID, orgID, devEUI)
 	}
 	// check topic application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/#
-	applicationID, devEUI, err = GetTopicVariables(s.allEventsTopicTemplate, topic)
+	applicationID, devEUI, err = GetTopicVariables(s.allEventsTopicRegexp, topic)
 	if err == nil {
 		return s.verifyTopicVariables(ctx, applicationID, orgID, devEUI)
 	}
@@ -217,7 +196,7 @@ func (s *Server) checkACLForRead(ctx context.Context, topic string, orgID int64,
 	var devEUI lorawan.EUI64
 	var err error
 
-	applicationID, devEUI, err = GetTopicVariables(s.eventTopicTemplate, topic)
+	applicationID, devEUI, err = GetTopicVariables(s.eventTopicRegexp, topic)
 	if err != nil {
 		return fmt.Errorf("user %s reading topic %s rejected", email, topic)
 	}
@@ -230,7 +209,7 @@ func (s *Server) checkACLForWrite(ctx context.Context, topic string, orgID int64
 	var devEUI lorawan.EUI64
 	var err error
 
-	applicationID, devEUI, err = GetTopicVariables(s.commandTopicTemplate, topic)
+	applicationID, devEUI, err = GetTopicVariables(s.commandTopicRegexp, topic)
 	if err != nil {
 		return fmt.Errorf("user %s writing topic %s rejected", email, topic)
 	}

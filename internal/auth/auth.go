@@ -27,8 +27,8 @@ func NewOptions() *Options {
 	}
 }
 
-// ExtractOrgIDFromToken sets GetOrgIDFromToken = true
-func (o *Options) ExtractOrgIDFromToken() *Options {
+// WithOrgIDFromToken sets GetOrgIDFromToken = true
+func (o *Options) WithOrgIDFromToken() *Options {
 	o.GetOrgIDFromToken = true
 	return o
 }

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/brocaar/lorawan"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -47,7 +47,7 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 	// check if gateway exists
 	var gatewayEUI = lorawan.EUI64{}
 	if err := gatewayEUI.UnmarshalText([]byte(req.GatewayMac)); err != nil {
-		log.WithError(err).Error("api/Heartbeat: Failed to convert gateway mac address")
+		logrus.WithError(err).Error("api/Heartbeat: Failed to convert gateway mac address")
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid gateway mac format: %s", req.GatewayMac)
 	}
 
@@ -63,35 +63,35 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		if err == errHandler.ErrDoesNotExist {
 			return nil, status.Errorf(codes.Unauthenticated, "Object does not exist: %s", gatewayEUI.String())
 		}
-		log.WithError(err).Errorf("Failed to select gateway by mac: %s", gatewayEUI.String())
+		logrus.WithError(err).Errorf("Failed to select gateway by mac: %s", gatewayEUI.String())
 		return nil, status.Errorf(codes.Unknown, "Failed to select gateway by mac: %s", gatewayEUI.String())
 	}
 
 	// verify gateway model
 	if gw.Model != req.Model {
-		log.Errorf("Request model does not match saved gateway.")
+		logrus.Errorf("Request model does not match saved gateway.")
 		return nil, status.Errorf(codes.Unauthenticated, "Request model does not match saved gateway.")
 	}
 
 	// important: do this before config and firmware update
 	// mining : update heartbeat only for new gateways
 	if strings.HasPrefix(gw.Model, "MX19") {
-		log.Info("processing MX19 gateway")
+		logrus.Info("processing MX19 gateway")
 		currentHeartbeat := time.Now().Unix()
 		lastHeartbeat := gw.LastHeartbeat
 
 		// if last heartbeat == 0 is a new gateway
 		if gw.LastHeartbeat == 0 {
-			log.Infof("updating heartbeat for the new gw")
+			logrus.Infof("updating heartbeat for the new gw")
 			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
+				logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
 			err = obj.st.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
+				logrus.WithError(err).Error("Heartbeat/Update first heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
 			}
 
@@ -103,13 +103,13 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		if currentHeartbeat-lastHeartbeat > mining.GetSettings().HeartbeatOfflineLimit {
 			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
+				logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
 			err = obj.st.UpdateFirstHeartbeatToZero(ctx, gatewayEUI)
 			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
+				logrus.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat to zero error")
 			}
 			goto Next
@@ -118,21 +118,21 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		// if first heartbeat != 0 and currentHeartbeat - lastHeart !> 600
 		firstHeartbeat, err := obj.st.GetFirstHeartbeat(ctx, gatewayEUI)
 		if err != nil {
-			log.WithError(err).Error("Heartbeat/Get first heartbeat error")
+			logrus.WithError(err).Error("Heartbeat/Get first heartbeat error")
 			return nil, status.Errorf(codes.DataLoss, "Get firstHeartbeat from DB error")
 		}
 
 		if firstHeartbeat == 0 {
 			err = obj.st.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
+				logrus.WithError(err).Error("Heartbeat/Update first heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
 			}
 		}
 
 		err = obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 		if err != nil {
-			log.WithError(err).Error("Heartbeat/Update last heartbeat error")
+			logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
 			return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 		}
 	}
@@ -145,7 +145,7 @@ Next:
 		configHash := md5.Sum([]byte(gw.Config))
 		b := types.MD5SUM{}
 		if err := b.UnmarshalText([]byte(req.ConfigHash)); err != nil {
-			log.WithError(err).Errorf("Failed to unmarshal config hash: %s", req.ConfigHash)
+			logrus.WithError(err).Errorf("Failed to unmarshal config hash: %s", req.ConfigHash)
 			return status.Errorf(codes.DataLoss, "Failed to unmarshal config hash: %s", req.ConfigHash)
 		}
 
@@ -160,7 +160,7 @@ Next:
 				if err == errHandler.ErrDoesNotExist {
 					return status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
 				}
-				log.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
+				logrus.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
 				return status.Errorf(codes.Unknown, "Failed to get firmware information for model: %s", gw.Model)
 			}
 
@@ -182,10 +182,10 @@ Next:
 					OsVersion: req.OsVersion,
 				})
 				if err != nil {
-					log.WithError(err).Error("Failed to call HeartbeatAPI: UpdateGateway")
+					logrus.WithError(err).Error("Failed to call HeartbeatAPI: UpdateGateway")
 				}
 			} else {
-				log.WithError(err).Error("Failed to create provisioning server client.")
+				logrus.WithError(err).Error("Failed to create provisioning server client.")
 			}
 		}
 
@@ -193,7 +193,7 @@ Next:
 		gw.Statistics = req.Statistics
 
 		if err := handler.UpdateGateway(ctx, &gw); err != nil {
-			log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
+			logrus.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
 			return err
 		}
 

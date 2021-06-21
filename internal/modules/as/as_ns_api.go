@@ -7,12 +7,12 @@ import (
 	"math"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
@@ -59,17 +59,17 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
-		log.WithField("dev_eui", devEUI).Error(errStr)
+		logrus.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
-		log.WithField("id", d.ApplicationID).Error(errStr)
+		logrus.WithField("id", d.ApplicationID).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"dev_eui": devEUI,
 	}).Info("downlink device-queue item acknowledged")
 
@@ -99,7 +99,7 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 
 	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleAckEvent(ctx, vars, pl)
 	if err != nil {
-		log.WithError(err).Error("send ack event error")
+		logrus.WithError(err).Error("send ack event error")
 	}
 
 	return &empty.Empty{}, nil
@@ -113,17 +113,17 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
-		log.WithField("dev_eui", devEUI).Error(errStr)
+		logrus.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
-		log.WithField("id", d.ApplicationID).Error(errStr)
+		logrus.WithField("id", d.ApplicationID).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"dev_eui": devEUI,
 	}).Info("downlink tx acknowledged by gateway")
 
@@ -152,7 +152,7 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 
 	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleTxAckEvent(ctx, vars, pl)
 	if err != nil {
-		log.WithError(err).Error("send tx ack event error")
+		logrus.WithError(err).Error("send tx ack event error")
 	}
 
 	return &empty.Empty{}, nil
@@ -166,18 +166,18 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
-		log.WithField("dev_eui", devEUI).Error(errStr)
+		logrus.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
-		log.WithField("id", d.ApplicationID).Error(errStr)
+		logrus.WithField("id", d.ApplicationID).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"type":    req.Type,
 		"dev_eui": devEUI,
 	}).Error(req.Error)
@@ -228,7 +228,7 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	err = integration.ForApplicationID(app.ID, a.gIntegrations).HandleErrorEvent(ctx, vars, pl)
 	if err != nil {
 		errStr := fmt.Sprintf("send error notification to integration error: %s", err)
-		log.Error(errStr)
+		logrus.Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
@@ -244,7 +244,7 @@ func (a *ApplicationServerAPI) HandleProprietaryUplink(ctx context.Context, req 
 	err := gwping.HandleReceivedPing(ctx, req)
 	if err != nil {
 		errStr := fmt.Sprintf("handle received ping error: %s", err)
-		log.Error(errStr)
+		logrus.Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
