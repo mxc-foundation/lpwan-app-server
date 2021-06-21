@@ -30,13 +30,13 @@ build
 
 # dependencies
 /vendor
-api/appserver-serves-ui/as/
-api/appserver-serves-ui/common/
-api/appserver-serves-ui/geo/
-api/appserver-serves-ui/gw/
-api/appserver-serves-ui/nc/
-api/appserver-serves-ui/ns/
-api/appserver-serves-ui/fuota/
+api/extapi/as/
+api/extapi/common/
+api/extapi/geo/
+api/extapi/gw/
+api/extapi/nc/
+api/extapi/ns/
+api/extapi/fuota/
 
 # certificates
 /certs
