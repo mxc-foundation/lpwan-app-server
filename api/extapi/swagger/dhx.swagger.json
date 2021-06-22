@@ -143,6 +143,39 @@
         ]
       }
     },
+    "/api/dhx-mining/estimate": {
+      "get": {
+        "summary": "DHXEstimateMining estimates organization's mining based on lockdrops,\nbonded DHX and number of gateways",
+        "operationId": "DHXEstimateMining",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiDHXEstimateMiningResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "id of the organization for which estimates should be calculated.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
     "/api/dhx-mining/history": {
       "get": {
         "summary": "Return info about DHX mining during the specified period",
@@ -516,6 +549,36 @@
           "type": "string",
           "format": "int64",
           "title": "ID of the created stake"
+        }
+      }
+    },
+    "extapiDHXEstimateMiningResponse": {
+      "type": "object",
+      "properties": {
+        "estimatedMiningPower": {
+          "type": "string",
+          "description": "estimated mining power based on lockdrop and the number of gateways.\nAssumes that the gateways are 100% uptime."
+        },
+        "estimatedDhxRevenue": {
+          "type": "string",
+          "title": "estimated DHX revenue, assuming that organization will have the\nestimated mining power, won't hit the dhx mining limit, and that DHX\nrevenue per unit of mining power will be the same as during the last\nmining"
+        },
+        "dhxBondRecommended": {
+          "type": "string",
+          "title": "the amount of DHX that the organization needs to have bonded to be able\nto claim the estimated DHX revenue"
+        },
+        "dhxBonded": {
+          "type": "string",
+          "title": "the amount of DHX that the organization currently has bonded"
+        },
+        "dhxMiningLimit": {
+          "type": "string",
+          "title": "current maximum amount of DHX that the organization can mine per day\nbased on the bonded amount of DHX"
+        },
+        "gateways": {
+          "type": "string",
+          "format": "int64",
+          "title": "number of gateways that organization has"
         }
       }
     },

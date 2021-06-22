@@ -345,3 +345,36 @@ func (a *Server) DHXBondInfo(ctx context.Context, req *api.DHXBondInfoRequest) (
 		DhxCoolingOffTotal: res.DhxCoolingOffTotal,
 	}, nil
 }
+
+// DHXEstimateMining estimates organization's mining based on lockdrops,
+// bonded DHX and number of gateways
+func (a *Server) DHXEstimateMining(ctx context.Context, req *api.DHXEstimateMiningRequest) (*api.DHXEstimateMiningResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
+
+	// the number of online gateways
+	gwcnt, err := a.store.GetOnlineGatewayCount(ctx, req.OrgId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	res, err := a.dhxCli.DHXEstimateMining(ctx, &pb.DHXEstimateMiningRequest{
+		OrgId:    req.OrgId,
+		Gateways: int64(gwcnt),
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+	return &api.DHXEstimateMiningResponse{
+		EstimatedMiningPower: res.EstimatedMiningPower,
+		EstimatedDhxRevenue:  res.EstimatedDhxRevenue,
+		DhxBondRecommended:   res.DhxBondRecommended,
+		DhxBonded:            res.DhxBonded,
+		DhxMiningLimit:       res.DhxMiningLimit,
+		Gateways:             int64(gwcnt),
+	}, nil
+}
