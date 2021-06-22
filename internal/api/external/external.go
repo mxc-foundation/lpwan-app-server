@@ -275,17 +275,12 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	if err != nil {
 		return fmt.Errorf("compile regexp error: %v", err)
 	}
-	allEventsTopicRegexp, err := regexp.Compile(mqttauth.AllEventsTopicTemplate)
-	if err != nil {
-		return fmt.Errorf("compile regexp error: %v", err)
-	}
 	api.RegisterMosquittoAuthServiceServer(srv.gs, mqttauth.NewServer(
 		pgs,
 		grpcAuth,
 		jwtValidator,
 		eventTopicRegexp,
 		commandTopicRegexp,
-		allEventsTopicRegexp,
 	))
 	return nil
 }

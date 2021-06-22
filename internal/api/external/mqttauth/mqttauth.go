@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"runtime"
 	"strconv"
 
 	"github.com/brocaar/lorawan"
@@ -23,9 +24,8 @@ type Server struct {
 	st   Store
 	jwtv *jwt.Validator
 
-	eventTopicRegexp     *regexp.Regexp
-	commandTopicRegexp   *regexp.Regexp
-	allEventsTopicRegexp *regexp.Regexp
+	eventTopicRegexp   *regexp.Regexp
+	commandTopicRegexp *regexp.Regexp
 }
 
 // Store defines set of db APIs used in mqttauth service
@@ -36,14 +36,13 @@ type Store interface {
 
 // NewServer returns a new MosquittoAuth Service Server
 func NewServer(st Store, auth auth.Authenticator, jwtv *jwt.Validator,
-	eventTopic, commandTopic, allEventsTopic *regexp.Regexp) *Server {
+	eventTopic, commandTopic *regexp.Regexp) *Server {
 	return &Server{
-		auth:                 auth,
-		st:                   st,
-		jwtv:                 jwtv,
-		eventTopicRegexp:     eventTopic,
-		commandTopicRegexp:   commandTopic,
-		allEventsTopicRegexp: allEventsTopic,
+		auth:               auth,
+		st:                 st,
+		jwtv:               jwtv,
+		eventTopicRegexp:   eventTopic,
+		commandTopicRegexp: commandTopic,
 	}
 }
 
@@ -82,23 +81,18 @@ func (s *Server) JWTAuthentication(ctx context.Context, req *pb.JWTAuthenticatio
 
 const (
 	// EventTopicTemplate defines topic template which will be published by appserver, read by user
-	EventTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/event/(?P<type>\\w)"
-	// AllEventsTopicTemplate defines topic that can be subscribed by user
-	AllEventsTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/event/#"
-
+	EventTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+|\\+)/event/(?P<type>\\w+|\\+)"
 	// CommandTopicTemplate defines topic template which will be published by user, read by appserver
-	CommandTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/command/(?P<type>\\w)"
+	CommandTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/command/(?P<type>\\w+)"
 )
 
 // GetTopicVariables parses given topic string and extract variables from it
-func GetTopicVariables(topicRegexp *regexp.Regexp, topic string) (int64, lorawan.EUI64, error) {
-	var applicationID int64
-	var devEUI lorawan.EUI64
-	var err error
+func GetTopicVariables(topicRegexp *regexp.Regexp, topic string) (TopicVariables, error) {
+	var tv TopicVariables
 
 	match := topicRegexp.FindStringSubmatch(topic)
 	if len(match) != len(topicRegexp.SubexpNames()) {
-		return applicationID, devEUI, fmt.Errorf("topic regex match error")
+		return tv, fmt.Errorf("topic regex match error")
 	}
 
 	result := make(map[string]string)
@@ -107,39 +101,64 @@ func GetTopicVariables(topicRegexp *regexp.Regexp, topic string) (int64, lorawan
 			result[name] = match[i]
 		}
 	}
-
 	if idStr, ok := result["application_id"]; ok {
-		applicationID, err = strconv.ParseInt(idStr, 10, 64)
-		if err != nil {
-			return applicationID, devEUI, fmt.Errorf("parse application id error: %v", err)
-		}
-	} else {
-		return applicationID, devEUI, fmt.Errorf("topic regexp does not contain application id")
+		tv.ApplicationID = idStr
 	}
-
 	if devEUIStr, ok := result["dev_eui"]; ok {
-		if err = devEUI.UnmarshalText([]byte(devEUIStr)); err != nil {
-			return applicationID, devEUI, fmt.Errorf("parse deveui error: %v", err)
-		}
+		tv.DevEUI = devEUIStr
 	}
-
-	return applicationID, devEUI, nil
+	if typeStr, ok := result["type"]; ok {
+		tv.Type = typeStr
+	}
+	return tv, nil
 }
 
-func (s *Server) verifyTopicVariables(ctx context.Context, applicationID, organizationID int64, devEUI lorawan.EUI64) error {
+// TopicVariables includes all variables mentioned in different topics
+type TopicVariables struct {
+	// all aclReqType require
+	ApplicationID string `mapstructure:"application_id"`
+	// not required by subAllDevEvents
+	DevEUI string `mapstructure:"dev_eui"`
+	Type   string `mapstructure:"type"`
+}
+
+type aclReqType int32
+
+const (
+	subDeviceEvent  aclReqType = 0
+	subAllEvents    aclReqType = 1
+	subAllDevEvents aclReqType = 2
+	readDeviceEvent aclReqType = 3
+	pubCommand      aclReqType = 4
+)
+
+func (s *Server) verifyTopicVariables(ctx context.Context, orgID int64, variables *TopicVariables, acl aclReqType) error {
+	var applicationID int64
+	var devEUI lorawan.EUI64
+	var err error
+
+	applicationID, err = strconv.ParseInt(variables.ApplicationID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse application id error")
+	}
+
 	// get application with id
-	_, err := s.st.GetApplicationWithIDAndOrganizationID(ctx, applicationID, organizationID)
+	_, err = s.st.GetApplicationWithIDAndOrganizationID(ctx, applicationID, orgID)
 	if err != nil {
-		return fmt.Errorf("failed to get application with id %d: %v", applicationID, err)
+		return fmt.Errorf("get application with id %d error: %v", applicationID, err)
 	}
 
-	device, err := s.st.GetDevice(ctx, devEUI, false)
-	if err != nil {
-		return fmt.Errorf("no such device (%s) : %v", devEUI.String(), err)
-	}
-
-	if device.ApplicationID != applicationID {
-		return fmt.Errorf("device (%s) is not under application %d", devEUI.String(), applicationID)
+	if acl != subAllDevEvents {
+		if err = devEUI.UnmarshalText([]byte(variables.DevEUI)); err != nil {
+			return fmt.Errorf("parse deveui error: %v", err)
+		}
+		dev, err := s.st.GetDevice(ctx, devEUI, false)
+		if err != nil {
+			return fmt.Errorf("no such dev (%s) : %v", devEUI.String(), err)
+		}
+		if dev.ApplicationID != applicationID {
+			return fmt.Errorf("dev (%s) is not under application %d", devEUI.String(), variables.ApplicationID)
+		}
 	}
 
 	return nil
@@ -156,63 +175,76 @@ func (s *Server) CheckACL(ctx context.Context, req *pb.CheckACLRequest) (*pb.Che
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
+	runtime.Breakpoint()
 	//acc = 1 is read, 2 is write, 3 is readwrite (not impelemented at the moment) , 4 is subscribe
 	switch req.Acc {
 	case 1:
 		// read message from given topic
-		return &pb.CheckACLResponse{}, s.checkACLForRead(ctx, req.Topic, cred.OrgID, cred.Username)
+		if err := s.checkACLForRead(ctx, req.Topic, cred.OrgID); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+		return &pb.CheckACLResponse{}, nil
 	case 4:
 		// subscribe topic
-		return &pb.CheckACLResponse{}, s.checkACLForSubscribe(ctx, req.Topic, cred.OrgID, cred.Username)
+		if err := s.checkACLForSubscribe(ctx, req.Topic, cred.OrgID); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+		return &pb.CheckACLResponse{}, nil
 	case 2:
 		// publish message to given topic
-		return &pb.CheckACLResponse{}, s.checkACLForWrite(ctx, req.Topic, cred.OrgID, cred.Username)
+		if err := s.checkACLForWrite(ctx, req.Topic, cred.OrgID); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
+		return &pb.CheckACLResponse{}, nil
 	default:
 		return nil, status.Errorf(codes.Unimplemented, "req.Acc is not supported: %d", req.Acc)
 	}
 }
 
-func (s *Server) checkACLForSubscribe(ctx context.Context, topic string, orgID int64, email string) error {
-	var applicationID int64
-	var devEUI lorawan.EUI64
+func (s *Server) checkACLForSubscribe(ctx context.Context, topic string, orgID int64) error {
 	var err error
+	var tv TopicVariables
 
 	// check topic application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .EventType }}
-	applicationID, devEUI, err = GetTopicVariables(s.eventTopicRegexp, topic)
-	if err == nil {
-		return s.verifyTopicVariables(ctx, applicationID, orgID, devEUI)
+	tv, err = GetTopicVariables(s.eventTopicRegexp, topic)
+	if err != nil {
+		return err
 	}
-	// check topic application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/#
-	applicationID, devEUI, err = GetTopicVariables(s.allEventsTopicRegexp, topic)
-	if err == nil {
-		return s.verifyTopicVariables(ctx, applicationID, orgID, devEUI)
+	// application/(?P<application_id>\w+)/device/(?P<dev_eui>\w+|\+)/event/(?P<type>\w+|\+)
+	if tv.DevEUI != "" && tv.Type != "" {
+		return s.verifyTopicVariables(ctx, orgID, &tv, subDeviceEvent)
 	}
-
-	return fmt.Errorf("user %s subscribing to topic %s rejected", email, topic)
+	// application/(?P<application_id>\w+)/device/(?P<dev_eui>\w+|\+)/event/+
+	if tv.DevEUI != "" && tv.Type == "+" {
+		return s.verifyTopicVariables(ctx, orgID, &tv, subAllEvents)
+	}
+	// application/(?P<application_id>\w+)/device/+/event/+
+	if tv.DevEUI == "+" && tv.Type == "+" {
+		return s.verifyTopicVariables(ctx, orgID, &tv, subAllDevEvents)
+	}
+	return fmt.Errorf("invalid topic to subscribe")
 }
 
-func (s *Server) checkACLForRead(ctx context.Context, topic string, orgID int64, email string) error {
-	var applicationID int64
-	var devEUI lorawan.EUI64
+func (s *Server) checkACLForRead(ctx context.Context, topic string, orgID int64) error {
+	var tv TopicVariables
 	var err error
 
-	applicationID, devEUI, err = GetTopicVariables(s.eventTopicRegexp, topic)
+	tv, err = GetTopicVariables(s.eventTopicRegexp, topic)
 	if err != nil {
-		return fmt.Errorf("user %s reading topic %s rejected", email, topic)
+		return err
 	}
 
-	return s.verifyTopicVariables(ctx, applicationID, orgID, devEUI)
+	return s.verifyTopicVariables(ctx, orgID, &tv, readDeviceEvent)
 }
 
-func (s *Server) checkACLForWrite(ctx context.Context, topic string, orgID int64, email string) error {
-	var applicationID int64
-	var devEUI lorawan.EUI64
+func (s *Server) checkACLForWrite(ctx context.Context, topic string, orgID int64) error {
+	var tv TopicVariables
 	var err error
 
-	applicationID, devEUI, err = GetTopicVariables(s.commandTopicRegexp, topic)
+	tv, err = GetTopicVariables(s.commandTopicRegexp, topic)
 	if err != nil {
-		return fmt.Errorf("user %s writing topic %s rejected", email, topic)
+		return err
 	}
 
-	return s.verifyTopicVariables(ctx, applicationID, orgID, devEUI)
+	return s.verifyTopicVariables(ctx, orgID, &tv, pubCommand)
 }

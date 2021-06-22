@@ -124,7 +124,7 @@ func (v Validator) GetClaims(tokenEncoded, audience string) (*Claims, error) {
 		claims.ExternalCred = externalCredStr
 	}
 
-	organizationID, ok := token.Get("orgnizationId")
+	organizationID, ok := token.Get("organizationId")
 	if ok {
 		organizationIDFloat, ok := organizationID.(float64)
 		if !ok {

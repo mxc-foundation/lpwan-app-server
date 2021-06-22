@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strconv"
 	"sync"
 	"text/template"
 	"time"
@@ -240,7 +241,7 @@ func (i *Integration) txPayloadHandler(mqttc mqtt.Client, msg mqtt.Message) {
 	defer i.wg.Done()
 
 	log.WithField("topic", msg.Topic()).Info("integration/mqtt: downlink event received")
-	topicApplicationID, topicDevEUI, err := mqttauth.GetTopicVariables(i.commandTopicRegexp, msg.Topic())
+	tv, err := mqttauth.GetTopicVariables(i.commandTopicRegexp, msg.Topic())
 	if err != nil {
 		log.WithError(err).Warning("integration/mqtt: get variables from topic error")
 		return
@@ -254,9 +255,15 @@ func (i *Integration) txPayloadHandler(mqttc mqtt.Client, msg mqtt.Message) {
 		}).Errorf("integration/mqtt: tx payload unmarshal error: %s", err)
 		return
 	}
-
-	pl.ApplicationID = topicApplicationID
-	pl.DevEUI = topicDevEUI
+	pl.ApplicationID, err = strconv.ParseInt(tv.ApplicationID, 10, 64)
+	if err != nil {
+		log.WithError(err).Warning("integration/mqtt: parse application id error")
+		return
+	}
+	if err = pl.DevEUI.UnmarshalText([]byte(tv.DevEUI)); err != nil {
+		log.WithError(err).Warning("integration/mqtt: get dev eui error")
+		return
+	}
 
 	if pl.FPort == 0 || pl.FPort > 224 {
 		log.WithFields(log.Fields{
