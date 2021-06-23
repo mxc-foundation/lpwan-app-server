@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
-	"regexp"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"

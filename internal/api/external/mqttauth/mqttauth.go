@@ -157,7 +157,7 @@ func (s *Server) verifyTopicVariables(ctx context.Context, orgID int64, variable
 			return fmt.Errorf("no such dev (%s) : %v", devEUI.String(), err)
 		}
 		if dev.ApplicationID != applicationID {
-			return fmt.Errorf("dev (%s) is not under application %d", devEUI.String(), variables.ApplicationID)
+			return fmt.Errorf("dev (%s) is not under application %d", devEUI.String(), applicationID)
 		}
 	}
 
