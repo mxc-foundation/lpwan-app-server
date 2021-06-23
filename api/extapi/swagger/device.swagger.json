@@ -800,10 +800,11 @@
       "type": "string",
       "enum": [
         "LORA",
-        "FSK"
+        "FSK",
+        "LR_FHSS"
       ],
       "default": "LORA",
-      "title": "- LORA: LoRa\n - FSK: FSK"
+      "title": "- LORA: LoRa\n - FSK: FSK\n - LR_FHSS: LR-FHSS"
     },
     "extapiActivateDeviceRequest": {
       "type": "object",
@@ -1402,6 +1403,25 @@
     "gwImmediatelyTimingInfo": {
       "type": "object"
     },
+    "gwLRFHSSModulationInfo": {
+      "type": "object",
+      "properties": {
+        "operatingChannelWidth": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Operating channel width (OCW) in Hz."
+        },
+        "codeRate": {
+          "type": "string",
+          "description": "Code-rate."
+        },
+        "gridSteps": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Hopping grid number of steps."
+        }
+      }
+    },
     "gwLoRaModulationInfo": {
       "type": "object",
       "properties": {
@@ -1533,6 +1553,10 @@
         "fskModulationInfo": {
           "$ref": "#/definitions/gwFSKModulationInfo",
           "description": "FSK modulation information."
+        },
+        "lrFHSSModulationInfo": {
+          "$ref": "#/definitions/gwLRFHSSModulationInfo",
+          "description": "LR-FHSS modulation information."
         }
       }
     },

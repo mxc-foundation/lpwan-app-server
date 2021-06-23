@@ -1,11 +1,12 @@
 package mqttauth
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"regexp"
-	"runtime"
 	"strconv"
+	"text/template"
 
 	"github.com/brocaar/lorawan"
 	"google.golang.org/grpc/codes"
@@ -24,6 +25,7 @@ type Server struct {
 	st   Store
 	jwtv *jwt.Validator
 
+	eventTypes         []string
 	eventTopicRegexp   *regexp.Regexp
 	commandTopicRegexp *regexp.Regexp
 }
@@ -38,9 +40,18 @@ type Store interface {
 func NewServer(st Store, auth auth.Authenticator, jwtv *jwt.Validator,
 	eventTopic, commandTopic *regexp.Regexp) *Server {
 	return &Server{
-		auth:               auth,
-		st:                 st,
-		jwtv:               jwtv,
+		auth: auth,
+		st:   st,
+		jwtv: jwtv,
+		eventTypes: []string{
+			UplinkEvent,
+			JoinEvent,
+			AckEvent,
+			ErrorEvent,
+			StatusEvent,
+			LocationEvent,
+			TxAckEvent,
+		},
 		eventTopicRegexp:   eventTopic,
 		commandTopicRegexp: commandTopic,
 	}
@@ -81,10 +92,51 @@ func (s *Server) JWTAuthentication(ctx context.Context, req *pb.JWTAuthenticatio
 
 const (
 	// EventTopicTemplate defines topic template which will be published by appserver, read by user
-	EventTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+|\\+)/event/(?P<type>\\w+|\\+)"
+	EventTopicTemplate = "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .Type }}"
 	// CommandTopicTemplate defines topic template which will be published by user, read by appserver
-	CommandTopicTemplate = "application/(?P<application_id>\\w+)/device/(?P<dev_eui>\\w+)/command/(?P<type>\\w+)"
+	CommandTopicTemplate = "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/command/{{ .Type }}"
 )
+
+const (
+	// UplinkEvent contains the data and meta-data for an uplink application payload.
+	UplinkEvent string = "up"
+	// JoinEvent is event published when a device joins the network.
+	// Please note that this is sent after the first received uplink (data) frame.
+	JoinEvent string = "join"
+	// AckEvent is event published on downlink frame acknowledgements.
+	AckEvent string = "ack"
+	// ErrorEvent is event published in case of an error related to payload scheduling or handling.
+	// E.g. in case when a payload could not be scheduled as it exceeds the maximum payload-size.
+	ErrorEvent string = "error"
+	// StatusEvent is event for battery and margin status received from devices.
+	StatusEvent string = "status"
+	// LocationEvent is event to set device location
+	LocationEvent string = "location"
+	// TxAckEvent is event published when a downlink frame has been acknowledged by the gateway for transmission.
+	TxAckEvent string = "txack"
+	// IntegrationEvent is used by LoRaCloud integration, which should not be implemented here, before refactor
+	// the whole integration package, leave it here temporarily
+	IntegrationEvent string = "integration"
+)
+
+// CompileRegexpFromTopicTemplate creates regexp object from template
+func CompileRegexpFromTopicTemplate(templateName string, topicTemplate string) (*regexp.Regexp, error) {
+	topicBuffer := bytes.NewBuffer(nil)
+	err := template.Must(template.New(templateName).Parse(topicTemplate)).Execute(topicBuffer,
+		struct {
+			ApplicationID string
+			DevEUI        string
+			Type          string
+		}{`(?P<application_id>\w+)`, `(?P<dev_eui>\w+|\+)`, `(?P<type>\w+|\+)`})
+	if err != nil {
+		return nil, fmt.Errorf("create topic from template: %v", err)
+	}
+	topicRegexp, err := regexp.Compile(topicBuffer.String())
+	if err != nil {
+		return nil, fmt.Errorf("compile regexp error: %v", err)
+	}
+	return topicRegexp, nil
+}
 
 // GetTopicVariables parses given topic string and extract variables from it
 func GetTopicVariables(topicRegexp *regexp.Regexp, topic string) (TopicVariables, error) {
@@ -175,7 +227,6 @@ func (s *Server) CheckACL(ctx context.Context, req *pb.CheckACLRequest) (*pb.Che
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	runtime.Breakpoint()
 	//acc = 1 is read, 2 is write, 3 is readwrite (not impelemented at the moment) , 4 is subscribe
 	switch req.Acc {
 	case 1:
@@ -210,17 +261,16 @@ func (s *Server) checkACLForSubscribe(ctx context.Context, topic string, orgID i
 	if err != nil {
 		return err
 	}
-	// application/(?P<application_id>\w+)/device/(?P<dev_eui>\w+|\+)/event/(?P<type>\w+|\+)
-	if tv.DevEUI != "" && tv.Type != "" {
-		return s.verifyTopicVariables(ctx, orgID, &tv, subDeviceEvent)
-	}
-	// application/(?P<application_id>\w+)/device/(?P<dev_eui>\w+|\+)/event/+
-	if tv.DevEUI != "" && tv.Type == "+" {
-		return s.verifyTopicVariables(ctx, orgID, &tv, subAllEvents)
-	}
-	// application/(?P<application_id>\w+)/device/+/event/+
+
 	if tv.DevEUI == "+" && tv.Type == "+" {
+		// application/(?P<application_id>\w+)/device/+/event/+
 		return s.verifyTopicVariables(ctx, orgID, &tv, subAllDevEvents)
+	} else if tv.DevEUI != "" && tv.Type == "+" {
+		// application/(?P<application_id>\w+)/device/(?P<dev_eui>\w+|\+)/event/+
+		return s.verifyTopicVariables(ctx, orgID, &tv, subAllEvents)
+	} else if tv.DevEUI != "" && tv.Type != "" {
+		// application/(?P<application_id>\w+)/device/(?P<dev_eui>\w+|\+)/event/(?P<type>\w+|\+)
+		return s.verifyTopicVariables(ctx, orgID, &tv, subDeviceEvent)
 	}
 	return fmt.Errorf("invalid topic to subscribe")
 }
@@ -247,4 +297,132 @@ func (s *Server) checkACLForWrite(ctx context.Context, topic string, orgID int64
 	}
 
 	return s.verifyTopicVariables(ctx, orgID, &tv, pubCommand)
+}
+
+// SubsribeDeviceEvents takes device eui as request parameter,
+// returns topis that can be used to subscribe to all device events or one specific event
+func (s *Server) SubsribeDeviceEvents(ctx context.Context, req *pb.SubsribeDeviceEventsRequest) (*pb.SubsribeDeviceEventsResponse, error) {
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	var devEUI lorawan.EUI64
+	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "parse dev eui error: %v", err)
+	}
+	dev, err := s.st.GetDevice(ctx, devEUI, false)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "device %s not found", devEUI.String())
+	}
+	application, err := s.st.GetApplicationWithIDAndOrganizationID(ctx, dev.ApplicationID, req.OrganizationId)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound,
+			"application %d not found with given organization %d", dev.ApplicationID, req.OrganizationId)
+	}
+
+	response := pb.SubsribeDeviceEventsResponse{}
+	topicBuffer := bytes.NewBuffer(nil)
+	// subscribe one device one event at a time
+	for _, event := range s.eventTypes {
+		if err := template.Must(template.New("sub-dev-event").Parse(EventTopicTemplate)).Execute(topicBuffer, struct {
+			ApplicationID string
+			DevEUI        string
+			Type          string
+		}{fmt.Sprintf("%d", application.ID), devEUI.String(), event}); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't get evet topic for %s: %event", event, err)
+		}
+		response.Topic = append(response.Topic, fmt.Sprintf("Topic for subscribing to device %s on event %s: '%s'",
+			devEUI.String(), event, topicBuffer.String()))
+		topicBuffer.Reset()
+	}
+
+	// subscribe one device all events
+	if err := template.Must(template.New("sub-dev-all-events").Parse(EventTopicTemplate)).Execute(topicBuffer, struct {
+		ApplicationID string
+		DevEUI        string
+		Type          string
+	}{fmt.Sprintf("%d", application.ID), devEUI.String(), "+"}); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get evet topic for subscribing all events: %v", err)
+	}
+	response.Topic = append(response.Topic, fmt.Sprintf("Topic for subscribing to device %s on all events: '%s'",
+		devEUI.String(), topicBuffer.String()))
+	topicBuffer.Reset()
+
+	return &response, nil
+}
+
+// SubsribeApplicationEvents takes application id as request parameter,
+// returns topics that can be used to subscribe to all devices' events under same application
+func (s *Server) SubsribeApplicationEvents(ctx context.Context, req *pb.SubsribeApplicationEventsRequest) (*pb.SubsribeApplicationEventsResponse, error) {
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	application, err := s.st.GetApplicationWithIDAndOrganizationID(ctx, req.ApplicationId, req.OrganizationId)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound,
+			"application %d not found with given organization %d", req.ApplicationId, req.OrganizationId)
+	}
+
+	var response pb.SubsribeApplicationEventsResponse
+	topicBuffer := bytes.NewBuffer(nil)
+	// subscribe application
+	if err := template.Must(template.New("sub-application").Parse(EventTopicTemplate)).Execute(topicBuffer, struct {
+		ApplicationID string
+		DevEUI        string
+		Type          string
+	}{fmt.Sprintf("%d", application.ID), "+", "+"}); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get evet topic for subscribing application: %v", err)
+	}
+	response.Topic = fmt.Sprintf("Topic for subscribing to application %d: '%s'", application.ID, topicBuffer.String())
+
+	return &response, nil
+}
+
+// SendCommandToDevice takes device eui as request paramter,
+// returns topics that can be used to send command to a specific device
+func (s *Server) SendCommandToDevice(ctx context.Context, req *pb.SendCommandToDeviceRequest) (*pb.SendCommandToDeviceResponse, error) {
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	var devEUI lorawan.EUI64
+	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "parse dev eui error: %v", err)
+	}
+	dev, err := s.st.GetDevice(ctx, devEUI, false)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "device %s not found", devEUI.String())
+	}
+	application, err := s.st.GetApplicationWithIDAndOrganizationID(ctx, dev.ApplicationID, req.OrganizationId)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound,
+			"application %d not found with given organization %d", dev.ApplicationID, req.OrganizationId)
+	}
+
+	var response pb.SendCommandToDeviceResponse
+	topicBuffer := bytes.NewBuffer(nil)
+	// send command
+	if err := template.Must(template.New("sent-command").Parse(CommandTopicTemplate)).Execute(topicBuffer, struct {
+		ApplicationID string
+		DevEUI        string
+		Type          string
+	}{fmt.Sprintf("%d", application.ID), devEUI.String(), "down"}); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get evet topic for subscribing application: %v", err)
+	}
+	response.Topic = fmt.Sprintf("Topic for subscribing to application %d: '%s'", application.ID, topicBuffer.String())
+
+	return &response, nil
 }
