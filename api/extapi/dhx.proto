@@ -74,6 +74,40 @@ service DHXServcie {
             body: "*"
         };
     }
+
+    // DHXEstimateMining estimates organization's mining based on lockdrops,
+    // bonded DHX and number of gateways
+    rpc DHXEstimateMining (DHXEstimateMiningRequest) returns (DHXEstimateMiningResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/estimate"
+        };
+    }
+}
+
+message DHXEstimateMiningRequest {
+    // id of the organization for which estimates should be calculated
+    int64 org_id = 1;
+}
+
+message DHXEstimateMiningResponse {
+    // estimated mining power based on lockdrop and the number of gateways.
+    // Assumes that the gateways are 100% uptime.
+    string estimated_mining_power = 1;
+    // estimated DHX revenue, assuming that organization will have the
+    // estimated mining power, won't hit the dhx mining limit, and that DHX
+    // revenue per unit of mining power will be the same as during the last
+    // mining
+    string estimated_dhx_revenue = 2;
+    // the amount of DHX that the organization needs to have bonded to be able
+    // to claim the estimated DHX revenue
+    string dhx_bond_recommended = 3;
+    // the amount of DHX that the organization currently has bonded
+    string dhx_bonded = 4;
+    // current maximum amount of DHX that the organization can mine per day
+    // based on the bonded amount of DHX
+    string dhx_mining_limit = 5;
+    // number of gateways that organization has
+    int64 gateways = 6;
 }
 
 message DHXGetLastMiningRequest {
