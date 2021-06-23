@@ -29,6 +29,54 @@ service MosquittoAuthService {
             body: "*"
         };
     }
+    // SubsribeDeviceEvents takes device eui as request parameter,
+    // returns topis that can be used to subscribe to all device events or one specific event
+    rpc SubsribeDeviceEvents (SubsribeDeviceEventsRequest) returns (SubsribeDeviceEventsResponse) {
+        option (google.api.http) = {
+            get: "/api/mosquitto-auth/subscribe-device-events"
+        };
+    }
+    // SubsribeApplication takes application id as request parameter,
+    // returns topics that can be used to subscribe to all devices' events under same application
+    rpc SubsribeApplicationEvents (SubsribeApplicationEventsRequest) returns (SubsribeApplicationEventsResponse) {
+        option (google.api.http) = {
+            get: "/api/mosquitto-auth/subscribe-application-events"
+        };
+    }
+    // SendCommandToDevice takes device eui as request paramter,
+    // returns topics that can be used to send command to a specific device
+    rpc SendCommandToDevice (SendCommandToDeviceRequest) returns (SendCommandToDeviceResponse) {
+        option (google.api.http) = {
+            get: "/api/mosquitto-auth/send-command"
+        };
+    }
+}
+
+message SendCommandToDeviceRequest {
+    string dev_eui = 1;
+    int64 organization_id = 2;
+}
+
+message SendCommandToDeviceResponse {
+    string topic = 1;
+}
+
+message SubsribeDeviceEventsRequest {
+    string dev_eui = 1;
+    int64 organization_id = 2;
+}
+
+message SubsribeDeviceEventsResponse {
+    repeated string topic = 1;
+}
+
+message SubsribeApplicationEventsRequest {
+    int64 application_id = 1;
+    int64 organization_id = 2;
+}
+
+message SubsribeApplicationEventsResponse {
+    string topic = 1;
 }
 
 message GetJWTRequest {

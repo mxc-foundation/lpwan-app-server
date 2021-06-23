@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -267,13 +266,13 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 		conf.ServerAddr,
 	))
 
-	eventTopicRegexp, err := regexp.Compile(mqttauth.EventTopicTemplate)
+	eventTopicRegexp, err := mqttauth.CompileRegexpFromTopicTemplate("event", mqttauth.EventTopicTemplate)
 	if err != nil {
-		return fmt.Errorf("compile regexp error: %v", err)
+		return err
 	}
-	commandTopicRegexp, err := regexp.Compile(mqttauth.CommandTopicTemplate)
+	commandTopicRegexp, err := mqttauth.CompileRegexpFromTopicTemplate("command", mqttauth.CommandTopicTemplate)
 	if err != nil {
-		return fmt.Errorf("compile regexp error: %v", err)
+		return err
 	}
 	api.RegisterMosquittoAuthServiceServer(srv.gs, mqttauth.NewServer(
 		pgs,

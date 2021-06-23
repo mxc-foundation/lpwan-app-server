@@ -60,17 +60,29 @@ func New(m marshaler.Type, conf types.IntegrationMQTTConfig) (*Integration, erro
 	}
 
 	i.retainEvents = i.config.RetainEvents
-	i.eventTopicRegexp, err = regexp.Compile(mqttauth.EventTopicTemplate)
+	i.eventTopicRegexp, err = mqttauth.CompileRegexpFromTopicTemplate("event",
+		mqttauth.EventTopicTemplate)
 	if err != nil {
 		return nil, errors.Wrap(err, "parse event template error")
 	}
-	i.commandTopicRegexp, err = regexp.Compile(mqttauth.CommandTopicTemplate)
+	i.commandTopicRegexp, err = mqttauth.CompileRegexpFromTopicTemplate("command",
+		mqttauth.CommandTopicTemplate)
 	if err != nil {
 		return nil, errors.Wrap(err, "parse command template error")
 	}
 
 	// generate downlink topic matching all applications and devices
-	i.downlinkTopic = "application/+/device/+/command/down"
+	topicBuffer := bytes.NewBuffer(nil)
+	err = template.Must(template.New("downlink").Parse(mqttauth.CommandTopicTemplate)).Execute(topicBuffer,
+		struct {
+			ApplicationID string
+			DevEUI        string
+			Type          string
+		}{"+", "+", "down"})
+	if err != nil {
+		return nil, fmt.Errorf("create downlink topic error: %v", err)
+	}
+	i.downlinkTopic = topicBuffer.String()
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(i.config.Server)
@@ -161,42 +173,42 @@ func (i *Integration) Close() error {
 
 // HandleUplinkEvent sends an UplinkEvent.
 func (i *Integration) HandleUplinkEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.UplinkEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "up", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.UplinkEvent, &payload)
 }
 
 // HandleJoinEvent sends a JoinEvent.
 func (i *Integration) HandleJoinEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.JoinEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "join", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.JoinEvent, &payload)
 }
 
 // HandleAckEvent sends an AckEvent.
 func (i *Integration) HandleAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.AckEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "ack", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.AckEvent, &payload)
 }
 
 // HandleErrorEvent sends an ErrorEvent.
 func (i *Integration) HandleErrorEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.ErrorEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "error", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.ErrorEvent, &payload)
 }
 
 // HandleStatusEvent sends a StatusEvent.
 func (i *Integration) HandleStatusEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.StatusEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "status", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.StatusEvent, &payload)
 }
 
 // HandleLocationEvent sends a LocationEvent.
 func (i *Integration) HandleLocationEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.LocationEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "location", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.LocationEvent, &payload)
 }
 
 // HandleTxAckEvent sends a TxAckEvent.
 func (i *Integration) HandleTxAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.TxAckEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "txack", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.TxAckEvent, &payload)
 }
 
 // HandleIntegrationEvent sends an IntegrationEvent.
 func (i *Integration) HandleIntegrationEvent(ctx context.Context, _ models.Integration, vars map[string]string, payload pb.IntegrationEvent) error {
-	return i.publish(ctx, payload.ApplicationId, payload.DevEui, "integration", &payload)
+	return i.publish(ctx, payload.ApplicationId, payload.DevEui, mqttauth.IntegrationEvent, &payload)
 }
 
 func (i *Integration) publish(ctx context.Context, applicationID uint64, devEUIB []byte, eventType string, msg proto.Message) error {
