@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"text/template"
 	"time"
 
 	"golang.org/x/net/context"
@@ -274,12 +275,22 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	if err != nil {
 		return err
 	}
+	eventTopicTemp, err := template.New("event").Parse(mqttauth.EventTopicTemplate)
+	if err != nil {
+		return err
+	}
+	commandTopicTemp, err := template.New("command").Parse(mqttauth.CommandTopicTemplate)
+	if err != nil {
+		return err
+	}
 	api.RegisterMosquittoAuthServiceServer(srv.gs, mqttauth.NewServer(
 		pgs,
 		grpcAuth,
 		jwtValidator,
 		eventTopicRegexp,
 		commandTopicRegexp,
+		eventTopicTemp,
+		commandTopicTemp,
 	))
 	return nil
 }
