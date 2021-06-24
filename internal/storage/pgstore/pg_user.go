@@ -288,6 +288,14 @@ func (ps *PgStore) getUser(ctx context.Context, condition string, args ...interf
 	return u, err
 }
 
+// GetSupernodeAdmin returns first (mostly only one) supernode admin id and email
+func (ps *PgStore) GetSupernodeAdmin(ctx context.Context) (user.User, error) {
+	var u user.User
+	query := `SELECT id, email FROM "user" where is_admin = true order by id limit 1`
+	err := ps.db.QueryRowxContext(ctx, query).Scan(&u.ID, &u.Email)
+	return u, err
+}
+
 // GetUserByID returns the User for the given id.
 func (ps *PgStore) GetUserByID(ctx context.Context, userID int64) (user.User, error) {
 	return ps.getUser(ctx, "id = $1", userID)

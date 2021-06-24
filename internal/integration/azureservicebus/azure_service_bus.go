@@ -26,13 +26,13 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 )
 
 // Publish modes.
 const (
-	AzurePublishModeTopic AzurePublishMode = "topic"
-	AzurePublishModeQueue AzurePublishMode = "queue"
+	AzurePublishModeTopic types.AzurePublishMode = "topic"
+	AzurePublishModeQueue types.AzurePublishMode = "queue"
 )
 
 // Integration implements an Azure Service-Bus integration.
@@ -41,7 +41,7 @@ type Integration struct {
 
 	marshaler   marshaler.Type
 	publishName string
-	publishMode AzurePublishMode
+	publishMode types.AzurePublishMode
 
 	uri     string
 	keyName string
@@ -49,7 +49,7 @@ type Integration struct {
 }
 
 // New creates a new Azure Service-Bus integration.
-func New(m marshaler.Type, conf IntegrationAzureConfig) (*Integration, error) {
+func New(m marshaler.Type, conf types.IntegrationAzureConfig) (*Integration, error) {
 	if conf.Marshaler != "" {
 		switch conf.Marshaler {
 		case "PROTOBUF":

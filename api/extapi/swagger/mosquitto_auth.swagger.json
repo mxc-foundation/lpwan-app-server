@@ -109,6 +109,121 @@
           "MosquittoAuthService"
         ]
       }
+    },
+    "/api/mosquitto-auth/send-command": {
+      "get": {
+        "summary": "SendCommandToDevice takes device eui as request paramter,\nreturns topics that can be used to send command to a specific device",
+        "operationId": "SendCommandToDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiSendCommandToDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEui",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    },
+    "/api/mosquitto-auth/subscribe-application-events": {
+      "get": {
+        "summary": "SubsribeApplication takes application id as request parameter,\nreturns topics that can be used to subscribe to all devices' events under same application",
+        "operationId": "SubsribeApplicationEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiSubsribeApplicationEventsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
+    },
+    "/api/mosquitto-auth/subscribe-device-events": {
+      "get": {
+        "summary": "SubsribeDeviceEvents takes device eui as request parameter,\nreturns topis that can be used to subscribe to all device events or one specific event",
+        "operationId": "SubsribeDeviceEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiSubsribeDeviceEventsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEui",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MosquittoAuthService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -153,6 +268,33 @@
     },
     "extapiJWTAuthenticationResponse": {
       "type": "object"
+    },
+    "extapiSendCommandToDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiSubsribeApplicationEventsResponse": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        }
+      }
+    },
+    "extapiSubsribeDeviceEventsResponse": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "protobufAny": {
       "type": "object",

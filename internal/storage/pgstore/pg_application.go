@@ -247,6 +247,18 @@ func (ps *PgStore) GetApplication(ctx context.Context, id int64) (Application, e
 	return app, nil
 }
 
+// GetApplicationWithIDAndOrganizationID returns Application with given application id and organization id
+func (ps *PgStore) GetApplicationWithIDAndOrganizationID(ctx context.Context, id, orgID int64) (Application, error) {
+	var app Application
+	err := sqlx.GetContext(ctx, ps.db, &app, "select * from application where id = $1 and organization_id = $2",
+		id, orgID)
+	if err != nil {
+		return app, handlePSQLError(Select, err, "select error")
+	}
+
+	return app, nil
+}
+
 // GetApplicationCount returns the total number of applications.
 func (ps *PgStore) GetApplicationCount(ctx context.Context, filters ApplicationFilters) (int, error) {
 	if filters.Search != "" {

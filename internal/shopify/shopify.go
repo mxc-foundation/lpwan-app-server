@@ -33,6 +33,7 @@ func Start(ctx context.Context, config user.Shopify, store user.Store, cli api.D
 		config:   config,
 		store:    store,
 		bonusCli: cli,
+		done:     make(chan struct{}),
 	}
 
 	go service.startCheckingOrdersForShopifyAccounts(ctx)

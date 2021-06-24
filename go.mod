@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.56.0 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
-	github.com/apex/log v1.1.0
 	github.com/aws/aws-sdk-go v1.26.3
 	github.com/brocaar/chirpstack-api/go/v3 v3.7.7
 	github.com/brocaar/lorawan v0.0.0-20200726141338-ee070f85d494

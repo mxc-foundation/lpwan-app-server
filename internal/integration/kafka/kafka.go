@@ -22,7 +22,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/kafka/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 )
 
 // Integration implements an Kafka integration.
@@ -30,11 +30,11 @@ type Integration struct {
 	marshaler        marshaler.Type
 	writer           *kafka.Writer
 	eventKeyTemplate *template.Template
-	config           IntegrationKafkaConfig
+	config           types.IntegrationKafkaConfig
 }
 
 // New creates a new Kafka integration.
-func New(m marshaler.Type, conf IntegrationKafkaConfig) (*Integration, error) {
+func New(m marshaler.Type, conf types.IntegrationKafkaConfig) (*Integration, error) {
 	wc := kafka.WriterConfig{
 		Brokers:  conf.Brokers,
 		Topic:    conf.Topic,

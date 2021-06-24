@@ -11,7 +11,10 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
@@ -31,8 +34,14 @@ type App struct {
 	mxpCli *mxpcli.Client
 	// mxprotocol server API
 	mxpSrv *mxpapisrv.MXPAPIServer
+	// network server API
+	nsSrv *as.NetworkServerAPIServer
+	// external API server
+	extAPISrv *external.ExtAPIServer
 	// shopify service
 	shopify *shopify.Service
+	// integration handlers
+	integrations []models.IntegrationHandler
 	// smtp service
 	mailer *email.Mailer
 }
@@ -69,6 +78,12 @@ func Start(ctx context.Context, cfg config.Config) (*App, error) {
 func (app *App) Close() error {
 	if app.mxpSrv != nil {
 		app.mxpSrv.Stop()
+	}
+	if app.nsSrv != nil {
+		app.nsSrv.Stop()
+	}
+	if app.extAPISrv != nil {
+		app.extAPISrv.Stop()
 	}
 	if app.mxpCli != nil {
 		if err := app.mxpCli.Close(); err != nil {
@@ -108,6 +123,12 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 		app.pgstore, app.mxpCli.GetDistributeBonusServiceClient())
 	// shopify service
 	app.shopify, err = shopify.Start(ctx, cfg.ShopifyConfig, app.pgstore, app.mxpCli.GetDistributeBonusServiceClient())
+	if err != nil {
+		return err
+	}
+
+	// integration service clients
+	app.integrations, err = integration.SetupGlobalIntegrations(cfg.ApplicationServer.Integration)
 	if err != nil {
 		return err
 	}
@@ -159,12 +180,16 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 // the gRPC servers
 func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	var err error
+	// API for network-server
+	if app.nsSrv, err = as.Start(store.NewStore(), cfg.ApplicationServer.API, app.integrations); err != nil {
+		return err
+	}
 	// API for mxprotocol server
 	if app.mxpSrv, err = mxpapisrv.Start(app.pgstore, cfg.ApplicationServer.APIForM2M, app.mailer); err != nil {
 		return err
 	}
 	// API for external clients
-	if err = external.Start(store.NewStore(), external.RESTApiServer{
+	if app.extAPISrv, err = external.Start(store.NewStore(), external.ExtAPIConfig{
 		S:                      cfg.ApplicationServer.ExternalAPI,
 		ApplicationServerID:    cfg.ApplicationServer.ID,
 		ServerAddr:             cfg.General.ServerAddr,

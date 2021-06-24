@@ -29,6 +29,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/mqttauth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/report"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
@@ -47,8 +48,13 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-// RESTApiServer defines all attributes for REST api service
-type RESTApiServer struct {
+// ExtAPIServer represents gRPC server serving external api
+type ExtAPIServer struct {
+	gs *grpc.Server
+}
+
+// ExtAPIConfig defines all attributes for ext api service
+type ExtAPIConfig struct {
 	S                      ExternalAPIStruct
 	ApplicationServerID    string
 	ServerAddr             string
@@ -64,14 +70,23 @@ type RESTApiServer struct {
 	MXPCli                 *mxpcli.Client
 }
 
+// Stop gracefully stops gRPC server
+func (srv *ExtAPIServer) Stop() {
+	srv.gs.GracefulStop()
+}
+
 // Start configures the API endpoints.
-func Start(h *store.Handler, srv RESTApiServer) (err error) {
+func Start(h *store.Handler, conf ExtAPIConfig) (*ExtAPIServer, error) {
+	var err error
 	// Bind external api port to listen to requests to all services
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
 
-	if err := srv.SetupCusAPI(h, grpcServer); err != nil {
-		return err
+	srv := &ExtAPIServer{
+		gs: grpcServer,
+	}
+	if err := srv.SetupCusAPI(h, conf); err != nil {
+		return nil, err
 	}
 
 	// setup the client http interface variable
@@ -89,8 +104,8 @@ func Start(h *store.Handler, srv RESTApiServer) (err error) {
 				return
 			}
 
-			if srv.S.CORSAllowOrigin != "" {
-				w.Header().Set("Access-Control-Allow-Origin", srv.S.CORSAllowOrigin)
+			if conf.S.CORSAllowOrigin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", conf.S.CORSAllowOrigin)
 				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Grpc-Metadata-Authorization")
 
@@ -106,18 +121,18 @@ func Start(h *store.Handler, srv RESTApiServer) (err error) {
 	// start the API server
 	go func() {
 		log.WithFields(log.Fields{
-			"bind":     srv.S.Bind,
-			"tls-cert": srv.S.TLSCert,
-			"tls-key":  srv.S.TLSKey,
+			"bind":     conf.S.Bind,
+			"tls-cert": conf.S.TLSCert,
+			"tls-key":  conf.S.TLSKey,
 		}).Info("api/external: starting api server")
 
-		if srv.S.TLSCert == "" || srv.S.TLSKey == "" {
-			log.Fatal(http.ListenAndServe(srv.S.Bind, h2c.NewHandler(handler, &http2.Server{})))
+		if conf.S.TLSCert == "" || conf.S.TLSKey == "" {
+			log.Fatal(http.ListenAndServe(conf.S.Bind, h2c.NewHandler(handler, &http2.Server{})))
 		} else {
 			log.Fatal(http.ListenAndServeTLS(
-				srv.S.Bind,
-				srv.S.TLSCert,
-				srv.S.TLSKey,
+				conf.S.Bind,
+				conf.S.TLSCert,
+				conf.S.TLSKey,
 				h2c.NewHandler(handler, &http2.Server{}),
 			))
 		}
@@ -127,137 +142,153 @@ func Start(h *store.Handler, srv RESTApiServer) (err error) {
 	time.Sleep(time.Millisecond * 100)
 
 	// setup the HTTP handler
-	clientHTTPHandler, err = srv.setupHTTPAPI()
+	clientHTTPHandler, err = srv.setupHTTPAPI(conf)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return srv, nil
 }
 
-// SetupCusAPI registers all REST api services
-func (srv *RESTApiServer) SetupCusAPI(h *store.Handler, grpcServer *grpc.Server) error {
-	jwtSecret := srv.S.JWTSecret
+// SetupCusAPI registers all ext api services
+func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error {
+	jwtSecret := conf.S.JWTSecret
 	if jwtSecret == "" {
 		return errors.New("jwt_secret must be set")
 	}
-	jwtTTL := srv.S.JWTDefaultTTL
+	jwtTTL := conf.S.JWTDefaultTTL
 	pgs := pgstore.New()
 
 	jwtValidator := jwt.NewValidator("HS256", []byte(jwtSecret), jwtTTL)
-	otpValidator, err := otp.NewValidator("lpwan-app-server", srv.S.OTPSecret, pgs)
+	otpValidator, err := otp.NewValidator("lpwan-app-server", conf.S.OTPSecret, pgs)
 	if err != nil {
 		return err
 	}
 	grpcAuth := grpcauth.New(pgs, jwtValidator, otpValidator)
 	authcus.SetupCred(pgs, jwtValidator, otpValidator)
 
-	rpID, err := uuid.FromString(srv.ApplicationServerID)
+	rpID, err := uuid.FromString(conf.ApplicationServerID)
 	if err != nil {
 		return fmt.Errorf("failed to convert application server id from string to uuid: %v", err)
 	}
 
-	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(h))
-	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(h))
-	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(rpID, h))
-	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(h))
-	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(h))
+	pb.RegisterFUOTADeploymentServiceServer(srv.gs, NewFUOTADeploymentAPI(h))
+	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h))
+	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(rpID, h))
+	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h))
+	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h))
 	// device
-	api.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(rpID, h))
+	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(rpID, h))
 	// gateway
 	psCli, err := pscli.GetPServerClient()
 	if err != nil {
 		return err
 	}
-	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(
+	api.RegisterGatewayServiceServer(srv.gs, NewGatewayAPI(
 		h.PgStore,
 		grpcAuth,
 		GwConfig{
 			ApplicationServerID: rpID,
-			ServerAddr:          srv.ServerAddr,
-			EnableSTC:           srv.EnableSTC,
+			ServerAddr:          conf.ServerAddr,
+			EnableSTC:           conf.EnableSTC,
 		},
 		psCli,
 	))
 
 	// gateway profile
-	api.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(h))
+	api.RegisterGatewayProfileServiceServer(srv.gs, NewGatewayProfileAPI(h))
 	// application
-	api.RegisterApplicationServiceServer(grpcServer, NewApplicationAPI(h))
+	api.RegisterApplicationServiceServer(srv.gs, NewApplicationAPI(h))
 	// network server
-	api.RegisterNetworkServerServiceServer(grpcServer, NewNetworkServerAPI(h))
+	api.RegisterNetworkServerServiceServer(srv.gs, NewNetworkServerAPI(h))
 	// orgnization
-	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
+	api.RegisterOrganizationServiceServer(srv.gs, NewOrganizationAPI(h))
 	// user
-	pwhasher, err := pwhash.New(16, srv.PasswordHashIterations)
+	pwhasher, err := pwhash.New(16, conf.PasswordHashIterations)
 	if err != nil {
 		return err
 	}
 	userSrv := user.NewServer(
 		pgs,
-		srv.Mailer,
+		conf.Mailer,
 		grpcAuth,
 		jwtValidator,
 		otpValidator,
 		pwhasher,
 		user.Config{
-			Recaptcha:        srv.Recaptcha,
-			Enable2FALogin:   srv.Enable2FA,
-			OperatorLogoPath: srv.OperatorLogo,
-			WeChatLogin:      srv.ExternalAuth.WechatAuth,
-			DebugWeChatLogin: srv.ExternalAuth.DebugWechatAuth,
-			ShopifyConfig:    srv.ShopifyConfig,
+			Recaptcha:        conf.Recaptcha,
+			Enable2FALogin:   conf.Enable2FA,
+			OperatorLogoPath: conf.OperatorLogo,
+			WeChatLogin:      conf.ExternalAuth.WechatAuth,
+			DebugWeChatLogin: conf.ExternalAuth.DebugWechatAuth,
+			ShopifyConfig:    conf.ShopifyConfig,
 		},
 	)
-	api.RegisterUserServiceServer(grpcServer, userSrv)
-	api.RegisterInternalServiceServer(grpcServer, userSrv)
-	api.RegisterExternalUserServiceServer(grpcServer, userSrv)
+	api.RegisterUserServiceServer(srv.gs, userSrv)
+	api.RegisterInternalServiceServer(srv.gs, userSrv)
+	api.RegisterExternalUserServiceServer(srv.gs, userSrv)
 
-	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(srv.ServerRegion))
-	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
-	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI(grpcAuth))
+	api.RegisterServerInfoServiceServer(srv.gs, NewServerInfoAPI(conf.ServerRegion))
+	api.RegisterSettingsServiceServer(srv.gs, NewSettingsServerAPI())
+	api.RegisterTopUpServiceServer(srv.gs, NewTopUpServerAPI(grpcAuth))
 
-	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI(
+	api.RegisterWalletServiceServer(srv.gs, NewWalletServerAPI(
 		h,
 		grpcAuth,
-		srv.EnableSTC,
+		conf.EnableSTC,
 	))
 
-	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI(grpcAuth))
+	api.RegisterWithdrawServiceServer(srv.gs, NewWithdrawServerAPI(grpcAuth))
 
-	api.RegisterStakingServiceServer(grpcServer, staking.NewServer(
+	api.RegisterStakingServiceServer(srv.gs, staking.NewServer(
 		mxpcli.Global.GetStakingServiceClient(),
 		grpcAuth,
 	))
 
-	api.RegisterDHXServcieServer(grpcServer, dhx.NewServer(
+	api.RegisterDHXServcieServer(srv.gs, dhx.NewServer(
 		mxpcli.Global.GetDHXServiceClient(),
 		grpcAuth,
 		pgs,
 	))
 
-	api.RegisterShopifyIntegrationServer(grpcServer, user.NewShopifyServiceServer(
+	api.RegisterShopifyIntegrationServer(srv.gs, user.NewShopifyServiceServer(
 		grpcAuth,
 		pgs,
 	))
 
-	api.RegisterDFIServiceServer(grpcServer, dfi.NewServer(
+	api.RegisterDFIServiceServer(srv.gs, dfi.NewServer(
 		pgs,
 	))
 
-	api.RegisterReportServiceServer(grpcServer, report.NewServer(
-		srv.MXPCli.GetFianceReportClient(),
+	api.RegisterReportServiceServer(srv.gs, report.NewServer(
+		conf.MXPCli.GetFianceReportClient(),
 		grpcAuth,
-		srv.ServerAddr,
+		conf.ServerAddr,
+	))
+
+	eventTopicRegexp, err := mqttauth.CompileRegexpFromTopicTemplate("event", mqttauth.EventTopicTemplate)
+	if err != nil {
+		return err
+	}
+	commandTopicRegexp, err := mqttauth.CompileRegexpFromTopicTemplate("command", mqttauth.CommandTopicTemplate)
+	if err != nil {
+		return err
+	}
+	api.RegisterMosquittoAuthServiceServer(srv.gs, mqttauth.NewServer(
+		pgs,
+		grpcAuth,
+		jwtValidator,
+		eventTopicRegexp,
+		commandTopicRegexp,
 	))
 	return nil
 }
 
-func (srv *RESTApiServer) setupHTTPAPI() (http.Handler, error) {
+func (srv *ExtAPIServer) setupHTTPAPI(conf ExtAPIConfig) (http.Handler, error) {
 	r := mux.NewRouter()
 
 	// setup json api handler
-	jsonHandler, err := srv.getJSONGateway(context.Background())
+	jsonHandler, err := srv.getJSONGateway(context.Background(), conf)
 	if err != nil {
 		return nil, err
 	}
@@ -289,14 +320,14 @@ func (srv *RESTApiServer) setupHTTPAPI() (http.Handler, error) {
 	return wsproxy.WebsocketProxy(r), nil
 }
 
-func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, error) {
+func (srv *ExtAPIServer) getJSONGateway(ctx context.Context, conf ExtAPIConfig) (http.Handler, error) {
 	// dial options for the grpc-gateway
 	var grpcDialOpts []grpc.DialOption
 
-	if srv.S.TLSCert == "" || srv.S.TLSKey == "" {
+	if conf.S.TLSCert == "" || conf.S.TLSKey == "" {
 		grpcDialOpts = append(grpcDialOpts, grpc.WithInsecure())
 	} else {
-		b, err := ioutil.ReadFile(srv.S.TLSCert)
+		b, err := ioutil.ReadFile(conf.S.TLSCert)
 		if err != nil {
 			return nil, errors.Wrap(err, "read external api tls cert error")
 		}
@@ -312,7 +343,7 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 		})))
 	}
 
-	bindParts := strings.SplitN(srv.S.Bind, ":", 2)
+	bindParts := strings.SplitN(conf.S.Bind, ":", 2)
 	if len(bindParts) != 2 {
 		log.Fatal("get port from bind failed")
 	}
@@ -397,6 +428,9 @@ func (srv *RESTApiServer) getJSONGateway(ctx context.Context) (http.Handler, err
 
 	err = api.RegisterReportServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register download service handler: %v", err)
+
+	err = api.RegisterMosquittoAuthServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register mosquitto auth service handler: %v", err)
 
 	return mux, nil
 }

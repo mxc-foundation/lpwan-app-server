@@ -6,12 +6,6 @@ import (
 
 	"github.com/brocaar/lorawan"
 
-	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -19,9 +13,12 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
-
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Pricer allows you to get the price of crypto currency

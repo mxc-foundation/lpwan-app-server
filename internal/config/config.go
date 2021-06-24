@@ -11,7 +11,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
-	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/data"
+	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
 	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js/data"
 	as "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
 	gws "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
