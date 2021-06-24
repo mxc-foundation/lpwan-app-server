@@ -28,6 +28,9 @@ type Server struct {
 	eventTypes         []string
 	eventTopicRegexp   *regexp.Regexp
 	commandTopicRegexp *regexp.Regexp
+
+	eventTopicTemplate   *template.Template
+	commandTopicTemplate *template.Template
 }
 
 // Store defines set of db APIs used in mqttauth service
@@ -38,7 +41,7 @@ type Store interface {
 
 // NewServer returns a new MosquittoAuth Service Server
 func NewServer(st Store, auth auth.Authenticator, jwtv *jwt.Validator,
-	eventTopic, commandTopic *regexp.Regexp) *Server {
+	eventTopic, commandTopic *regexp.Regexp, eventTopicTemp, commandTopicTemp *template.Template) *Server {
 	return &Server{
 		auth: auth,
 		st:   st,
@@ -52,8 +55,10 @@ func NewServer(st Store, auth auth.Authenticator, jwtv *jwt.Validator,
 			LocationEvent,
 			TxAckEvent,
 		},
-		eventTopicRegexp:   eventTopic,
-		commandTopicRegexp: commandTopic,
+		eventTopicRegexp:     eventTopic,
+		commandTopicRegexp:   commandTopic,
+		eventTopicTemplate:   eventTopicTemp,
+		commandTopicTemplate: commandTopicTemp,
 	}
 }
 
@@ -119,17 +124,20 @@ const (
 	IntegrationEvent string = "integration"
 )
 
-// CompileRegexpFromTopicTemplate creates regexp object from template
+// CompileRegexpFromTopicTemplate creates regexp object from template, must be called in initializing of the server
 func CompileRegexpFromTopicTemplate(templateName string, topicTemplate string) (*regexp.Regexp, error) {
 	topicBuffer := bytes.NewBuffer(nil)
-	err := template.Must(template.New(templateName).Parse(topicTemplate)).Execute(topicBuffer,
+	temp, err := template.New(templateName).Parse(topicTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("parse template %s error: %v", topicTemplate, err)
+	}
+	if err := temp.Execute(topicBuffer,
 		struct {
 			ApplicationID string
 			DevEUI        string
 			Type          string
-		}{`(?P<application_id>\w+)`, `(?P<dev_eui>\w+|\+)`, `(?P<type>\w+|\+)`})
-	if err != nil {
-		return nil, fmt.Errorf("create topic from template: %v", err)
+		}{`(?P<application_id>\w+)`, `(?P<dev_eui>\w+|\+)`, `(?P<type>\w+|\+)`}); err != nil {
+		return nil, fmt.Errorf("create topic from temp: %v", err)
 	}
 	topicRegexp, err := regexp.Compile(topicBuffer.String())
 	if err != nil {
@@ -328,7 +336,7 @@ func (s *Server) SubsribeDeviceEvents(ctx context.Context, req *pb.SubsribeDevic
 	topicBuffer := bytes.NewBuffer(nil)
 	// subscribe one device one event at a time
 	for _, event := range s.eventTypes {
-		if err := template.Must(template.New("sub-dev-event").Parse(EventTopicTemplate)).Execute(topicBuffer, struct {
+		if err := s.eventTopicTemplate.Execute(topicBuffer, struct {
 			ApplicationID string
 			DevEUI        string
 			Type          string
@@ -341,7 +349,7 @@ func (s *Server) SubsribeDeviceEvents(ctx context.Context, req *pb.SubsribeDevic
 	}
 
 	// subscribe one device all events
-	if err := template.Must(template.New("sub-dev-all-events").Parse(EventTopicTemplate)).Execute(topicBuffer, struct {
+	if err := s.eventTopicTemplate.Execute(topicBuffer, struct {
 		ApplicationID string
 		DevEUI        string
 		Type          string
@@ -375,7 +383,7 @@ func (s *Server) SubsribeApplicationEvents(ctx context.Context, req *pb.Subsribe
 	var response pb.SubsribeApplicationEventsResponse
 	topicBuffer := bytes.NewBuffer(nil)
 	// subscribe application
-	if err := template.Must(template.New("sub-application").Parse(EventTopicTemplate)).Execute(topicBuffer, struct {
+	if err := s.eventTopicTemplate.Execute(topicBuffer, struct {
 		ApplicationID string
 		DevEUI        string
 		Type          string
@@ -415,7 +423,7 @@ func (s *Server) SendCommandToDevice(ctx context.Context, req *pb.SendCommandToD
 	var response pb.SendCommandToDeviceResponse
 	topicBuffer := bytes.NewBuffer(nil)
 	// send command
-	if err := template.Must(template.New("sent-command").Parse(CommandTopicTemplate)).Execute(topicBuffer, struct {
+	if err := s.commandTopicTemplate.Execute(topicBuffer, struct {
 		ApplicationID string
 		DevEUI        string
 		Type          string

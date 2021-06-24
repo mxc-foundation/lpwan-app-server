@@ -43,7 +43,7 @@ type Integration struct {
 	dataDownChan       chan models.DataDownPayload
 	wg                 sync.WaitGroup
 	config             types.IntegrationMQTTConfig
-	eventTopicRegexp   *regexp.Regexp
+	eventTopicTemplate *template.Template
 	commandTopicRegexp *regexp.Regexp
 
 	downlinkTopic string
@@ -60,26 +60,28 @@ func New(m marshaler.Type, conf types.IntegrationMQTTConfig) (*Integration, erro
 	}
 
 	i.retainEvents = i.config.RetainEvents
-	i.eventTopicRegexp, err = mqttauth.CompileRegexpFromTopicTemplate("event",
-		mqttauth.EventTopicTemplate)
+	i.eventTopicTemplate, err = template.New("event").Parse(mqttauth.EventTopicTemplate)
 	if err != nil {
-		return nil, errors.Wrap(err, "parse event template error")
+		return nil, fmt.Errorf("parse event topic template error: %v", err)
 	}
 	i.commandTopicRegexp, err = mqttauth.CompileRegexpFromTopicTemplate("command",
 		mqttauth.CommandTopicTemplate)
 	if err != nil {
-		return nil, errors.Wrap(err, "parse command template error")
+		return nil, errors.Wrap(err, "compile command topic regexp error")
 	}
 
 	// generate downlink topic matching all applications and devices
 	topicBuffer := bytes.NewBuffer(nil)
-	err = template.Must(template.New("downlink").Parse(mqttauth.CommandTopicTemplate)).Execute(topicBuffer,
+	downTopicTemp, err := template.New("downlink").Parse(mqttauth.CommandTopicTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("parse command topic template error: %v", err)
+	}
+	if err = downTopicTemp.Execute(topicBuffer,
 		struct {
 			ApplicationID string
 			DevEUI        string
 			Type          string
-		}{"+", "+", "down"})
-	if err != nil {
+		}{"+", "+", "down"}); err != nil {
 		return nil, fmt.Errorf("create downlink topic error: %v", err)
 	}
 	i.downlinkTopic = topicBuffer.String()
@@ -327,10 +329,8 @@ func (i *Integration) onConnectionLost(mqttc mqtt.Client, reason error) {
 }
 
 func (i *Integration) getTopic(applicationID uint64, devEUI lorawan.EUI64, eventType string) (string, error) {
-	var topicTemplate *template.Template
-
 	topic := bytes.NewBuffer(nil)
-	err := topicTemplate.Execute(topic, struct {
+	err := i.eventTopicTemplate.Execute(topic, struct {
 		ApplicationID uint64
 		DevEUI        lorawan.EUI64
 		EventType     string
