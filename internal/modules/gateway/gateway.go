@@ -104,7 +104,7 @@ func Setup(name string, h *store.Handler) error {
 	if err := listenWithCredentials("New Gateway API", ctrl.conf.NewGateway.Bind,
 		ctrl.conf.NewGateway.CACert,
 		ctrl.conf.NewGateway.TLSCert,
-		ctrl.conf.NewGateway.TLSKey); err != nil {
+		ctrl.conf.NewGateway.TLSKey, h); err != nil {
 		return err
 	}
 
@@ -112,7 +112,7 @@ func Setup(name string, h *store.Handler) error {
 	if err := listenWithCredentials("Old Gateway API", ctrl.conf.OldGateway.Bind,
 		ctrl.conf.OldGateway.CACert,
 		ctrl.conf.OldGateway.TLSCert,
-		ctrl.conf.OldGateway.TLSKey); err != nil {
+		ctrl.conf.OldGateway.TLSKey, h); err != nil {
 		return err
 	}
 
@@ -123,7 +123,7 @@ func Setup(name string, h *store.Handler) error {
 	return nil
 }
 
-func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error {
+func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string, h *store.Handler) error {
 	log.WithFields(log.Fields{
 		"bind":     bind,
 		"ca-cert":  caCert,
@@ -136,7 +136,7 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 		return errors.Wrap(err, "listenWithCredentials: get new server error")
 	}
 
-	gwpb.RegisterHeartbeatServiceServer(gs, NewHeartbeatAPI(bind))
+	gwpb.RegisterHeartbeatServiceServer(gs, NewHeartbeatAPI(bind, h))
 
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {
