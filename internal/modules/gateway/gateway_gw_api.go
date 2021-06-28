@@ -16,37 +16,25 @@ import (
 
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
 // HeartbeatAPI exports the HeartbeatAPI related functions.
 type HeartbeatAPI struct {
 	BindPort string
-	st       *store.Handler
+	st       Store
+	psCli    pspb.ProvisionClient
 }
 
-/*type Store interface {
-	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gw.Gateway, error)
-	UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error
-	UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error
-	UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error
-	GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error)
-	GetGatewayFirmware(ctx context.Context, model string, forUpdate bool) (gwFw gw.GatewayFirmware, err error)
-	UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI64, firmware types.MD5SUM,
-		osVersion, statistics string) error
-
-	Tx(ctx context.Context, f func(context.Context, Store) error) error
-}*/
-
 // NewHeartbeatAPI creates new HeartbeatAPI
-func NewHeartbeatAPI(bind string, h *store.Handler) *HeartbeatAPI {
+func NewHeartbeatAPI(bind string, st Store, psCli *pscli.Client) *HeartbeatAPI {
 	return &HeartbeatAPI{
 		BindPort: bind,
-		st:       h,
+		st:       st,
+		psCli:    psCli.GetPServerClient(),
 	}
 }
 
@@ -173,7 +161,8 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 		osVersion:    gateway.OsVersion,
 		statistics:   gateway.Statistics,
 	}
-	if err := a.st.Tx(ctx, func(ctx context.Context, h *store.Handler) error {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		store := st.(Store)
 		// compare config hash
 		/* #nosec */
 		configHash := md5.Sum([]byte(gateway.Config))
@@ -189,7 +178,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 
 		// check if firmware updated
 		if gateway.AutoUpdateFirmware {
-			firmware, err := h.GetGatewayFirmware(ctx, gateway.Model, false)
+			firmware, err := store.GetGatewayFirmware(ctx, gateway.Model, false)
 			if err != nil {
 				return status.Errorf(codes.Internal, "Failed to get firmware information for model: %s", gateway.Model)
 			}
@@ -207,7 +196,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 		if !bytes.Equal(updatedGateway.firmwareHash[:], gateway.FirmwareHash[:]) ||
 			updatedGateway.osVersion != gateway.OsVersion ||
 			updatedGateway.statistics != gateway.Statistics {
-			if err := h.UpdateGatewayAttributes(ctx, gateway.MAC, updatedGateway.firmwareHash,
+			if err := store.UpdateGatewayAttributes(ctx, gateway.MAC, updatedGateway.firmwareHash,
 				updatedGateway.osVersion, updatedGateway.statistics); err != nil {
 				return status.Errorf(codes.Internal, err.Error())
 			}
@@ -216,11 +205,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 		// update gateway osVersion on provisioning server
 		if gateway.OsVersion != req.OsVersion {
 			// update provisioning server
-			client, err := pscli.GetPServerClient()
-			if err != nil {
-				return status.Errorf(codes.Internal, err.Error())
-			}
-			_, err = client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
+			_, err := a.psCli.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
 				Sn:        gateway.SerialNumber,
 				Mac:       gateway.MAC.String(),
 				OsVersion: req.OsVersion,

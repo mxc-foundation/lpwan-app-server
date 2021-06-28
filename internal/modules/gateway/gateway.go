@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/grpc"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brocaar/lorawan"
@@ -25,34 +27,52 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	org "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	nets "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
 type Server struct {
-	bindOldGateway string
-	bindNewGateway string
+	bind       string
+	gs         *grpc.Server
+	psCli      *pscli.Client
+	serverAddr string
+	st         Store
+}
 
+type controller struct {
+	bindOld    string
+	bindNew    string
 	psCli      psPb.ProvisionClient
 	serverAddr string
 	st         Store
 }
 
 type Store interface {
-	GetGatewayFirmwareList(ctx context.Context) (list []GatewayFirmware, err error)
-	UpdateGatewayFirmware(ctx context.Context, gwFw *GatewayFirmware) (model string, err error)
+	GetGatewayFirmwareList(ctx context.Context) (list []gw.GatewayFirmware, err error)
+	UpdateGatewayFirmware(ctx context.Context, gwFw *gw.GatewayFirmware) (model string, err error)
 	GetOrganization(ctx context.Context, id int64, forUpdate bool) (org.Organization, error)
-	GetGatewayCount(ctx context.Context, filters GatewayFilters) (int, error)
-	CreateGateway(ctx context.Context, gw *Gateway) error
+	GetGatewayCount(ctx context.Context, filters gw.GatewayFilters) (int, error)
+	CreateGateway(ctx context.Context, gw *gw.Gateway) error
 	GetNetworkServer(ctx context.Context, id int64) (nets.NetworkServer, error)
-	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (Gateway, error)
 	GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nets.NetworkServer, error)
 	DeleteGateway(ctx context.Context, mac lorawan.EUI64) error
+	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gw.Gateway, error)
+
+	UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error
+	UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error
+	UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error
+	GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error)
+	GetGatewayFirmware(ctx context.Context, model string, forUpdate bool) (gwFw gw.GatewayFirmware, err error)
+	UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI64, firmware types.MD5SUM,
+		osVersion, statistics string) error
+
+	Tx(ctx context.Context, f func(context.Context, interface{}) error) error
 
 	InTx() bool
 }
@@ -68,41 +88,57 @@ func extractPort(bindStr string) (string, error) {
 	return strArray[1], nil
 }
 
-func Start(st Store, ServerAddr string, PSCli psPb.ProvisionClient, conf GatewayBindStruct, updateSchedule string) error {
-	server := &Server{
-		st:             st,
-		psCli:          PSCli,
-		serverAddr:     ServerAddr,
-		bindOldGateway: conf.OldGateway.Bind,
-		bindNewGateway: conf.NewGateway.Bind,
-	}
-
+func Start(st Store, ServerAddr string, psCli *pscli.Client,
+	conf gw.GatewayBindStruct, updateSchedule string) (old *Server, new *Server, err error) {
 	log.Info("Set up API for gateway")
 
 	// listen to new gateways
-	if err := listenWithCredentials("New Gateway API", conf.NewGateway.Bind,
+	new = &Server{
+		bind:       conf.NewGateway.Bind,
+		psCli:      psCli,
+		serverAddr: ServerAddr,
+		st:         st,
+	}
+	err = new.listenWithCredentials("New Gateway API", conf.NewGateway.Bind,
 		conf.NewGateway.CACert,
 		conf.NewGateway.TLSCert,
-		conf.NewGateway.TLSKey); err != nil {
-		return err
+		conf.NewGateway.TLSKey)
+	if err != nil {
+		return nil, nil, err
 	}
-
 	// listen to old gateways
-	if err := listenWithCredentials("Old Gateway API", conf.OldGateway.Bind,
+	old = &Server{
+		bind:       conf.OldGateway.Bind,
+		psCli:      psCli,
+		serverAddr: ServerAddr,
+		st:         st,
+	}
+	err = old.listenWithCredentials("Old Gateway API", conf.OldGateway.Bind,
 		conf.OldGateway.CACert,
 		conf.OldGateway.TLSCert,
-		conf.OldGateway.TLSKey); err != nil {
-		return err
+		conf.OldGateway.TLSKey)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	if err := server.scheduleUpdateFirmwareFromProvisioningServer(context.Background(), updateSchedule); err != nil {
-		return err
+	ctrl := &controller{
+		bindOld: conf.OldGateway.Bind,
+		bindNew: conf.NewGateway.Bind,
+		psCli:   psCli.GetPServerClient(),
+		st:      st,
+	}
+	if err := ctrl.scheduleUpdateFirmwareFromProvisioningServer(context.Background(), updateSchedule); err != nil {
+		return nil, nil, err
 	}
 
-	return nil
+	return old, new, nil
 }
 
-func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error {
+func (s *Server) Stop() {
+	s.gs.GracefulStop()
+}
+
+func (s *Server) listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error {
 	log.WithFields(log.Fields{
 		"bind":     bind,
 		"ca-cert":  caCert,
@@ -115,7 +151,7 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 		return errors.Wrap(err, "listenWithCredentials: get new server error")
 	}
 
-	gwpb.RegisterHeartbeatServiceServer(gs, NewHeartbeatAPI(bind))
+	gwpb.RegisterHeartbeatServiceServer(gs, NewHeartbeatAPI(bind, s.st, s.psCli))
 
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {
@@ -125,44 +161,45 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 	go func() {
 		_ = gs.Serve(ln)
 	}()
+	s.gs = gs
 
 	return nil
 }
 
 // UpdateFirmware respond to manual operation to update gateway firmware from provisioining server
 func UpdateFirmware(ctx context.Context, st Store, bindOldGateway, bindNewGateway, serverAddr string, psCli psPb.ProvisionClient) error {
-	server := &Server{
-		bindOldGateway: bindOldGateway,
-		bindNewGateway: bindNewGateway,
-		psCli:          psCli,
-		serverAddr:     serverAddr,
-		st:             st,
+	ctrl := &controller{
+		bindOld:    bindOldGateway,
+		bindNew:    bindNewGateway,
+		psCli:      psCli,
+		serverAddr: serverAddr,
+		st:         st,
 	}
-	return server.updateFirmwareFromProvisioningServer(ctx)
+	return ctrl.updateFirmwareFromProvisioningServer(ctx)
 }
 
-func (s *Server) updateFirmwareFromProvisioningServer(ctx context.Context) error {
+func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) error {
 	log.Info("Check firmware update...")
-	gwFwList, err := s.st.GetGatewayFirmwareList(ctx)
+	gwFwList, err := c.st.GetGatewayFirmwareList(ctx)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get gateway firmware list.")
 		return err
 	}
 
-	bindPortOld, err := extractPort(s.bindOldGateway)
+	bindPortOld, err := extractPort(c.bindOld)
 	if err != nil {
 		return err
 	}
-	bindPortNew, err := extractPort(s.bindNewGateway)
+	bindPortNew, err := extractPort(c.bindNew)
 	if err != nil {
 		return err
 	}
 
 	// send update
 	for _, v := range gwFwList {
-		res, err := s.psCli.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
+		res, err := c.psCli.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
 			Model:          v.Model,
-			SuperNodeAddr:  s.serverAddr,
+			SuperNodeAddr:  c.serverAddr,
 			PortOldGateway: bindPortOld,
 			PortNewGateway: bindPortNew,
 		})
@@ -177,13 +214,13 @@ func (s *Server) updateFirmwareFromProvisioningServer(ctx context.Context) error
 			continue
 		}
 
-		gatewayFw := GatewayFirmware{
+		gatewayFw := gw.GatewayFirmware{
 			Model:        v.Model,
 			ResourceLink: res.ResourceLink,
 			FirmwareHash: md5sum,
 		}
 
-		model, _ := s.st.UpdateGatewayFirmware(ctx, &gatewayFw)
+		model, _ := c.st.UpdateGatewayFirmware(ctx, &gatewayFw)
 		if model == "" {
 			log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
 		}
@@ -193,12 +230,12 @@ func (s *Server) updateFirmwareFromProvisioningServer(ctx context.Context) error
 	return nil
 }
 
-func (s *Server) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Context, updateSchedule string) error {
+func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Context, updateSchedule string) error {
 	log.Info("Start schedule to update gateway firmware...")
 
 	cron := cron.New()
 	err := cron.AddFunc(updateSchedule, func() {
-		if err := s.updateFirmwareFromProvisioningServer(ctx); err != nil {
+		if err := c.updateFirmwareFromProvisioningServer(ctx); err != nil {
 			log.WithError(err).Error("update firmware on schdule error")
 		}
 	})
@@ -211,7 +248,7 @@ func (s *Server) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Contex
 	return nil
 }
 
-func AddGateway(ctx context.Context, st Store, gw *Gateway, createReq ns.CreateGatewayRequest,
+func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns.CreateGatewayRequest,
 	mxpCli pb.GSGatewayServiceClient) error {
 	// A transaction is needed as:
 	//  * A remote gRPC call is performed and in case of error, we want to
@@ -221,14 +258,14 @@ func AddGateway(ctx context.Context, st Store, gw *Gateway, createReq ns.CreateG
 	if !st.InTx() {
 		return fmt.Errorf("AddGateway must be called from within transaction")
 	}
-	organization, err := st.GetOrganization(ctx, gw.OrganizationID, true)
+	organization, err := st.GetOrganization(ctx, gateway.OrganizationID, true)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
 
 	// Validate max. gateway count when != 0.
 	if organization.MaxGatewayCount != 0 {
-		count, err := st.GetGatewayCount(ctx, GatewayFilters{
+		count, err := st.GetGatewayCount(ctx, gw.GatewayFilters{
 			OrganizationID: organization.ID,
 			Search:         "",
 		})
@@ -241,7 +278,7 @@ func AddGateway(ctx context.Context, st Store, gw *Gateway, createReq ns.CreateG
 		}
 	}
 
-	err = st.CreateGateway(ctx, gw)
+	err = st.CreateGateway(ctx, gateway)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -249,12 +286,12 @@ func AddGateway(ctx context.Context, st Store, gw *Gateway, createReq ns.CreateG
 	timestampCreatedAt := timestamppb.New(time.Now())
 	// add this gateway to m2m server
 	_, err = mxpCli.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
-		OrgId: gw.OrganizationID,
+		OrgId: gateway.OrganizationID,
 		GwProfile: &pb.AppServerGatewayProfile{
-			Mac:         gw.MAC.String(),
-			OrgId:       gw.OrganizationID,
-			Description: gw.Description,
-			Name:        gw.Name,
+			Mac:         gateway.MAC.String(),
+			OrgId:       gateway.OrganizationID,
+			Description: gateway.Description,
+			Name:        gateway.Name,
 			CreatedAt:   timestampCreatedAt,
 		},
 	})
@@ -262,7 +299,7 @@ func AddGateway(ctx context.Context, st Store, gw *Gateway, createReq ns.CreateG
 		return helpers.ErrToRPCError(err)
 	}
 
-	n, err := st.GetNetworkServer(ctx, gw.NetworkServerID)
+	n, err := st.GetNetworkServer(ctx, gateway.NetworkServerID)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}

@@ -59,6 +59,8 @@ type ExtAPIConfig struct {
 	S                      ExternalAPIStruct
 	ApplicationServerID    uuid.UUID
 	ServerAddr             string
+	BindNewGateway         string
+	BindOldGateway         string
 	Recaptcha              user.RecaptchaConfig
 	Enable2FA              bool
 	ServerRegion           string
@@ -169,28 +171,27 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	grpcAuth := grpcauth.New(pgs, jwtValidator, otpValidator)
 	authcus.SetupCred(pgs, jwtValidator, otpValidator)
 
-	rpID, err := uuid.FromString(conf.ApplicationServerID)
-	if err != nil {
-		return fmt.Errorf("failed to convert application server id from string to uuid: %v", err)
-	}
-
 	pb.RegisterFUOTADeploymentServiceServer(srv.gs, NewFUOTADeploymentAPI(h))
 	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h))
-	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(rpID, h))
+	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(conf.ApplicationServerID, h))
 	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h))
 	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h))
 	// device
-	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(rpID, h))
+	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(conf.ApplicationServerID, h, conf.MXPCli, conf.PSCli))
 	// gateway
 	api.RegisterGatewayServiceServer(srv.gs, NewGatewayAPI(
 		h.PgStore,
 		grpcAuth,
 		GwConfig{
-			ApplicationServerID: rpID,
+			ApplicationServerID: conf.ApplicationServerID,
 			ServerAddr:          conf.ServerAddr,
 			EnableSTC:           conf.EnableSTC,
 		},
 		conf.PSCli,
+		conf.MXPCli,
+		conf.ServerAddr,
+		conf.BindOldGateway,
+		conf.BindNewGateway,
 	))
 	// device provision
 	api.RegisterProvisionedDeviceServiceServer(srv.gs, NewDeviceProvisionAPI(
@@ -199,6 +200,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 		conf.ApplicationServerID,
 		conf.ServerAddr,
 		conf.PSCli,
+		conf.MXPCli,
 	))
 
 	// gateway profile

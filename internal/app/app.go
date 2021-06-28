@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -42,6 +43,10 @@ type App struct {
 	nsSrv *as.NetworkServerAPIServer
 	// external API server
 	extAPISrv *external.ExtAPIServer
+	// gateway server for new gateway model
+	newGwSrv *gateway.Server
+	// gateway server for old gateway model
+	oldGwSrv *gateway.Server
 	// shopify service
 	shopify *shopify.Service
 	// integration handlers
@@ -82,6 +87,7 @@ func Start(ctx context.Context, cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
+	logrus.Info("Successfully start all services in server")
 	return app, nil
 }
 
@@ -96,9 +102,20 @@ func (app *App) Close() error {
 	if app.extAPISrv != nil {
 		app.extAPISrv.Stop()
 	}
+	if app.newGwSrv != nil {
+		app.newGwSrv.Stop()
+	}
+	if app.oldGwSrv != nil {
+		app.oldGwSrv.Stop()
+	}
 	if app.mxpCli != nil {
 		if err := app.mxpCli.Close(); err != nil {
 			logrus.Warnf("error shutting down MXP server connection: %v", err)
+		}
+	}
+	if app.psCli != nil {
+		if err := app.psCli.Close(); err != nil {
+			logrus.Warnf("error shutting down Provisioning server connection: %v", err)
 		}
 	}
 	if app.bonus != nil {
@@ -209,6 +226,8 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		S:                      cfg.ApplicationServer.ExternalAPI,
 		ApplicationServerID:    app.applicationServerID,
 		ServerAddr:             cfg.General.ServerAddr,
+		BindNewGateway:         cfg.ApplicationServer.APIForGateway.NewGateway.Bind,
+		BindOldGateway:         cfg.ApplicationServer.APIForGateway.OldGateway.Bind,
 		Recaptcha:              cfg.Recaptcha,
 		Enable2FA:              cfg.General.Enable2FALogin,
 		ServerRegion:           cfg.General.ServerRegion,
@@ -219,7 +238,14 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		OperatorLogo:           cfg.Operator.OperatorLogo,
 		Mailer:                 app.mailer,
 		MXPCli:                 app.mxpCli,
+		PSCli:                  app.psCli,
 	}); err != nil {
+		return err
+	}
+
+	app.newGwSrv, app.oldGwSrv, err = gateway.Start(app.pgstore, cfg.General.ServerAddr,
+		app.psCli, cfg.ApplicationServer.APIForGateway, cfg.ProvisionServer.UpdateSchedule)
+	if err != nil {
 		return err
 	}
 

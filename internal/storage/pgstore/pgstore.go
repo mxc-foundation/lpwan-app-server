@@ -46,7 +46,7 @@ func New() *PgStore {
 	}
 }
 
-func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, *PgStore) error) error {
+func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, interface{}) error) error {
 	for {
 		pst, err := ps.TxBegin(ctx)
 		if err != nil {

@@ -514,7 +514,8 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		tags.Map[k] = sql.NullString{Valid: true, String: v}
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, store *pgstore.PgStore) error {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		store := st.(*pgstore.PgStore)
 		if err := gw.AddGateway(ctx, store, &Gateway{
 			MAC:                mac,
 			Name:               req.Name,
@@ -925,7 +926,8 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, err
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *pgstore.PgStore) error {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		handler := st.(*pgstore.PgStore)
 		gw, err := handler.GetGateway(ctx, mac, true)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
@@ -1022,7 +1024,8 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, err
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, store *pgstore.PgStore) error {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		store := st.(*pgstore.PgStore)
 		if err := gw.DeleteGateway(ctx, mac, store, a.pscli); err != nil {
 			return err
 		}
