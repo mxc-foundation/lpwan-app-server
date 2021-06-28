@@ -88,7 +88,8 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 		opts.OrgID = claims.OrganizationID
 	}
 
-	creds, err := auth.NewCredentials(ctx, ga.store, claims.Username, opts.OrgID, claims.Service)
+	creds, err := auth.NewCredentials(ctx, ga.store, claims.Username, opts.OrgID,
+		claims.Service, opts.ApplicationID, opts.DeviceProfileID)
 	if err != nil {
 		return nil, fmt.Errorf("user validation has failed: %v", err)
 	}

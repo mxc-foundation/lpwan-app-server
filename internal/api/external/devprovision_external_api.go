@@ -2,221 +2,168 @@ package external
 
 import (
 	"context"
-	"database/sql"
 	"encoding/hex"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/lib/pq/hstore"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	appmoddata "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	app "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 )
 
 // ProvisionedDeviceAPI exports the Gateway related functions.
 type ProvisionedDeviceAPI struct {
-	st                  *store.Handler
+	st                  Store
 	ApplicationServerID uuid.UUID
 	ServerAddr          string
 	auth                auth.Authenticator
-	pscli               psPb.DeviceProvisionClient
+	psCli               psPb.DeviceProvisionClient
+	mxpCli              pb.DSDeviceServiceClient
 }
 
 // NewDeviceProvisionAPI - creates a new DeviceProvisionAPI.
-func NewDeviceProvisionAPI(h *store.Handler, auth auth.Authenticator,
-	applicationID uuid.UUID, serverAddr string, pscli psPb.DeviceProvisionClient) *ProvisionedDeviceAPI {
+func NewDeviceProvisionAPI(st Store, auth auth.Authenticator,
+	applicationID uuid.UUID, serverAddr string, psCli *pscli.Client, mxpCli *mxpcli.Client) *ProvisionedDeviceAPI {
 	return &ProvisionedDeviceAPI{
-		st:                  h,
+		st:                  st,
 		auth:                auth,
 		ApplicationServerID: applicationID,
 		ServerAddr:          serverAddr,
-		pscli:               pscli,
+		psCli:               psCli.GetDeviceProvisionServiceClient(),
+		mxpCli:              mxpCli.GetM2MDeviceServiceClient(),
 	}
 }
 
-//
-func (a *ProvisionedDeviceAPI) createDevice(ctx context.Context, app appmoddata.Application, devEUI lorawan.EUI64,
-	req *api.CreateProvisionedDeviceRequest, deviceProfileID uuid.UUID, provisioned *psPb.GetDeviceResponse) error {
-	// Set Device struct.
-	d := data.Device{
-		DevEUI:            devEUI,
-		ApplicationID:     req.Device.ApplicationId,
-		DeviceProfileID:   deviceProfileID,
-		Name:              req.Device.Name,
-		Description:       req.Device.Description,
-		SkipFCntCheck:     req.Device.SkipFCntCheck,
-		ReferenceAltitude: req.Device.ReferenceAltitude,
-		Variables: hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		},
-		Tags: hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		},
-	}
-	log.Debugf("data.Device: %v", d)
-
-	for k, v := range req.Device.Variables {
-		d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
-	}
-
-	for k, v := range req.Device.Tags {
-		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
-	}
-
-	if err := devmod.CreateDevice(ctx, &d, &app, a.ApplicationServerID); err != nil {
-		return status.Errorf(codes.Unknown, err.Error())
-	}
-
-	// Set Keys
-	var appKey lorawan.AES128Key
-	var nwkKey lorawan.AES128Key
-	var genAppKey lorawan.AES128Key
-
-	copy(appKey[:], provisioned.AppKey)
-	copy(nwkKey[:], provisioned.NwkKey)
-	copy(genAppKey[:], provisioned.NwkKey)
-
-	if err := a.st.CreateDeviceKeys(ctx, &data.DeviceKeys{
-		DevEUI:    devEUI,
-		NwkKey:    nwkKey,
-		AppKey:    appKey,
-		GenAppKey: genAppKey,
-	}); err != nil {
-		return err
-	}
-
-	return nil
+type Store interface {
+	GetApplication(ctx context.Context, id int64) (app.Application, error)
+	Tx(ctx context.Context, f func(context.Context, *store.Handler) error) error
+	UpdateDeviceWithDevProvisioingAttr(ctx context.Context, device *data.Device) error
+	CreateDeviceKeys(ctx context.Context, dc *data.DeviceKeys) error
 }
 
 // Create - creates the given device.
-func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateProvisionedDeviceRequest) (*empty.Empty, error) {
-	log.Debugf("ProvisionedDeviceServiceServer.Create() called")
+func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
+	log.WithFields(log.Fields{
+		"provision_id":   req.ProvisionId,
+		"application_id": req.ApplicationId,
+	}).Debugf("ProvisionedDeviceServiceServer.Create() called")
+
 	// first check whether user is an authorized user
-	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	cred, err := a.auth.GetCredentials(ctx,
+		auth.NewOptions().WithOrgID(req.OrganizationId).WithApplicationID(req.ApplicationId).WithDeviceProfileID(req.DeviceProfileId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	// Get Device provisioned data from PS
-	provisioneddata, err := a.pscli.GetDeviceByID(ctx, &psPb.GetDeviceByIdRequest{ProvisionId: req.Device.ProvisionId})
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to get device from PS: %v, %v", req.Device.ProvisionId, err)
-	}
-	if provisioneddata.Status != "PROVISIONED" {
-		return nil, status.Errorf(codes.NotFound, "Device not provisioned: %v", req.Device.ProvisionId)
-	}
-	if provisioneddata.Server != "" {
-		return nil, status.Errorf(codes.Internal, "Device already registered at %v: %v", provisioneddata.Server, req.Device.ProvisionId)
+	// only organizaiton admin or device admin can create device
+	if !cred.IsOrgAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied: neither org admin nor device admin")
 	}
 
-	//
-	var devEUI lorawan.EUI64
-	copy(devEUI[:], provisioneddata.DevEUI)
-	if len(provisioneddata.DevEUI) != 8 {
-		return nil, status.Errorf(codes.InvalidArgument, "Invalid DevEUI %v", hex.EncodeToString(provisioneddata.DevEUI))
+	if !cred.IsApplicationUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied: not accessible to given application")
 	}
 
-	dpID, err := uuid.FromString(req.Device.DeviceProfileId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	if !cred.DeviceProfileIsValid {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied: not accessbile to given device profile")
 	}
 
-	if valid, err := devmod.NewValidator(a.st).ValidateGlobalNodesAccess(ctx, authcus.Create, req.Device.ApplicationId); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	// if Name is "", set it to the DevEUI
-	if req.Device.Name == "" {
-		req.Device.Name = provisioneddata.Model + "_" + provisioneddata.SerialNumber
-	}
-
-	// Validate that application and device-profile are under the same
-	// organization ID.
-	app, err := application.GetApplication(ctx, req.Device.ApplicationId)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	if app.OrganizationID != dp.OrganizationID {
-		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
-	}
-
-	//
-	err = a.createDevice(ctx, app, devEUI, req, dpID, provisioneddata)
-	if err != nil {
-		return nil, err
-	}
-
-	//
-	_, err = a.pscli.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: req.Device.ProvisionId, Server: a.ServerAddr})
-	if err != nil {
-		return nil, err
-	}
-
-	return &empty.Empty{}, nil
-}
-
-// Get - returns the device matching the given Provision ID.
-func (a *ProvisionedDeviceAPI) Get(ctx context.Context, req *api.GetProvisionedDeviceRequest) (*api.GetProvisionedDeviceResponse, error) {
-	log.Debugf("ProvisionedDeviceServiceServer.Get() called")
-	// first check whether user is an authorized user
-	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	//
-	respcheck, err := a.pscli.IsDeviceExist(ctx, &psPb.IsDeviceExistRequest{ProvisionId: req.ProvisionId})
+	respcheck, err := a.psCli.IsDeviceExist(ctx, &psPb.IsDeviceExistRequest{ProvisionId: req.ProvisionId})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Failed to check device existence: %v, %v", req.ProvisionId, err)
 	}
 	if !respcheck.Exist {
 		return nil, status.Errorf(codes.NotFound, "Device not found: %v", req.ProvisionId)
 	}
-
-	//
-	respdev, err := a.pscli.GetDeviceByID(ctx, &psPb.GetDeviceByIdRequest{ProvisionId: req.ProvisionId})
+	respdev, err := a.psCli.GetDeviceByID(ctx, &psPb.GetDeviceByIdRequest{ProvisionId: req.ProvisionId})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Failed to get device from PS: %v, %v", req.ProvisionId, err)
 	}
-
-	respmfg, err := a.pscli.GetManufacturerByID(ctx, &psPb.GetMfgByIdRequest{ManufacturerId: respdev.ManufacturerId})
+	respmfg, err := a.psCli.GetManufacturerByID(ctx, &psPb.GetMfgByIdRequest{ManufacturerId: respdev.ManufacturerId})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Failed to get mfg info from PS: id=%v, %v", respdev.ManufacturerId, err)
 	}
 	if len(respmfg.Info) == 0 {
 		return nil, status.Errorf(codes.Internal, "mfg info not found from PS: id=%v", respdev.ManufacturerId)
 	}
-
-	ret := api.GetProvisionedDeviceResponse{
-		ProvisionId:      respdev.ProvisionId,
-		ManufacturerId:   respdev.ManufacturerId,
-		ManufacturerName: respmfg.Info[0].Name,
-		Model:            respdev.Model,
-		SerialNumber:     respdev.SerialNumber,
-		FixedDevEUI:      respdev.FixedDevEUI,
-		DevEUI:           hex.EncodeToString(respdev.DevEUI),
-		Status:           respdev.Status,
-		Server:           respdev.Server,
-		TimeCreated:      respdev.TimeCreated,
-		TimeProvisioned:  respdev.TimeProvisioned,
-		TimeAddToServer:  respdev.TimeAddToServer,
+	if respdev.Status != "PROVISIONED" {
+		return nil, status.Errorf(codes.FailedPrecondition, "Device not provisioned: %v", req.ProvisionId)
+	}
+	if respdev.Server != "" {
+		return nil, status.Errorf(codes.FailedPrecondition, "Device already registered at %v: %v", respdev.Server, req.ProvisionId)
 	}
 
-	return &ret, nil
+	var devEUI lorawan.EUI64
+	copy(devEUI[:], respdev.DevEUI)
+	if len(respdev.DevEUI) != 8 {
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid DevEUI %v", hex.EncodeToString(respdev.DevEUI))
+	}
+	dpID, err := uuid.FromString(req.DeviceProfileId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+	app, err := a.st.GetApplication(ctx, req.ApplicationId)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	// Set Device struct.
+	d := data.Device{
+		DevEUI:          devEUI,
+		ApplicationID:   req.ApplicationId,
+		DeviceProfileID: dpID,
+		Name:            respdev.Model + "_" + respdev.SerialNumber,
+		Description:     "",
+		// attributes for device provisioning only
+		ProvisionID:  req.ProvisionId,
+		Model:        respdev.Model,
+		SerialNumber: respdev.SerialNumber,
+		Manufacturer: respmfg.Info[0].Name,
+	}
+	// Set Keys
+	var appKey lorawan.AES128Key
+	var nwkKey lorawan.AES128Key
+	var genAppKey lorawan.AES128Key
+
+	copy(appKey[:], respdev.AppKey)
+	copy(nwkKey[:], respdev.NwkKey)
+	copy(genAppKey[:], respdev.NwkKey)
+
+	if err := a.st.Tx(ctx, func(ctx context.Context, h *store.Handler) error {
+		if err := devmod.CreateDevice(ctx, h, &d, &app, a.ApplicationServerID, a.mxpCli); err != nil {
+			return err
+		}
+		// add additional attributes for device provisioning
+		if err := a.st.UpdateDeviceWithDevProvisioingAttr(ctx, &d); err != nil {
+			return err
+		}
+		if err := a.st.CreateDeviceKeys(ctx, &data.DeviceKeys{
+			DevEUI:    devEUI,
+			NwkKey:    nwkKey,
+			AppKey:    appKey,
+			GenAppKey: genAppKey,
+		}); err != nil {
+			return err
+		}
+		_, err = a.psCli.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: req.ProvisionId, Server: a.ServerAddr})
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+
+	return &api.CreateResponse{}, nil
 }

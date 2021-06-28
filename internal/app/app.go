@@ -5,6 +5,7 @@ package app
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
@@ -18,6 +19,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/shopify"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -32,6 +34,8 @@ type App struct {
 	bonus *bonus.Service
 	// mxprotocol server client
 	mxpCli *mxpcli.Client
+	// provisioning server client
+	psCli *pscli.Client
 	// mxprotocol server API
 	mxpSrv *mxpapisrv.MXPAPIServer
 	// network server API
@@ -44,12 +48,19 @@ type App struct {
 	integrations []models.IntegrationHandler
 	// smtp service
 	mailer *email.Mailer
+	// uuid of appserver used by other internal servers to identify appserver
+	applicationServerID uuid.UUID
 }
 
 // Start starts all the routines required for appserver and returns the App
 // structure or error.
 func Start(ctx context.Context, cfg config.Config) (*App, error) {
 	app := &App{}
+	var err error
+	app.applicationServerID, err = uuid.FromString(cfg.ApplicationServer.ID)
+	if err != nil {
+		return nil, err
+	}
 	if err := app.externalServices(ctx, cfg); err != nil {
 		// we already have an error
 		_ = app.Close()
@@ -118,6 +129,11 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	mxpcli.Global = app.mxpCli
+	// provisioning server client
+	app.psCli, err = pscli.Connect(cfg.ProvisionServer)
+	if err != nil {
+		return err
+	}
 	// bonus distribution service
 	app.bonus = bonus.Start(ctx, cfg.ApplicationServer.Airdrop,
 		app.pgstore, app.mxpCli.GetDistributeBonusServiceClient())
@@ -191,7 +207,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	// API for external clients
 	if app.extAPISrv, err = external.Start(store.NewStore(), external.ExtAPIConfig{
 		S:                      cfg.ApplicationServer.ExternalAPI,
-		ApplicationServerID:    cfg.ApplicationServer.ID,
+		ApplicationServerID:    app.applicationServerID,
 		ServerAddr:             cfg.General.ServerAddr,
 		Recaptcha:              cfg.Recaptcha,
 		Enable2FA:              cfg.General.Enable2FALogin,

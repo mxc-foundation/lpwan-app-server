@@ -66,6 +66,11 @@ func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, *PgStore) err
 	}
 }
 
+// InTx returns true if the object is in transaction
+func (ps *PgStore) InTx() bool {
+	return ps.txDB != nil
+}
+
 func (ps *PgStore) TxBegin(ctx context.Context) (*PgStore, error) {
 	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,

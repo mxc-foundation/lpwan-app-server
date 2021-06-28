@@ -7,116 +7,95 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/lorawan"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/brocaar/lorawan"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
-
-	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
-	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
-	ps "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+	org "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	nets "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
+type Server struct {
+	bindOldGateway string
+	bindNewGateway string
+
+	psCli      psPb.ProvisionClient
+	serverAddr string
+	st         Store
 }
 
-const moduleName = "gateway"
+type Store interface {
+	GetGatewayFirmwareList(ctx context.Context) (list []GatewayFirmware, err error)
+	UpdateGatewayFirmware(ctx context.Context, gwFw *GatewayFirmware) (model string, err error)
+	GetOrganization(ctx context.Context, id int64, forUpdate bool) (org.Organization, error)
+	GetGatewayCount(ctx context.Context, filters GatewayFilters) (int, error)
+	CreateGateway(ctx context.Context, gw *Gateway) error
+	GetNetworkServer(ctx context.Context, id int64) (nets.NetworkServer, error)
+	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (Gateway, error)
+	GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nets.NetworkServer, error)
+	DeleteGateway(ctx context.Context, mac lorawan.EUI64) error
 
-type controller struct {
-	name               string
-	st                 *store.Handler
-	ps                 ps.ProvisioningServerStruct
-	bindPortOldGateway string
-	bindPortNewGateway string
-	serverAddr         string
-	conf               GatewayBindStruct
-
-	moduleUp bool
+	InTx() bool
 }
 
-var ctrl *controller
-
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, s config.Config) error {
-
-	ctrl = &controller{
-		name:       moduleName,
-		serverAddr: s.General.ServerAddr,
-		ps:         s.ProvisionServer,
-		conf:       s.ApplicationServer.APIForGateway,
+func extractPort(bindStr string) (string, error) {
+	var strArray []string
+	if strArray = strings.Split(bindStr, ":"); len(strArray) != 2 {
+		return "", fmt.Errorf("cannot parse port from %s", bindStr)
 	}
-
-	bindStruct := s.ApplicationServer.APIForGateway
-	if strArray := strings.Split(bindStruct.OldGateway.Bind, ":"); len(strArray) != 2 {
-		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", bindStruct.OldGateway.Bind))
-	} else {
-		ctrl.bindPortOldGateway = strArray[1]
+	if strArray[1] == "" {
+		return "", fmt.Errorf("no valid bind port defined")
 	}
-
-	if strArray := strings.Split(bindStruct.NewGateway.Bind, ":"); len(strArray) != 2 {
-		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", bindStruct.NewGateway.Bind))
-	} else {
-		ctrl.bindPortNewGateway = strArray[1]
-	}
-
-	return nil
+	return strArray[1], nil
 }
 
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
-		return nil
+func Start(st Store, ServerAddr string, PSCli psPb.ProvisionClient, conf GatewayBindStruct, updateSchedule string) error {
+	server := &Server{
+		st:             st,
+		psCli:          PSCli,
+		serverAddr:     ServerAddr,
+		bindOldGateway: conf.OldGateway.Bind,
+		bindNewGateway: conf.NewGateway.Bind,
 	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
-
-	if ctrl.bindPortNewGateway == "" || ctrl.bindPortOldGateway == "" {
-		return errors.New("bindPortNewGateway and bindPortOldGateway not initiated")
-	}
-	ctrl.st = h
 
 	log.Info("Set up API for gateway")
 
 	// listen to new gateways
-	if err := listenWithCredentials("New Gateway API", ctrl.conf.NewGateway.Bind,
-		ctrl.conf.NewGateway.CACert,
-		ctrl.conf.NewGateway.TLSCert,
-		ctrl.conf.NewGateway.TLSKey); err != nil {
+	if err := listenWithCredentials("New Gateway API", conf.NewGateway.Bind,
+		conf.NewGateway.CACert,
+		conf.NewGateway.TLSCert,
+		conf.NewGateway.TLSKey); err != nil {
 		return err
 	}
 
 	// listen to old gateways
-	if err := listenWithCredentials("Old Gateway API", ctrl.conf.OldGateway.Bind,
-		ctrl.conf.OldGateway.CACert,
-		ctrl.conf.OldGateway.TLSCert,
-		ctrl.conf.OldGateway.TLSKey); err != nil {
+	if err := listenWithCredentials("Old Gateway API", conf.OldGateway.Bind,
+		conf.OldGateway.CACert,
+		conf.OldGateway.TLSCert,
+		conf.OldGateway.TLSKey); err != nil {
 		return err
 	}
 
-	if err := ctrl.scheduleUpdateFirmwareFromProvisioningServer(context.Background()); err != nil {
+	if err := server.scheduleUpdateFirmwareFromProvisioningServer(context.Background(), updateSchedule); err != nil {
 		return err
 	}
 
@@ -151,31 +130,41 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 }
 
 // UpdateFirmware respond to manual operation to update gateway firmware from provisioining server
-func UpdateFirmware(ctx context.Context) error {
-	return ctrl.updateFirmwareFromProvisioningServer(ctx)
+func UpdateFirmware(ctx context.Context, st Store, bindOldGateway, bindNewGateway, serverAddr string, psCli psPb.ProvisionClient) error {
+	server := &Server{
+		bindOldGateway: bindOldGateway,
+		bindNewGateway: bindNewGateway,
+		psCli:          psCli,
+		serverAddr:     serverAddr,
+		st:             st,
+	}
+	return server.updateFirmwareFromProvisioningServer(ctx)
 }
 
-func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) error {
+func (s *Server) updateFirmwareFromProvisioningServer(ctx context.Context) error {
 	log.Info("Check firmware update...")
-	gwFwList, err := c.st.GetGatewayFirmwareList(ctx)
+	gwFwList, err := s.st.GetGatewayFirmwareList(ctx)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get gateway firmware list.")
 		return err
 	}
 
-	// send update
-	psClient, err := pscli.GetPServerClient()
+	bindPortOld, err := extractPort(s.bindOldGateway)
 	if err != nil {
-		log.WithError(err).Errorf("Create Provisioning server client error")
+		return err
+	}
+	bindPortNew, err := extractPort(s.bindNewGateway)
+	if err != nil {
 		return err
 	}
 
+	// send update
 	for _, v := range gwFwList {
-		res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
+		res, err := s.psCli.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
 			Model:          v.Model,
-			SuperNodeAddr:  c.serverAddr,
-			PortOldGateway: c.bindPortOldGateway,
-			PortNewGateway: c.bindPortNewGateway,
+			SuperNodeAddr:  s.serverAddr,
+			PortOldGateway: bindPortOld,
+			PortNewGateway: bindPortNew,
 		})
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
@@ -194,7 +183,7 @@ func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) e
 			FirmwareHash: md5sum,
 		}
 
-		model, _ := c.st.UpdateGatewayFirmware(ctx, &gatewayFw)
+		model, _ := s.st.UpdateGatewayFirmware(ctx, &gatewayFw)
 		if model == "" {
 			log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
 		}
@@ -204,18 +193,12 @@ func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) e
 	return nil
 }
 
-func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Context) error {
-	log.WithFields(log.Fields{
-		"provisioning-server": ctrl.ps.Server,
-		"caCert":              ctrl.ps.CACert,
-		"tlsCert":             ctrl.ps.TLSCert,
-		"tlsKey":              ctrl.ps.TLSKey,
-		"schedule":            ctrl.ps.UpdateSchedule,
-	}).Info("Start schedule to update gateway firmware...")
+func (s *Server) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Context, updateSchedule string) error {
+	log.Info("Start schedule to update gateway firmware...")
 
 	cron := cron.New()
-	err := cron.AddFunc(ctrl.ps.UpdateSchedule, func() {
-		if err := c.updateFirmwareFromProvisioningServer(ctx); err != nil {
+	err := cron.AddFunc(updateSchedule, func() {
+		if err := s.updateFirmwareFromProvisioningServer(ctx); err != nil {
 			log.WithError(err).Error("update firmware on schdule error")
 		}
 	})
@@ -228,154 +211,142 @@ func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Co
 	return nil
 }
 
-func AddGateway(ctx context.Context, gw *Gateway, createReq ns.CreateGatewayRequest) error {
+func AddGateway(ctx context.Context, st Store, gw *Gateway, createReq ns.CreateGatewayRequest,
+	mxpCli pb.GSGatewayServiceClient) error {
 	// A transaction is needed as:
 	//  * A remote gRPC call is performed and in case of error, we want to
 	//    rollback the transaction.
 	//  * We want to lock the organization so that we can validate the
 	//    max gateway count.
-	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		org, err := handler.GetOrganization(ctx, gw.OrganizationID, true)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
+	if !st.InTx() {
+		return fmt.Errorf("AddGateway must be called from within transaction")
+	}
+	organization, err := st.GetOrganization(ctx, gw.OrganizationID, true)
+	if err != nil {
+		return helpers.ErrToRPCError(err)
+	}
 
-		// Validate max. gateway count when != 0.
-		if org.MaxGatewayCount != 0 {
-			count, err := handler.GetGatewayCount(ctx, GatewayFilters{
-				OrganizationID: org.ID,
-				Search:         "",
-			})
-			if err != nil {
-				return helpers.ErrToRPCError(err)
-			}
-
-			if count >= org.MaxGatewayCount {
-				return helpers.ErrToRPCError(errHandler.ErrOrganizationMaxGatewayCount)
-			}
-		}
-
-		err = handler.CreateGateway(ctx, gw)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
-		// add this gateway to m2m server
-		gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
-
-		_, err = gwClient.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
-			OrgId: gw.OrganizationID,
-			GwProfile: &pb.AppServerGatewayProfile{
-				Mac:         gw.MAC.String(),
-				OrgId:       gw.OrganizationID,
-				Description: gw.Description,
-				Name:        gw.Name,
-				CreatedAt:   timestampCreatedAt,
-			},
+	// Validate max. gateway count when != 0.
+	if organization.MaxGatewayCount != 0 {
+		count, err := st.GetGatewayCount(ctx, GatewayFilters{
+			OrganizationID: organization.ID,
+			Search:         "",
 		})
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
-		n, err := handler.GetNetworkServer(ctx, gw.NetworkServerID)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
+		if count >= organization.MaxGatewayCount {
+			return helpers.ErrToRPCError(errHandler.ErrOrganizationMaxGatewayCount)
 		}
+	}
 
-		nStruct := &nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		client, err := nStruct.GetNetworkServiceClient()
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
+	err = st.CreateGateway(ctx, gw)
+	if err != nil {
+		return helpers.ErrToRPCError(err)
+	}
 
-		_, err = client.CreateGateway(ctx, &createReq)
-		if err != nil && status.Code(err) != codes.AlreadyExists {
-			return err
-		}
+	timestampCreatedAt := timestamppb.New(time.Now())
+	// add this gateway to m2m server
+	_, err = mxpCli.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
+		OrgId: gw.OrganizationID,
+		GwProfile: &pb.AppServerGatewayProfile{
+			Mac:         gw.MAC.String(),
+			OrgId:       gw.OrganizationID,
+			Description: gw.Description,
+			Name:        gw.Name,
+			CreatedAt:   timestampCreatedAt,
+		},
+	})
+	if err != nil {
+		return helpers.ErrToRPCError(err)
+	}
 
-		return nil
-	}); err != nil {
-		return status.Errorf(codes.Unknown, err.Error())
+	n, err := st.GetNetworkServer(ctx, gw.NetworkServerID)
+	if err != nil {
+		return helpers.ErrToRPCError(err)
+	}
+
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
+	if err != nil {
+		return helpers.ErrToRPCError(err)
+	}
+
+	_, err = client.CreateGateway(ctx, &createReq)
+	if err != nil && status.Code(err) != codes.AlreadyExists {
+		return err
 	}
 
 	return nil
 }
 
-func DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
-	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		// if the gateway is MatchX gateway, unregister it from provisioning server
-		obj, err := handler.GetGateway(ctx, mac, false)
-		if err != nil {
-			return errors.Wrap(err, "get gateway error")
-		}
+func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.ProvisionClient) error {
+	if !st.InTx() {
+		return fmt.Errorf("DeleteGateway must be called from within transaction")
+	}
+	// if the gateway is MatchX gateway, unregister it from provisioning server
+	obj, err := st.GetGateway(ctx, mac, false)
+	if err != nil {
+		return errors.Wrap(err, "get gateway error")
+	}
 
-		n, err := handler.GetNetworkServerForGatewayMAC(ctx, mac)
-		if err != nil {
-			return errors.Wrap(err, "get network-server error")
-		}
+	n, err := st.GetNetworkServerForGatewayMAC(ctx, mac)
+	if err != nil {
+		return errors.Wrap(err, "get network-server error")
+	}
 
-		if err := handler.DeleteGateway(ctx, obj.MAC); err != nil {
-			return err
-		}
-
-		// delete this gateway from m2m-server
-		gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
-
-		_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &pb.DeleteGatewayInM2MServerRequest{
-			MacAddress: mac.String(),
-		})
-		if err != nil && status.Code(err) != codes.NotFound {
-			log.WithError(err).Error("delete gateway from m2m-server error")
-		}
-
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		client, err := nsStruct.GetNetworkServiceClient()
-		if err != nil {
-			return errors.Wrap(err, "get network-server client error")
-		}
-
-		_, err = client.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
-			Id: mac[:],
-		})
-		if err != nil && status.Code(err) != codes.NotFound {
-			return errors.Wrap(err, "delete gateway error")
-		}
-
-		if strings.HasPrefix(obj.Model, "MX") {
-			provClient, err := pscli.GetPServerClient()
-			if err != nil {
-				return errors.Wrap(err, "failed to connect to provisioning server")
-			}
-
-			_, err = provClient.UnregisterGw(context.Background(), &psPb.UnregisterGwRequest{
-				Sn:  obj.SerialNumber,
-				Mac: obj.MAC.String(),
-			})
-			if err != nil {
-				return errors.Wrap(err, "failed to unregister from provisioning server")
-			}
-		}
-
-		log.WithFields(log.Fields{
-			"id":     mac,
-			"ctx_id": ctx.Value(logging.ContextIDKey),
-		}).Info("gateway deleted")
-
-		return nil
-	}); err != nil {
+	if err := st.DeleteGateway(ctx, obj.MAC); err != nil {
 		return err
 	}
+
+	// delete this gateway from m2m-server
+	gwClient := mxpcli.Global.GetM2MGatewayServiceClient()
+
+	_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &pb.DeleteGatewayInM2MServerRequest{
+		MacAddress: mac.String(),
+	})
+	if err != nil && status.Code(err) != codes.NotFound {
+		log.WithError(err).Error("delete gateway from m2m-server error")
+	}
+
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nsStruct.GetNetworkServiceClient()
+	if err != nil {
+		return errors.Wrap(err, "get network-server client error")
+	}
+
+	_, err = client.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
+		Id: mac[:],
+	})
+	if err != nil && status.Code(err) != codes.NotFound {
+		return errors.Wrap(err, "delete gateway error")
+	}
+
+	if strings.HasPrefix(obj.Model, "MX") {
+		_, err = psCli.UnregisterGw(context.Background(), &psPb.UnregisterGwRequest{
+			Sn:  obj.SerialNumber,
+			Mac: obj.MAC.String(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to unregister from provisioning server")
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"id":     mac,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
+	}).Info("gateway deleted")
 
 	return nil
 }

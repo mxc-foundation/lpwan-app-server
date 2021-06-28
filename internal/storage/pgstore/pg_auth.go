@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/gofrs/uuid"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 )
 
@@ -31,4 +32,30 @@ func (ps *PgStore) AuthGetOrgUser(ctx context.Context, userID int64, orgID int64
 		err = nil
 	}
 	return ou, err
+}
+
+// ApplicationOwnedByOrganization returns true when given orgID owns given applicationID
+func (ps *PgStore) ApplicationOwnedByOrganization(ctx context.Context, orgID, applicationID int64) (bool, error) {
+	var count int64
+	q := `SELECT count(a.id) 
+		FROM application a JOIN organization org ON a.organization_id = org.id 
+		WHERE a.id=$1 AND org.id=$2`
+	err := ps.db.QueryRowContext(ctx, q, applicationID, orgID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// DeviceProfileOwnedByOrganization returns true when given orgID owns given device profile
+func (ps *PgStore) DeviceProfileOwnedByOrganization(ctx context.Context, orgID int64, deviceProfile uuid.UUID) (bool, error) {
+	var count int64
+	q := `SELECT count(dp.device_profile_id) 
+		FROM device_profile dp JOIN organization org ON dp.organization_id = org.id 
+		WHERE dp.device_profile_id=$1 AND org.id=$2`
+	err := ps.db.QueryRowContext(ctx, q, deviceProfile, orgID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

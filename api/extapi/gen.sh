@@ -31,7 +31,8 @@ protoc -I. -I${GRPC_GW_PATH} --go_out=paths=source_relative,plugins=grpc:. \
   shopify_integration.proto \
   dfi_service.proto \
   report.proto \
-  mosquitto_auth.proto
+  mosquitto_auth.proto \
+  provisionedDevice.proto
 
 # generate the JSON interface code
 protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=paths=source_relative,logtostderr=true:. \
@@ -61,7 +62,8 @@ protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=paths=source_relative,logtostder
   shopify_integration.proto \
   dfi_service.proto \
   report.proto \
-  mosquitto_auth.proto
+  mosquitto_auth.proto \
+  provisionedDevice.proto
 
 # generate the swagger definitions
 protoc -I. -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true,simple_operation_ids=true:./swagger \
@@ -91,7 +93,8 @@ protoc -I. -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true,simple_ope
   shopify_integration.proto \
   dfi_service.proto \
   report.proto \
-  mosquitto_auth.proto
+  mosquitto_auth.proto \
+  provisionedDevice.proto
 
 # merge the swagger code into one file
 #go run swagger/main.go swagger > ../static/swagger/api.swagger.json

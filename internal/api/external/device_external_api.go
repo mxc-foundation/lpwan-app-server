@@ -3,6 +3,8 @@ package external
 import (
 	"database/sql"
 	"encoding/json"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"strconv"
 
 	"google.golang.org/grpc/status"
@@ -41,18 +43,23 @@ import (
 type DeviceAPI struct {
 	st                  *store.Handler
 	ApplicationServerID uuid.UUID
+	mxpCli              pb.DSDeviceServiceClient
+	psCli               psPb.DeviceProvisionClient
 }
 
 // NewDeviceAPI creates a new NodeAPI.
-func NewDeviceAPI(applicationID uuid.UUID, h *store.Handler) *DeviceAPI {
+func NewDeviceAPI(applicationID uuid.UUID, h *store.Handler, mxpCli *mxpcli.Client, psCli *pscli.Client) *DeviceAPI {
 	return &DeviceAPI{
 		st:                  h,
 		ApplicationServerID: applicationID,
+		mxpCli:              mxpCli.GetM2MDeviceServiceClient(),
+		psCli:               psCli.GetDeviceProvisionServiceClient(),
 	}
 }
 
 // Create creates the given device.
 func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.Device == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
 	}
@@ -115,11 +122,16 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
 	}
 
-	if err := devmod.CreateDevice(ctx, &d, &app, a.ApplicationServerID); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		if err := devmod.CreateDevice(ctx, handler, &d, &app, a.ApplicationServerID, a.mxpCli); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // Get returns the device matching the given DevEUI.
@@ -305,6 +317,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 
 // Update updates the device matching the given DevEUI.
 func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.Device == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
 	}
@@ -436,11 +449,12 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // Delete deletes the node matching the given name.
 func (a *DeviceAPI) Delete(ctx context.Context, req *api.DeleteDeviceRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -452,16 +466,22 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *api.DeleteDeviceRequest) (*
 
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
-	err := devmod.DeleteDevice(ctx, eui)
-	if err != nil {
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err := devmod.DeleteDevice(ctx, handler, eui, a.mxpCli, a.psCli)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // CreateKeys creates the given device-keys.
 func (a *DeviceAPI) CreateKeys(ctx context.Context, req *api.CreateDeviceKeysRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.DeviceKeys == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device_keys must not be nil")
 	}
@@ -509,7 +529,7 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *api.CreateDeviceKeysReq
 		return nil, err
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // GetKeys returns the device-keys for the given DevEUI.
@@ -540,6 +560,7 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *api.GetDeviceKeysRequest) 
 
 // UpdateKeys updates the device-keys.
 func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *api.UpdateDeviceKeysRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.DeviceKeys == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device_keys must not be nil")
 	}
@@ -588,11 +609,12 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *api.UpdateDeviceKeysReq
 		return nil, err
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // DeleteKeys deletes the device-keys for the given DevEUI.
 func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *api.DeleteDeviceKeysRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -607,11 +629,12 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *api.DeleteDeviceKeysReq
 		return nil, err
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // Deactivate de-activates the device.
 func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -646,11 +669,12 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceReq
 		DevEui: d.DevEUI[:],
 	})
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // Activate activates the node (ABP only).
 func (a *DeviceAPI) Activate(ctx context.Context, req *api.ActivateDeviceRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.DeviceActivation == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device_activation must not be nil")
 	}
@@ -743,7 +767,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *api.ActivateDeviceRequest
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // GetActivation returns the device activation for the given DevEUI.
@@ -948,7 +972,8 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *api.GetRandomDevA
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	resp, err := client.GetRandomDevAddr(ctx, &empty.Empty{})
+	var emptyReqeust empty.Empty
+	resp, err := client.GetRandomDevAddr(ctx, &emptyReqeust)
 	if err != nil {
 		return nil, err
 	}

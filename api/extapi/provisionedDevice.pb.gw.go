@@ -2,11 +2,11 @@
 // source: provisionedDevice.proto
 
 /*
-Package appserver_serves_ui is a reverse proxy.
+Package extapi is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package appserver_serves_ui
+package extapi
 
 import (
 	"context"
@@ -34,7 +34,7 @@ var _ = descriptor.ForMessage
 var _ = metadata.Join
 
 func request_ProvisionedDeviceService_Create_0(ctx context.Context, marshaler runtime.Marshaler, client ProvisionedDeviceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateProvisionedDeviceRequest
+	var protoReq CreateRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -51,7 +51,7 @@ func request_ProvisionedDeviceService_Create_0(ctx context.Context, marshaler ru
 }
 
 func local_request_ProvisionedDeviceService_Create_0(ctx context.Context, marshaler runtime.Marshaler, server ProvisionedDeviceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateProvisionedDeviceRequest
+	var protoReq CreateRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -63,60 +63,6 @@ func local_request_ProvisionedDeviceService_Create_0(ctx context.Context, marsha
 	}
 
 	msg, err := server.Create(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-func request_ProvisionedDeviceService_Get_0(ctx context.Context, marshaler runtime.Marshaler, client ProvisionedDeviceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetProvisionedDeviceRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["provisionId"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "provisionId")
-	}
-
-	protoReq.ProvisionId, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "provisionId", err)
-	}
-
-	msg, err := client.Get(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_ProvisionedDeviceService_Get_0(ctx context.Context, marshaler runtime.Marshaler, server ProvisionedDeviceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetProvisionedDeviceRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["provisionId"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "provisionId")
-	}
-
-	protoReq.ProvisionId, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "provisionId", err)
-	}
-
-	msg, err := server.Get(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -147,29 +93,6 @@ func RegisterProvisionedDeviceServiceHandlerServer(ctx context.Context, mux *run
 		}
 
 		forward_ProvisionedDeviceService_Create_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_ProvisionedDeviceService_Get_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		var stream runtime.ServerTransportStream
-		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_ProvisionedDeviceService_Get_0(rctx, inboundMarshaler, server, req, pathParams)
-		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ProvisionedDeviceService_Get_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -234,37 +157,13 @@ func RegisterProvisionedDeviceServiceHandlerClient(ctx context.Context, mux *run
 
 	})
 
-	mux.Handle("GET", pattern_ProvisionedDeviceService_Get_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_ProvisionedDeviceService_Get_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ProvisionedDeviceService_Get_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	return nil
 }
 
 var (
 	pattern_ProvisionedDeviceService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "device-provision"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_ProvisionedDeviceService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "device-provision", "provisionId"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
 	forward_ProvisionedDeviceService_Create_0 = runtime.ForwardResponseMessage
-
-	forward_ProvisionedDeviceService_Get_0 = runtime.ForwardResponseMessage
 )

@@ -62,3 +62,7 @@ func (h *Handler) Tx(ctx context.Context, f func(context.Context, *Handler) erro
 		return err
 	}
 }
+
+func (h *Handler) InTx() bool {
+	return h.inTX
+}

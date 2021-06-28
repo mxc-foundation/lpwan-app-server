@@ -3,6 +3,7 @@ package pgstore
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
@@ -329,6 +330,30 @@ func (ps *PgStore) CreateDevice(ctx context.Context, d *device.Device) error {
 	return nil
 }
 
+// UpdateDeviceWithDevProvisioingAttr updates device with provisionID, model, serialNumber, manufacturer
+func (ps *PgStore) UpdateDeviceWithDevProvisioingAttr(ctx context.Context, device *device.Device) error {
+	if device.ProvisionID == "" || device.Model == "" || device.SerialNumber == "" || device.Manufacturer == "" {
+		return fmt.Errorf("invalid device provisioning attributes, unable to update device")
+	}
+	query := `update device 
+			set provision_id = $1, model = $2, serial_number = $3, manufacturer = $4 
+			where dev_eui=$5`
+	res, err := ps.db.ExecContext(ctx, query, device.ProvisionID, device.Model, device.SerialNumber,
+		device.Manufacturer, device.DevEUI[:])
+	if err != nil {
+		return err
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if ra == 0 {
+		return fmt.Errorf("no row affected when updating device (%s) with device provisioning attributes",
+			device.DevEUI.String())
+	}
+	return nil
+}
+
 // GetDevice returns the device matching the given DevEUI.
 // When forUpdate is set to true, then tx must be a tx transaction.
 // When localOnly is set to true, no call to the network-server is made to
@@ -339,16 +364,66 @@ func (ps *PgStore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdat
 		fu = " for update"
 	}
 
-	var d device.Device
-	err := sqlx.GetContext(ctx, ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return d, errHandler.ErrDoesNotExist
-		}
-		return d, errors.Wrap(err, "select error")
-	}
+	query := `select
+			dev_eui,
+			created_at,
+			updated_at,
+			application_id,
+			device_profile_id,
+			name,
+			description,
+			device_status_battery,
+			device_status_margin,
+			device_status_external_power_source,
+			last_seen_at,
+			latitude,
+			longitude,
+			altitude,
+			dr,
+			variables,
+			tags,
+			dev_addr,
+			app_s_key,
+			provision_id,
+			model,
+			serial_number, 
+			manufacturer
+	from device where dev_eui = $1`
 
-	return d, nil
+	var d device.Device
+	var provisionID, model, serialNumber, manufacturer sql.NullString
+	err := ps.db.QueryRowContext(ctx, query+fu, devEUI[:]).Scan(
+		&d.DevEUI,
+		&d.CreatedAt,
+		&d.UpdatedAt,
+		&d.ApplicationID,
+		&d.DeviceProfileID,
+		&d.Name,
+		&d.Description,
+		&d.DeviceStatusBattery,
+		&d.DeviceStatusMargin,
+		&d.DeviceStatusExternalPower,
+		&d.LastSeenAt,
+		&d.Latitude,
+		&d.Longitude,
+		&d.Altitude,
+		&d.DR,
+		&d.Variables,
+		&d.Tags,
+		&d.DevAddr,
+		&d.AppSKey,
+		&provisionID,
+		&model,
+		&serialNumber,
+		&manufacturer)
+	if err == sql.ErrNoRows {
+		return d, errHandler.ErrDoesNotExist
+	}
+	d.ProvisionID = provisionID.String
+	d.Model = model.String
+	d.SerialNumber = serialNumber.String
+	d.Manufacturer = manufacturer.String
+	return d, err
 }
 
 // GetDeviceCount returns the number of devices.
@@ -401,9 +476,32 @@ func (ps *PgStore) GetDevices(ctx context.Context, filters device.DeviceFilters)
 		filters.Search = "%" + filters.Search + "%"
 	}
 
+	selectedItems := `d.dev_eui,
+			d.created_at,
+			d.updated_at,
+			d.application_id,
+			d.device_profile_id,
+			d.name,
+			d.description,
+			d.device_status_battery,
+			d.device_status_margin,
+			d.device_status_external_power_source,
+			d.last_seen_at,
+			d.latitude,
+			d.longitude,
+			d.altitude,
+			d.dr,
+			d.variables,
+			d.tags,
+			d.dev_addr,
+			d.app_s_key,
+			d.provision_id,
+			d.model,
+			d.serial_number, 
+			d.manufacturer`
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
-			distinct d.*,
+			distinct `+selectedItems+`,
 			dp.name as device_profile_name
 		from
 			device d
@@ -423,13 +521,52 @@ func (ps *PgStore) GetDevices(ctx context.Context, filters device.DeviceFilters)
 		return nil, errors.Wrap(err, "named query error")
 	}
 
-	var devices []device.DeviceListItem
-	err = sqlx.SelectContext(ctx, ps.db, &devices, query, args...)
+	rows, err := ps.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
 	}
+	defer rows.Close()
 
-	return devices, nil
+	var devices []device.DeviceListItem
+	var provisionID, model, serialNumber, manufacturer sql.NullString
+
+	for rows.Next() {
+		var devItem device.DeviceListItem
+		if err := rows.Scan(
+			&devItem.DevEUI,
+			&devItem.CreatedAt,
+			&devItem.UpdatedAt,
+			&devItem.ApplicationID,
+			&devItem.DeviceProfileID,
+			&devItem.Name,
+			&devItem.Description,
+			&devItem.DeviceStatusBattery,
+			&devItem.DeviceStatusMargin,
+			&devItem.DeviceStatusExternalPower,
+			&devItem.LastSeenAt,
+			&devItem.Latitude,
+			&devItem.Longitude,
+			&devItem.Altitude,
+			&devItem.DR,
+			&devItem.Variables,
+			&devItem.Tags,
+			&devItem.DevAddr,
+			&devItem.AppSKey,
+			&provisionID,
+			&model,
+			&serialNumber,
+			&manufacturer,
+			&devItem.DeviceProfileName); err != nil {
+			return nil, err
+		}
+		devItem.ProvisionID = provisionID.String
+		devItem.Model = model.String
+		devItem.SerialNumber = serialNumber.String
+		devItem.Manufacturer = manufacturer.String
+		devices = append(devices, devItem)
+	}
+
+	return devices, rows.Err()
 }
 
 // UpdateDevice updates the given device.

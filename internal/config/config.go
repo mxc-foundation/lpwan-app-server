@@ -6,7 +6,6 @@ import (
 	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
 	multicastsetup "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
-	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
 	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
@@ -24,6 +23,7 @@ import (
 	oidc "github.com/mxc-foundation/lpwan-app-server/internal/oidc/data"
 	pprof "github.com/mxc-foundation/lpwan-app-server/internal/pprof/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+	psconn "github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
 var AppserverVersion string
