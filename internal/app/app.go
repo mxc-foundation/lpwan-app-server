@@ -4,7 +4,11 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -35,6 +39,8 @@ type App struct {
 	bonus *bonus.Service
 	// mxprotocol server client
 	mxpCli *mxpcli.Client
+	// network server client
+	nsCli *nscli.Client
 	// provisioning server client
 	psCli *pscli.Client
 	// mxprotocol server API
@@ -118,6 +124,11 @@ func (app *App) Close() error {
 			logrus.Warnf("error shutting down Provisioning server connection: %v", err)
 		}
 	}
+	if app.nsCli != nil {
+		if err := app.nsCli.Close(); err != nil {
+			logrus.Warnf("error shutting down network server connection: %v", err)
+		}
+	}
 	if app.bonus != nil {
 		app.bonus.Stop()
 	}
@@ -146,6 +157,27 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	mxpcli.Global = app.mxpCli
+	// network server client (also used by code migration)
+	// get network server list (normally there should be only one network server saved in db)
+	nsList, err := app.pgstore.GetNetworkServers(ctx, nsd.NetworkServerFilters{Limit: 999, Offset: 0})
+	if err != nil {
+		return err
+	}
+	var nscfg []nscli.NetworkServerConfig
+	for _, v := range nsList {
+		nscfg = append(nscfg, nscli.NetworkServerConfig{
+			NetworkServerID: v.ID,
+			ConnOptions: grpccli.ConnectionOpts{
+				Server:  v.Server,
+				CACert:  v.CACert,
+				TLSCert: v.TLSCert,
+				TLSKey:  v.TLSKey,
+			},
+		})
+	}
+	if app.nsCli, err = nscli.Connect(nscfg); err != nil {
+		return err
+	}
 	// provisioning server client
 	app.psCli, err = pscli.Connect(cfg.ProvisionServer)
 	if err != nil {
@@ -246,6 +278,10 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	app.newGwSrv, app.oldGwSrv, err = gateway.Start(app.pgstore, cfg.General.ServerAddr,
 		app.psCli, cfg.ApplicationServer.APIForGateway, cfg.ProvisionServer.UpdateSchedule)
 	if err != nil {
+		return err
+	}
+
+	if err := devprovision.Start(app.psCli, app.nsCli); err != nil {
 		return err
 	}
 

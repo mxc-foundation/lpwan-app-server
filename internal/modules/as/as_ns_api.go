@@ -7,6 +7,9 @@ import (
 	"math"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
+	"google.golang.org/grpc/status"
+
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -238,14 +241,22 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 // HandleProprietaryUplink handles proprietary uplink payloads.
 func (a *ApplicationServerAPI) HandleProprietaryUplink(ctx context.Context, req *as.HandleProprietaryUplinkRequest) (*empty.Empty, error) {
 	if req.TxInfo == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "tx_info must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "tx_info must not be nil")
 	}
 
-	err := gwping.HandleReceivedPing(ctx, req)
-	if err != nil {
-		errStr := fmt.Sprintf("handle received ping error: %s", err)
+	processed, errForDev := devprovision.HandleReceivedFrame(ctx, req, a.st)
+	if errForDev != nil {
+		errStr := fmt.Sprintf("handle received proprietary error: %s", errForDev)
 		logrus.Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
+	}
+	if !processed {
+		err := gwping.HandleReceivedPing(ctx, req)
+		if err != nil {
+			errStr := fmt.Sprintf("handle received ping error: %s", err)
+			logrus.Error(errStr)
+			return nil, status.Errorf(codes.Internal, errStr)
+		}
 	}
 
 	return &empty.Empty{}, nil

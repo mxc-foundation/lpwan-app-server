@@ -4,8 +4,6 @@ package extapi;
 option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
 
 import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 
 // ProvisionedDeviceService is the service managing the devices with Provision ID.
 service ProvisionedDeviceService {

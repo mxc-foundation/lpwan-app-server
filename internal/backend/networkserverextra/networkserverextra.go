@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
 
-	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
+	nsextra "github.com/mxc-foundation/lpwan-app-server/api/networkserver"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
