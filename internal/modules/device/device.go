@@ -2,7 +2,6 @@ package device
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -27,6 +26,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
+// CreateDevice add new device and sync across all relevant servers. Must be called from within transaction
 func CreateDevice(ctx context.Context, h *store.Handler, d *Device, app *appd.Application,
 	applicationServerID uuid.UUID, mxpCli pb.DSDeviceServiceClient) error {
 	// A transaction is needed as:
@@ -111,6 +111,7 @@ func CreateDevice(ctx context.Context, h *store.Handler, d *Device, app *appd.Ap
 	return nil
 }
 
+// DeleteDevice deletes device and sync across all relevant servers. Must be called from within transaction
 func DeleteDevice(ctx context.Context, h *store.Handler, devEUI lorawan.EUI64, mxpCli pb.DSDeviceServiceClient,
 	psCli psPb.DeviceProvisionClient) error {
 	if !h.InTx() {
@@ -122,22 +123,9 @@ func DeleteDevice(ctx context.Context, h *store.Handler, devEUI lorawan.EUI64, m
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	// Get Device Provision ID from Description
-	devicepid := ""
 	d, err := h.GetDevice(ctx, devEUI, false)
-	if err == nil {
-		devdesc := d.Description
-		if strings.Contains(devdesc, "PID:") {
-			lines := strings.Split(devdesc, "\n")
-			for _, line := range lines {
-				if strings.Index(line, "PID:") == 0 {
-					fields := strings.Split(line, ":")
-					if len(fields) >= 2 {
-						devicepid = strings.Trim(fields[1], " ")
-					}
-				}
-			}
-		}
+	if err != nil {
+		return err
 	}
 
 	if err := h.DeleteDevice(ctx, devEUI); err != nil {
@@ -174,9 +162,9 @@ func DeleteDevice(ctx context.Context, h *store.Handler, devEUI lorawan.EUI64, m
 	}
 
 	// Set device to no server at PS
-	if devicepid != "" {
-		log.Debugf("DeleteDevice() Clear server addr for %v at PS", devicepid)
-		_, err = psCli.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: devicepid, Server: ""})
+	if d.ProvisionID != "" {
+		log.Debugf("DeleteDevice() Clear server addr for %v at PS", d.ProvisionID)
+		_, err = psCli.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: d.ProvisionID, Server: ""})
 		if err != nil {
 			return err
 		}

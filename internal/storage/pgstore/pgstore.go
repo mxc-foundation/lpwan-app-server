@@ -46,6 +46,12 @@ func New() *PgStore {
 	}
 }
 
+// Tx starts transaction and executes the function passing to it Handler
+// using this transaction. It automatically rolls the transaction back if
+// function returns an error. If the error has been caused by serialization
+// error, it calls the function again. In order for serialization errors
+// handling to work, the function should return Handler errors
+// unchanged, or wrap them using %w.
 func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, interface{}) error) error {
 	for {
 		pst, err := ps.TxBegin(ctx)

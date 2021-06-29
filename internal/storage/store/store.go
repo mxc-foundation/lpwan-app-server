@@ -63,6 +63,7 @@ func (h *Handler) Tx(ctx context.Context, f func(context.Context, *Handler) erro
 	}
 }
 
+// InTx returns true if the object is in transaction
 func (h *Handler) InTx() bool {
 	return h.inTX
 }

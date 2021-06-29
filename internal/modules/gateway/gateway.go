@@ -37,6 +37,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
+// Server represents gRPC server serving gateway
 type Server struct {
 	bind       string
 	gs         *grpc.Server
@@ -53,6 +54,7 @@ type controller struct {
 	st         Store
 }
 
+// Store defines db API used by gateway server
 type Store interface {
 	GetGatewayFirmwareList(ctx context.Context) (list []gw.GatewayFirmware, err error)
 	UpdateGatewayFirmware(ctx context.Context, gwFw *gw.GatewayFirmware) (model string, err error)
@@ -88,6 +90,7 @@ func extractPort(bindStr string) (string, error) {
 	return strArray[1], nil
 }
 
+// Start starts gRPC server of gateway server
 func Start(st Store, ServerAddr string, psCli *pscli.Client,
 	conf gw.GatewayBindStruct, updateSchedule string) (old *Server, new *Server, err error) {
 	log.Info("Set up API for gateway")
@@ -134,6 +137,7 @@ func Start(st Store, ServerAddr string, psCli *pscli.Client,
 	return old, new, nil
 }
 
+// Stop gracefully stops gRPC server
 func (s *Server) Stop() {
 	s.gs.GracefulStop()
 }
@@ -248,6 +252,7 @@ func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Co
 	return nil
 }
 
+// AddGateway add new gateway and sync across all relevant servers. Must be called from within transaction
 func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns.CreateGatewayRequest,
 	mxpCli pb.GSGatewayServiceClient) error {
 	// A transaction is needed as:
@@ -323,6 +328,7 @@ func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns
 	return nil
 }
 
+// DeleteGateway deletes gateway and sync across all relevant servers. Must be called from within transaction
 func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.ProvisionClient) error {
 	if !st.InTx() {
 		return fmt.Errorf("DeleteGateway must be called from within transaction")

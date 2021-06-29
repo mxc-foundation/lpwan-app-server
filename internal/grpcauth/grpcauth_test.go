@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/lestrrat-go/jwx/jwa"
 	ljwt "github.com/lestrrat-go/jwx/jwt"
 	"google.golang.org/grpc/metadata"
@@ -29,6 +30,14 @@ func (to testOTPV) Validate(ctx context.Context, username, otp string) error {
 }
 
 type testStore struct{}
+
+func (ts testStore) ApplicationOwnedByOrganization(ctx context.Context, orgID, applicationID int64) (bool, error) {
+	return false, nil
+}
+
+func (ts testStore) DeviceProfileOwnedByOrganization(ctx context.Context, orgID int64, deviceProfile uuid.UUID) (bool, error) {
+	return false, nil
+}
 
 func (ts testStore) AuthGetUser(ctx context.Context, username string) (auth.User, error) {
 	if username != "alice@example.com" {

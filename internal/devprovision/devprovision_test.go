@@ -238,7 +238,7 @@ func TestDeviceSessionExpire(t *testing.T) {
 		}
 		ctrl.devSessionList.sessionlist[k].expireTime.Add(time.Second * (-12))
 
-		count -= 1
+		count--
 	}
 	ctrl.devSessionList.clearExpiredDevSession()
 	if len(ctrl.devSessionList.sessionlist) != ctrl.devSessionList.maxNumberOfDevSession-count {

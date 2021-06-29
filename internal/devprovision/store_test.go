@@ -5,18 +5,18 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/protobuf/ptypes/empty"
 	"io/ioutil"
 	"os/user"
 	"time"
 
-	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"google.golang.org/grpc"
 
 	"github.com/brocaar/lorawan"
+	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/networkserver"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 )
