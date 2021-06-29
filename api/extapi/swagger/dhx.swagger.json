@@ -602,6 +602,10 @@
           "type": "string",
           "title": "the amount of DHX that supernode actually distributed"
         },
+        "globalMiningPower": {
+          "type": "string",
+          "title": "combined mining power of all supernodes"
+        },
         "orgId": {
           "type": "string",
           "format": "int64",
