@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 
 	"github.com/sirupsen/logrus"
 
@@ -43,7 +44,8 @@ type App struct {
 	// integration handlers
 	integrations []models.IntegrationHandler
 	// smtp service
-	mailer *email.Mailer
+	mailer      *email.Mailer
+	downlinkSrv *downlink.Server
 }
 
 // Start starts all the routines required for appserver and returns the App
@@ -95,6 +97,15 @@ func (app *App) Close() error {
 	}
 	if app.shopify != nil {
 		app.shopify.Stop()
+	}
+	for _, v := range app.integrations {
+		if err := v.Close(); err != nil {
+			logrus.Warnf("error shutting down integrations: %v", err)
+		}
+	}
+	// close downlinkSrv after closing integrations
+	if app.downlinkSrv != nil {
+		app.downlinkSrv.Stop()
 	}
 	return nil
 }
@@ -207,5 +218,6 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
+	app.downlinkSrv = downlink.Start(store.NewStore(), app.integrations)
 	return nil
 }

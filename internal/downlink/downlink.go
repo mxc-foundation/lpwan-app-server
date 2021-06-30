@@ -25,39 +25,54 @@ type controller struct {
 	gIntegrations []models.IntegrationHandler
 }
 
-// Setup sets up downlink service, starts HandleDataDownPayloads which handles received downlink payloads to be emitted to the
-// devices.
-func Setup(h *store.Handler, gIntegrations []models.IntegrationHandler) {
+// Server represents downlink service
+type Server struct {
+	downLinkChan chan models.DataDownPayload
+}
+
+// Start starts service which handles received downlink payloads to be emitted to the devices.
+func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) *Server {
 	ctrl := &controller{
 		h:             h,
 		gIntegrations: gIntegrations,
 	}
-	go ctrl.HandleDataDownPayloads()
+	downChan := make(chan models.DataDownPayload)
+
+	go func() {
+		downChan = integration.ForApplicationID(0, gIntegrations).DataDownChan()
+		for pl := range downChan {
+			go func(pl models.DataDownPayload) {
+				ctxID, err := uuid.NewV4()
+				if err != nil {
+					log.WithError(err).Error("new uuid error")
+					return
+				}
+
+				ctx := context.Background()
+				ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
+
+				if err := ctrl.handleDataDownPayload(ctx, pl); err != nil {
+					log.WithFields(log.Fields{
+						"dev_eui":        pl.DevEUI,
+						"application_id": pl.ApplicationID,
+					}).Errorf("handle data-down payload error: %s", err)
+				}
+			}(pl)
+		}
+	}()
+
+	return &Server{downLinkChan: downChan}
 }
 
-// HandleDataDownPayloads handles received downlink payloads to be emitted to the
-// devices.
-func (c *controller) HandleDataDownPayloads() {
-	downChan := integration.ForApplicationID(0, c.gIntegrations).DataDownChan()
-	for pl := range downChan {
-		go func(pl models.DataDownPayload) {
-			ctxID, err := uuid.NewV4()
-			if err != nil {
-				log.WithError(err).Error("new uuid error")
-				return
-			}
-
-			ctx := context.Background()
-			ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
-
-			if err := c.handleDataDownPayload(ctx, pl); err != nil {
-				log.WithFields(log.Fields{
-					"dev_eui":        pl.DevEUI,
-					"application_id": pl.ApplicationID,
-				}).Errorf("handle data-down payload error: %s", err)
-			}
-		}(pl)
+// Stop closes down link channel
+func (s *Server) Stop() {
+	select {
+	case <-s.downLinkChan:
+		return
+	default:
 	}
+	// close a closed channel will cause panic
+	close(s.downLinkChan)
 }
 
 func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {
