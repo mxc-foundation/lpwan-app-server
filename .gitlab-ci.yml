@@ -38,7 +38,7 @@ build_image:
   stage: build
   image: docker:19.03.0
   before_script:
-    - sudo apk add --no-cache ca-certificates make git bash
+    - apk add --no-cache ca-certificates make git bash
   services:
     - docker:19.03.0-dind
   variables:
@@ -62,7 +62,7 @@ tag_gitlab_image:
   stage: release-private
   image: docker:19.03.0
   before_script:
-    - sudo apk add --no-cache ca-certificates make git bash
+    - apk add --no-cache ca-certificates make git bash
   services:
     - docker:19.03.0-dind
   variables:
@@ -85,7 +85,7 @@ tag_dockerhub_image:
   stage: release-public
   image: docker:19.03.0
   before_script:
-    - sudo apk add --no-cache ca-certificates make git bash
+    - apk add --no-cache ca-certificates make git bash
   services:
     - docker:19.03.0-dind
   variables:
