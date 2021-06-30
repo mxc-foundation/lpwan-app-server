@@ -28,36 +28,8 @@ type mockDataType struct {
 
 var mockData mockDataType
 
-// Mock of get current time
-var mockNowQueue []time.Time
-
-func mockGetNow() time.Time {
-	if len(mockNowQueue) == 0 {
-		return time.Time{}
-	}
-	poptime := mockNowQueue[0]
-	if len(mockNowQueue) > 1 {
-		mockNowQueue = mockNowQueue[1:]
-	}
-	return poptime
-}
-
 // Mock of random buf generation. Set -1 to use pesudorandom
 var mockRandValue int
-
-func mockGen128Rand() []byte {
-	softrand := softRand{}
-	randbuf := make([]byte, 128)
-	for i := range randbuf {
-		if mockRandValue < 0 {
-			randbuf[i] = uint8(softrand.Get())
-		} else {
-			randbuf[i] = uint8(mockRandValue)
-		}
-	}
-
-	return randbuf
-}
 
 // Mock device list
 var timeCreated = time.Now()
@@ -86,39 +58,6 @@ type deviceInfoForJSON struct {
 	AppEUI          string `json:"appEUI"`
 	AppKey          string `json:"appKey"`
 	NwkKey          string `json:"nwkKey"`
-}
-
-func mockSaveDevice(ctx context.Context, device deviceInfo) error {
-	for i := range mockDeviceList {
-		if mockDeviceList[i].ProvisionIDHash == device.ProvisionIDHash {
-			mockDeviceList[i] = device
-			break
-		}
-	}
-
-	var devlist []deviceInfoForJSON
-	for i := range mockDeviceList {
-		devlist = append(devlist, deviceInfoForJSON{
-			ProvisionID:     mockDeviceList[i].ProvisionID,
-			ProvisionIDHash: mockDeviceList[i].ProvisionIDHash,
-			DevEUI:          hex.EncodeToString(mockDeviceList[i].DevEUI),
-			AppEUI:          hex.EncodeToString(mockDeviceList[i].AppEUI),
-			AppKey:          hex.EncodeToString(mockDeviceList[i].AppKey),
-			NwkKey:          hex.EncodeToString(mockDeviceList[i].NwkKey),
-		})
-	}
-
-	targetfile := "devicelist.json"
-	user, err := user.Current()
-	if err != nil {
-		log.Errorf("Error to get current user. %s", err.Error())
-	} else {
-		targetfile = user.HomeDir + "/devicelist.json"
-	}
-	log.Debugf("Save device list to %s", targetfile)
-	outputbuf, _ := json.MarshalIndent(devlist, "", "  ")
-	_ = ioutil.WriteFile(targetfile, outputbuf, 0600)
-	return nil
 }
 
 type testPsCli struct {

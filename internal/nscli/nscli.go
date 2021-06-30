@@ -57,18 +57,18 @@ func (cli *Client) GetNumberOfNetworkServerClients() int {
 
 // GetNetworkServerServiceClient returns a new NetworkServerServiceClient instance
 func (cli *Client) GetNetworkServerServiceClient(networkServerID int64) (ns.NetworkServerServiceClient, error) {
-	if v, ok := cli.nsConn[networkServerID]; !ok {
+	v, ok := cli.nsConn[networkServerID]
+	if !ok {
 		return nil, fmt.Errorf("no such connection for network server id= %d", networkServerID)
-	} else {
-		return ns.NewNetworkServerServiceClient(v), nil
 	}
+	return ns.NewNetworkServerServiceClient(v), nil
 }
 
 // GetNetworkServerExtraServiceClient returns a new NetworkServerExtraServiceClient instance
 func (cli *Client) GetNetworkServerExtraServiceClient(networkServerID int64) (nsextra.NetworkServerExtraServiceClient, error) {
-	if v, ok := cli.nsConn[networkServerID]; !ok {
+	v, ok := cli.nsConn[networkServerID]
+	if !ok {
 		return nil, fmt.Errorf("no such connection for network server id= %d", networkServerID)
-	} else {
-		return nsextra.NewNetworkServerExtraServiceClient(v), nil
 	}
+	return nsextra.NewNetworkServerExtraServiceClient(v), nil
 }

@@ -22,11 +22,11 @@ type Handler struct {
 // txBegin creates a transaction and returns a new instance of Handler that
 // will either commit or rollback all the changes that done using this
 // instance.
-func (s *Handler) txBegin(ctx context.Context) (*Handler, error) {
-	if s.inTX {
+func (h *Handler) txBegin(ctx context.Context) (*Handler, error) {
+	if h.inTX {
 		return nil, fmt.Errorf("already in transaction")
 	}
-	store, err := s.TxBegin(ctx)
+	store, err := h.TxBegin(ctx)
 	if err != nil {
 		return nil, err
 	}

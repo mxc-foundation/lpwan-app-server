@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
-	
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 )
 

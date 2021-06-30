@@ -10,10 +10,12 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
+// Client represents provisioning server client
 type Client struct {
 	psconn *grpc.ClientConn
 }
 
+// Connect connects to provisioning server and returns the client
 func Connect(config types.ProvisioningServerStruct) (*Client, error) {
 	psconn, err := grpccli.Connect(config.ServerConifig)
 	if err != nil {
@@ -24,14 +26,17 @@ func Connect(config types.ProvisioningServerStruct) (*Client, error) {
 	}, nil
 }
 
+// Close closes connection to provisioning server
 func (c *Client) Close() error {
 	return c.psconn.Close()
 }
 
+// GetPServerClient returns a new ProvisionClient of provisioning server
 func (c *Client) GetPServerClient() pb.ProvisionClient {
 	return pb.NewProvisionClient(c.psconn)
 }
 
+// GetDeviceProvisionServiceClient returns a new DeviceProvisionClient of provisioning server
 func (c *Client) GetDeviceProvisionServiceClient() pb.DeviceProvisionClient {
 	return pb.NewDeviceProvisionClient(c.psconn)
 }

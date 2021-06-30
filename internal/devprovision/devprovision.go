@@ -138,6 +138,7 @@ func (c *controller) processMessage(ctx context.Context, nID int64, req *as.Hand
 	return processed, nil
 }
 
+// Store defines db API used by device provision service
 type Store interface {
 	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gwd.Gateway, error)
 	GetNetworkServer(ctx context.Context, id int64) (nsd.NetworkServer, error)
