@@ -2,6 +2,7 @@ package devprovision
 
 import (
 	"crypto/aes"
+	cryptorand "crypto/rand"
 	"time"
 
 	"github.com/jacobsa/crypto/cmac"
@@ -27,10 +28,11 @@ type deviceSession struct {
 	provKey          []byte
 	expireTime       time.Time
 	lastGwContext    []byte
+
+	ecdhK223 ecdh.K233
 }
 
-//
-func makeDeviceSession() deviceSession {
+func makeDeviceSession(sessionLifecycle time.Duration) deviceSession {
 	session := deviceSession{}
 	session.rDevEui = make([]byte, 8)
 	session.serverNonce = make([]byte, 4)
@@ -39,20 +41,35 @@ func makeDeviceSession() deviceSession {
 	session.serverPublicKey = make([]byte, ecdh.K233PubKeySize)
 	session.serverPrivateKey = make([]byte, ecdh.K233PrvKeySize)
 	session.sharedKey = make([]byte, ecdh.K233PubKeySize)
-	session.expireTime = funcGetNow().Add(deviceSessionLifeTime)
+	session.expireTime = time.Now().Add(sessionLifecycle)
 	session.assignedDevEui = make([]byte, 8)
 	session.assignedAppEui = make([]byte, 8)
 	session.appKey = make([]byte, 16)
 	session.nwkKey = make([]byte, 16)
 	session.provKey = make([]byte, 16)
+	session.ecdhK223 = ecdh.K233{}
 
 	return session
 }
 
-//
+// Gen 128 bytes of random numbers
+func gen128Rand() []byte {
+	randbuf := make([]byte, 128)
+	_, err := cryptorand.Read(randbuf[:])
+	if err != nil {
+		log.Error("crypto.rand() failed. Fallback to Pseudorandom")
+		// Fallback to Pseudorandom
+		softrand := softRand{}
+		for i := range randbuf {
+			randbuf[i] = uint8(softrand.Get())
+		}
+	}
+	return randbuf
+}
+
 func (d *deviceSession) genServerKeys() {
-	randbuf := funcGen128Rand()
-	privateKey, publickey := ecdhK223.GenerateKeys(randbuf)
+	randbuf := gen128Rand()
+	privateKey, publickey := d.ecdhK223.GenerateKeys(randbuf)
 	if privateKey != nil {
 		copy(d.serverPrivateKey[:], privateKey[:])
 		copy(d.serverPublicKey[:], publickey[:])
@@ -61,7 +78,7 @@ func (d *deviceSession) genServerKeys() {
 }
 
 func (d *deviceSession) genSharedKey() {
-	newsharedkey := ecdhK223.SharedSecret(d.serverPrivateKey, d.devicePublicKey)
+	newsharedkey := d.ecdhK223.SharedSecret(d.serverPrivateKey, d.devicePublicKey)
 	copy(d.sharedKey[:], newsharedkey[:])
 }
 

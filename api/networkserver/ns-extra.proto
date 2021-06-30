@@ -1,19 +1,19 @@
 syntax = "proto3";
 
-package nsextra;
+package networkserver;
 
-option go_package = "github.com/mxc-foundation/lpwan-app-server/api/ns-extra;nsextra";
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/networkserver;networkserver";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
 
 //import "common/common.proto";
 
-
 // NetworkServerExtraService provides the extra network-server API methods.
 service NetworkServerExtraService {
     // SendDelayedProprietaryPayload send a delayed payload using the 'Proprietary' LoRaWAN message-type.
-    rpc SendDelayedProprietaryPayload(SendDelayedProprietaryPayloadRequest) returns (google.protobuf.Empty) {}
+    rpc SendDelayedProprietaryPayload (SendDelayedProprietaryPayloadRequest) returns (google.protobuf.Empty) {
+    }
 }
 
 message SendDelayedProprietaryPayloadRequest {
@@ -41,10 +41,10 @@ message SendDelayedProprietaryPayloadRequest {
 
     // Spreading-factors for the related uplink.
     uint32 uplink_sf = 8;
-    
+
     // Gateway specific context.
     bytes context = 9;
-    
+
     // The delay will be added to the gateway internal timing, provided by the context object.
     google.protobuf.Duration delay = 10;
 }

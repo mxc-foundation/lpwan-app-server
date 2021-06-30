@@ -16,133 +16,156 @@ import (
 
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
-	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
+	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
 // HeartbeatAPI exports the HeartbeatAPI related functions.
 type HeartbeatAPI struct {
 	BindPort string
-	st       *store.Handler
+	st       Store
+	psCli    pspb.ProvisionClient
 }
 
 // NewHeartbeatAPI creates new HeartbeatAPI
-func NewHeartbeatAPI(bind string) *HeartbeatAPI {
+func NewHeartbeatAPI(bind string, st Store, psCli *pscli.Client) *HeartbeatAPI {
 	return &HeartbeatAPI{
 		BindPort: bind,
-		st:       ctrl.st,
+		st:       st,
+		psCli:    psCli.GetPServerClient(),
 	}
 }
 
-func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwpb.HeartbeatResponse, error) {
-	if obj.BindPort == ctrl.bindPortOldGateway {
-		return nil, status.Error(codes.PermissionDenied, "")
-	}
-
-	response := gwpb.HeartbeatResponse{}
-
+func (a *HeartbeatAPI) verifyGateway(ctx context.Context, mac string, model string) (*gw.Gateway, error) {
 	// check if gateway exists
 	var gatewayEUI = lorawan.EUI64{}
-	if err := gatewayEUI.UnmarshalText([]byte(req.GatewayMac)); err != nil {
+	if err := gatewayEUI.UnmarshalText([]byte(mac)); err != nil {
 		logrus.WithError(err).Error("api/Heartbeat: Failed to convert gateway mac address")
-		return nil, status.Errorf(codes.InvalidArgument, "Invalid gateway mac format: %s", req.GatewayMac)
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid gateway mac format: %s", mac)
 	}
 
-	/*	tx, err := obj.Store.
-		if err != nil {
-			log.WithError(err).Error("Failed to start transaction")
-			return nil, status.Errorf(codes.Unknown, "Failed to start transaction: %v", err)
-		}
-		defer tx.Rollback()*/
-
-	gw, err := obj.st.GetGateway(ctx, gatewayEUI, true)
+	gateway, err := a.st.GetGateway(ctx, gatewayEUI, true)
 	if err != nil {
-		if err == errHandler.ErrDoesNotExist {
-			return nil, status.Errorf(codes.Unauthenticated, "Object does not exist: %s", gatewayEUI.String())
-		}
-		logrus.WithError(err).Errorf("Failed to select gateway by mac: %s", gatewayEUI.String())
 		return nil, status.Errorf(codes.Unknown, "Failed to select gateway by mac: %s", gatewayEUI.String())
 	}
 
 	// verify gateway model
-	if gw.Model != req.Model {
+	if gateway.Model != model {
 		logrus.Errorf("Request model does not match saved gateway.")
 		return nil, status.Errorf(codes.Unauthenticated, "Request model does not match saved gateway.")
 	}
 
 	// important: do this before config and firmware update
 	// mining : update heartbeat only for new gateways
-	if strings.HasPrefix(gw.Model, "MX19") {
-		logrus.Info("processing MX19 gateway")
-		currentHeartbeat := time.Now().Unix()
-		lastHeartbeat := gw.LastHeartbeat
+	if !strings.HasPrefix(gateway.Model, "MX19") {
+		// do not proceed, return nil for *gw.Gateway
+		// it depends on the gateway which sends heartbeat to server, to prevent gatway from sending continuous request
+		//  after receiving response with error, here we return nil for error
+		return nil, nil
+	}
+	return &gateway, nil
+}
 
-		// if last heartbeat == 0 is a new gateway
-		if gw.LastHeartbeat == 0 {
-			logrus.Infof("updating heartbeat for the new gw")
-			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
-			if err != nil {
-				logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
-				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
-			}
+// Heartbeat receives gateway heartbeat signals, updates heartbeat timestamp, os_version, statistics, firmware_hash,
+//  returns new firmware link and config if changed
+func (a *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwpb.HeartbeatResponse, error) {
+	if a.BindPort == "8005" {
+		return nil, status.Error(codes.PermissionDenied, "only new model of gateway should be processed")
+	}
 
-			err = obj.st.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
-			if err != nil {
-				logrus.WithError(err).Error("Heartbeat/Update first heartbeat error")
-				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
-			}
+	gateway, err := a.verifyGateway(ctx, req.GatewayMac, req.Model)
+	if err != nil {
+		return nil, err
+	} else if gateway == nil {
+		// it depends on the gateway which sends heartbeat to server, to prevent gatway from sending continuous request
+		// after receiving response with error, here we return nil for error
+		return &gwpb.HeartbeatResponse{}, nil
+	}
 
-			goto Next
-		}
+	logrus.Info("processing MX19 gateway")
+	currentHeartbeat := time.Now().Unix()
+	lastHeartbeat := gateway.LastHeartbeat
 
-		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
-		//if current_heartbeat-last_heartbeat > 600 {
-		if currentHeartbeat-lastHeartbeat > mining.GetSettings().HeartbeatOfflineLimit {
-			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
-			if err != nil {
-				logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
-				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
-			}
-
-			err = obj.st.UpdateFirstHeartbeatToZero(ctx, gatewayEUI)
-			if err != nil {
-				logrus.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
-				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat to zero error")
-			}
-			goto Next
-		}
-
-		// if first heartbeat != 0 and currentHeartbeat - lastHeart !> 600
-		firstHeartbeat, err := obj.st.GetFirstHeartbeat(ctx, gatewayEUI)
-		if err != nil {
-			logrus.WithError(err).Error("Heartbeat/Get first heartbeat error")
-			return nil, status.Errorf(codes.DataLoss, "Get firstHeartbeat from DB error")
-		}
-
-		if firstHeartbeat == 0 {
-			err = obj.st.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
-			if err != nil {
-				logrus.WithError(err).Error("Heartbeat/Update first heartbeat error")
-				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
-			}
-		}
-
-		err = obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
+	// if last heartbeat == 0 is a new gateway
+	if gateway.LastHeartbeat == 0 {
+		logrus.Infof("updating heartbeat for the new gateway")
+		err := a.st.UpdateLastHeartbeat(ctx, gateway.MAC, currentHeartbeat)
 		if err != nil {
 			logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
 			return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 		}
+
+		err = a.st.UpdateFirstHeartbeat(ctx, gateway.MAC, currentHeartbeat)
+		if err != nil {
+			logrus.WithError(err).Error("Heartbeat/Update first heartbeat error")
+			return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
+		}
+
+		return a.checkStatusAndFirmwareUpdate(ctx, gateway, req)
 	}
 
-Next:
+	// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
+	//if current_heartbeat-last_heartbeat > 600 {
+	if currentHeartbeat-lastHeartbeat > mining.GetSettings().HeartbeatOfflineLimit {
+		err := a.st.UpdateLastHeartbeat(ctx, gateway.MAC, currentHeartbeat)
+		if err != nil {
+			logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
+			return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
+		}
 
-	if err := obj.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err = a.st.UpdateFirstHeartbeatToZero(ctx, gateway.MAC)
+		if err != nil {
+			logrus.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
+			return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat to zero error")
+		}
+		return a.checkStatusAndFirmwareUpdate(ctx, gateway, req)
+	}
+
+	// if first heartbeat != 0 and currentHeartbeat - lastHeart !> 600
+	firstHeartbeat, err := a.st.GetFirstHeartbeat(ctx, gateway.MAC)
+	if err != nil {
+		logrus.WithError(err).Error("Heartbeat/Get first heartbeat error")
+		return nil, status.Errorf(codes.DataLoss, "Get firstHeartbeat from DB error")
+	}
+
+	if firstHeartbeat == 0 {
+		err = a.st.UpdateFirstHeartbeat(ctx, gateway.MAC, currentHeartbeat)
+		if err != nil {
+			logrus.WithError(err).Error("Heartbeat/Update first heartbeat error")
+			return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
+		}
+	}
+
+	err = a.st.UpdateLastHeartbeat(ctx, gateway.MAC, currentHeartbeat)
+	if err != nil {
+		logrus.WithError(err).Error("Heartbeat/Update last heartbeat error")
+		return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
+	}
+
+	return a.checkStatusAndFirmwareUpdate(ctx, gateway, req)
+}
+
+type gatewayAttributes struct {
+	firmwareHash types.MD5SUM
+	osVersion    string
+	statistics   string
+}
+
+func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway *gw.Gateway,
+	req *gwpb.HeartbeatRequest) (*gwpb.HeartbeatResponse, error) {
+	response := gwpb.HeartbeatResponse{}
+	updatedGateway := gatewayAttributes{
+		firmwareHash: gateway.FirmwareHash,
+		osVersion:    gateway.OsVersion,
+		statistics:   gateway.Statistics,
+	}
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		store := st.(Store)
 		// compare config hash
 		/* #nosec */
-		configHash := md5.Sum([]byte(gw.Config))
+		configHash := md5.Sum([]byte(gateway.Config))
 		b := types.MD5SUM{}
 		if err := b.UnmarshalText([]byte(req.ConfigHash)); err != nil {
 			logrus.WithError(err).Errorf("Failed to unmarshal config hash: %s", req.ConfigHash)
@@ -150,57 +173,51 @@ Next:
 		}
 
 		if bytes.Equal(configHash[:], b[:]) == false {
-			response.Config = gw.Config
+			response.Config = gateway.Config
 		}
 
 		// check if firmware updated
-		if gw.AutoUpdateFirmware {
-			firmware, err := handler.GetGatewayFirmware(ctx, gw.Model, false)
+		if gateway.AutoUpdateFirmware {
+			firmware, err := store.GetGatewayFirmware(ctx, gateway.Model, false)
 			if err != nil {
-				if err == errHandler.ErrDoesNotExist {
-					return status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
-				}
-				logrus.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
-				return status.Errorf(codes.Unknown, "Failed to get firmware information for model: %s", gw.Model)
+				return status.Errorf(codes.Internal, "Failed to get firmware information for model: %s", gateway.Model)
 			}
 
-			if bytes.Equal(firmware.FirmwareHash[:], gw.FirmwareHash[:]) == false {
+			if !bytes.Equal(firmware.FirmwareHash[:], gateway.FirmwareHash[:]) {
 				response.NewFirmwareLink = firmware.ResourceLink
 				// update gateway firmware hash as well
-				copy(gw.FirmwareHash[:], firmware.FirmwareHash[:])
+				copy(updatedGateway.firmwareHash[:], firmware.FirmwareHash[:])
 			}
 		}
 
-		// update gateway with osVersion and statistics
-		if gw.OsVersion != req.OsVersion {
+		updatedGateway.osVersion = req.OsVersion
+		updatedGateway.statistics = req.Statistics
+
+		if !bytes.Equal(updatedGateway.firmwareHash[:], gateway.FirmwareHash[:]) ||
+			updatedGateway.osVersion != gateway.OsVersion ||
+			updatedGateway.statistics != gateway.Statistics {
+			if err := store.UpdateGatewayAttributes(ctx, gateway.MAC, updatedGateway.firmwareHash,
+				updatedGateway.osVersion, updatedGateway.statistics); err != nil {
+				return status.Errorf(codes.Internal, err.Error())
+			}
+		}
+
+		// update gateway osVersion on provisioning server
+		if gateway.OsVersion != req.OsVersion {
 			// update provisioning server
-			client, err := pscli.GetPServerClient()
-			if err == nil {
-				_, err := client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
-					Sn:        gw.SerialNumber,
-					Mac:       gw.MAC.String(),
-					OsVersion: req.OsVersion,
-				})
-				if err != nil {
-					logrus.WithError(err).Error("Failed to call HeartbeatAPI: UpdateGateway")
-				}
-			} else {
-				logrus.WithError(err).Error("Failed to create provisioning server client.")
+			_, err := a.psCli.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
+				Sn:        gateway.SerialNumber,
+				Mac:       gateway.MAC.String(),
+				OsVersion: req.OsVersion,
+			})
+			if err != nil {
+				logrus.WithError(err).Error("Failed to call HeartbeatAPI: UpdateGateway")
 			}
 		}
-
-		gw.OsVersion = req.OsVersion
-		gw.Statistics = req.Statistics
-
-		if err := handler.UpdateGateway(ctx, &gw); err != nil {
-			logrus.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
-			return err
-		}
-
 		return nil
 	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, err
 	}
 
-	return &response, status.Error(codes.OK, "")
+	return &response, nil
 }

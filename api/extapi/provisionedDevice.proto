@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package extapi;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/extapi;extapi";
+
+import "google/api/annotations.proto";
+
+// ProvisionedDeviceService is the service managing the devices with Provision ID.
+service ProvisionedDeviceService {
+    // Create - creates the given provisioned device.
+    rpc Create (CreateRequest) returns (CreateResponse) {
+        option (google.api.http) = {
+            post: "/api/device-provision"
+            body: "*"
+        };
+    }
+}
+
+message CreateRequest {
+    // Device EUI (HEX string without 0x prefix).
+    string provisionId = 1;
+    // Name of the device (if left blank, it will be set to the DevEUI).
+    int64 organization_id = 2;
+    // ID of the application to which the device must be added.
+    // It is possible to move a device to a different application on update,
+    // given that both the old and the new application share the same
+    // service-profile.
+    int64 application_id = 3 [json_name = "applicationID"];
+    // DeviceProfileID attached to the device.
+    string device_profile_id = 4 [json_name = "deviceProfileID"];
+}
+
+message CreateResponse {
+}

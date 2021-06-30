@@ -8,7 +8,6 @@ import (
 	"github.com/apex/log"
 
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 )
 
 type deviceInfo struct {
@@ -29,15 +28,8 @@ type deviceInfo struct {
 	TimeAddToServer *time.Time `json:"timeAddToServer"`
 }
 
-//
-func findDeviceBySnHash(ctx context.Context, provisionIdhash []byte) (bool, deviceInfo) {
-	psClient, err := pscli.GetDevProClient()
-	if err != nil {
-		log.WithError(err).Errorf("find device failed.")
-		return false, deviceInfo{}
-	}
-
-	resp, err := psClient.GetDeviceByIDHash(ctx, &psPb.GetDeviceByIdHashRequest{
+func findDeviceBySnHash(ctx context.Context, provisionIdhash []byte, psCli psPb.DeviceProvisionClient) (bool, deviceInfo) {
+	resp, err := psCli.GetDeviceByIDHash(ctx, &psPb.GetDeviceByIdHashRequest{
 		ProvisionIdHash: hex.EncodeToString(provisionIdhash)})
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get device, hash: %s", hex.EncodeToString(provisionIdhash))
@@ -77,14 +69,8 @@ func findDeviceBySnHash(ctx context.Context, provisionIdhash []byte) (bool, devi
 	return true, retdevice
 }
 
-//
-func saveDevice(ctx context.Context, device deviceInfo) error {
-	psClient, err := pscli.GetDevProClient()
-	if err != nil {
-		return err
-	}
-
-	_, err = psClient.SetDeviceProvisioned(ctx, &psPb.SetDeviceProvisionedRequest{
+func saveDevice(ctx context.Context, device deviceInfo, psCli psPb.DeviceProvisionClient) error {
+	_, err := psCli.SetDeviceProvisioned(ctx, &psPb.SetDeviceProvisionedRequest{
 		ProvisionId: device.ProvisionID,
 		DevEUI:      device.DevEUI,
 		AppEUI:      device.AppEUI,

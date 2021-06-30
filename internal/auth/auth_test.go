@@ -4,11 +4,21 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	"github.com/gofrs/uuid"
 )
 
 type tStore struct {
 	users    map[string]User
 	orgUsers map[int64]map[int64]OrgUser
+}
+
+func (ts *tStore) ApplicationOwnedByOrganization(ctx context.Context, orgID, applicationID int64) (bool, error) {
+	return false, nil
+}
+
+func (ts *tStore) DeviceProfileOwnedByOrganization(ctx context.Context, orgID int64, deviceProfile uuid.UUID) (bool, error) {
+	return false, nil
 }
 
 func (ts *tStore) AuthGetUser(ctx context.Context, username string) (User, error) {
@@ -51,11 +61,11 @@ func TestCredentials(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	malory, err := NewCredentials(ctx, ts, "malory@example.com", 5, EMAIL)
+	malory, err := NewCredentials(ctx, ts, "malory@example.com", 5, EMAIL, 0, "")
 	if err == nil {
 		t.Errorf("got credentials for mallory: %v", *malory)
 	}
-	alice, err := NewCredentials(ctx, ts, "alice@example.com", 111, EMAIL)
+	alice, err := NewCredentials(ctx, ts, "alice@example.com", 111, EMAIL, 0, "")
 	if err == nil {
 		t.Errorf("expected db error, but got: %v", *alice)
 	}
@@ -144,7 +154,7 @@ func TestCredentials(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Logf(tc.name)
-		cred, err := NewCredentials(ctx, ts, tc.username, tc.orgid, EMAIL)
+		cred, err := NewCredentials(ctx, ts, tc.username, tc.orgid, EMAIL, 0, "")
 		if err != nil {
 			t.Errorf("couldn't get credentials: %v", err)
 		}

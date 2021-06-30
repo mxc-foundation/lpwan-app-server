@@ -11,7 +11,6 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/fuota"
@@ -35,10 +34,8 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/set_default"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 )
 
 // grpcLogger implements a wrapper around the logrus Logger to make it

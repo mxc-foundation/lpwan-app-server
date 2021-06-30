@@ -29,9 +29,9 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
@@ -49,6 +49,11 @@ type GatewayAPI struct {
 	config GwConfig
 	auth   auth.Authenticator
 	pscli  psPb.ProvisionClient
+	mxpCli pb.GSGatewayServiceClient
+
+	serverAddr     string
+	bindOldGateway string
+	bindNewGateway string
 }
 
 type GwConfig struct {
@@ -58,12 +63,17 @@ type GwConfig struct {
 }
 
 // NewGatewayAPI creates a new GatewayAPI.
-func NewGatewayAPI(h *pgstore.PgStore, auth auth.Authenticator, config GwConfig, pscli psPb.ProvisionClient) *GatewayAPI {
+func NewGatewayAPI(st *pgstore.PgStore, auth auth.Authenticator, config GwConfig, pscli *pscli.Client,
+	mxpCli *mxpcli.Client, serverAddr, bindOldGateway, bindNewGateway string) *GatewayAPI {
 	return &GatewayAPI{
-		st:     h,
-		auth:   auth,
-		config: config,
-		pscli:  pscli,
+		st:             st,
+		auth:           auth,
+		config:         config,
+		pscli:          pscli.GetPServerClient(),
+		mxpCli:         mxpCli.GetM2MGatewayServiceClient(),
+		serverAddr:     serverAddr,
+		bindNewGateway: bindNewGateway,
+		bindOldGateway: bindOldGateway,
 	}
 }
 
@@ -116,7 +126,7 @@ func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterRese
 func (a *GatewayAPI) ManualTriggerUpdateFirmware(ctx context.Context, req *api.ManualTriggerUpdateFirmwareRequest) (*api.ManualTriggerUpdateFirmwareResponse, error) {
 	log.Info("ManualTriggerUpdateFirmware is called")
 
-	if err := gw.UpdateFirmware(ctx); err != nil {
+	if err := gw.UpdateFirmware(ctx, a.st, a.bindOldGateway, a.bindNewGateway, a.serverAddr, a.pscli); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -385,6 +395,7 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *api.GetDe
 
 // Create creates the given gateway.
 func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.Gateway == nil {
 		return nil, status.Error(codes.InvalidArgument, "gateway must not be nil")
 	}
@@ -410,7 +421,7 @@ func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) 
 		return nil, err
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) error {
@@ -503,32 +514,37 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		tags.Map[k] = sql.NullString{Valid: true, String: v}
 	}
 
-	if err := gw.AddGateway(ctx, &Gateway{
-		MAC:                mac,
-		Name:               req.Name,
-		Description:        req.Description,
-		OrganizationID:     req.OrganizationId,
-		Ping:               req.DiscoveryEnabled,
-		NetworkServerID:    req.NetworkServerId,
-		GatewayProfileID:   &req.GatewayProfileId,
-		Latitude:           req.Location.Latitude,
-		Longitude:          req.Location.Longitude,
-		Altitude:           req.Location.Altitude,
-		Tags:               tags,
-		Metadata:           metadata,
-		Model:              defaultGw.Model,
-		FirstHeartbeat:     0,
-		LastHeartbeat:      0,
-		Config:             defaultGw.Config,
-		OsVersion:          defaultGw.OsVersion,
-		Statistics:         defaultGw.Statistics,
-		SerialNumber:       defaultGw.SerialNumber,
-		FirmwareHash:       types.MD5SUM{},
-		AutoUpdateFirmware: true,
-	}, createReq); err != nil {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		store := st.(*pgstore.PgStore)
+		if err := gw.AddGateway(ctx, store, &Gateway{
+			MAC:                mac,
+			Name:               req.Name,
+			Description:        req.Description,
+			OrganizationID:     req.OrganizationId,
+			Ping:               req.DiscoveryEnabled,
+			NetworkServerID:    req.NetworkServerId,
+			GatewayProfileID:   &req.GatewayProfileId,
+			Latitude:           req.Location.Latitude,
+			Longitude:          req.Location.Longitude,
+			Altitude:           req.Location.Altitude,
+			Tags:               tags,
+			Metadata:           metadata,
+			Model:              defaultGw.Model,
+			FirstHeartbeat:     0,
+			LastHeartbeat:      0,
+			Config:             defaultGw.Config,
+			OsVersion:          defaultGw.OsVersion,
+			Statistics:         defaultGw.Statistics,
+			SerialNumber:       defaultGw.SerialNumber,
+			FirmwareHash:       types.MD5SUM{},
+			AutoUpdateFirmware: true,
+		}, createReq, a.mxpCli); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -892,6 +908,7 @@ func (a *GatewayAPI) ensureGatewayAdmin(ctx context.Context, mac lorawan.EUI64) 
 
 // Update updates the given gateway.
 func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.Gateway == nil {
 		return nil, status.Error(codes.InvalidArgument, "gateway must not be nil")
 	}
@@ -909,7 +926,8 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, err
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *pgstore.PgStore) error {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		handler := st.(*pgstore.PgStore)
 		gw, err := handler.GetGateway(ctx, mac, true)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
@@ -991,11 +1009,12 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // Delete deletes the gateway matching the given ID.
 func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1005,11 +1024,17 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, err
 	}
 
-	if err := gw.DeleteGateway(ctx, mac); err != nil {
+	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
+		store := st.(*pgstore.PgStore)
+		if err := gw.DeleteGateway(ctx, mac, store, a.pscli); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // GetStats gets the gateway statistics for the gateway with the given Mac.
@@ -1253,13 +1278,8 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		}
 	}
 
-	provClient, err := pscli.GetPServerClient()
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
-	}
-
 	// check whether gateway is allowed to be registered on current supernode
-	res, err := provClient.PreRegisterGW(ctx, &psPb.PreRegisterGWRequest{Sn: req.Sn})
+	res, err := a.pscli.PreRegisterGW(ctx, &psPb.PreRegisterGWRequest{Sn: req.Sn})
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "get gateway info from ps by sn failed: %v", err)
 	}
@@ -1274,7 +1294,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		OrgId:         req.OrganizationId,
 	}
 
-	resp, err := provClient.RegisterGW(ctx, &provReq)
+	resp, err := a.pscli.RegisterGW(ctx, &provReq)
 	if err != nil {
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	}
@@ -1378,12 +1398,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *api.GetGwPwdRequest) (*a
 		return nil, err
 	}
 
-	provClient, err := pscli.GetPServerClient()
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "failed to connect to provisioning server")
-	}
-
-	resp, err := provClient.GetRootPWD(context.Background(), &psPb.GetRootPWDRequest{
+	resp, err := a.pscli.GetRootPWD(context.Background(), &psPb.GetRootPWDRequest{
 		Sn:  req.Sn,
 		Mac: req.GatewayId,
 	})

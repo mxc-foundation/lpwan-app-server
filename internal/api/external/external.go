@@ -36,13 +36,13 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
@@ -57,8 +57,10 @@ type ExtAPIServer struct {
 // ExtAPIConfig defines all attributes for ext api service
 type ExtAPIConfig struct {
 	S                      ExternalAPIStruct
-	ApplicationServerID    string
+	ApplicationServerID    uuid.UUID
 	ServerAddr             string
+	BindNewGateway         string
+	BindOldGateway         string
 	Recaptcha              user.RecaptchaConfig
 	Enable2FA              bool
 	ServerRegion           string
@@ -69,6 +71,7 @@ type ExtAPIConfig struct {
 	OperatorLogo           string
 	Mailer                 *email.Mailer
 	MXPCli                 *mxpcli.Client
+	PSCli                  *pscli.Client
 }
 
 // Stop gracefully stops gRPC server
@@ -168,32 +171,36 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	grpcAuth := grpcauth.New(pgs, jwtValidator, otpValidator)
 	authcus.SetupCred(pgs, jwtValidator, otpValidator)
 
-	rpID, err := uuid.FromString(conf.ApplicationServerID)
-	if err != nil {
-		return fmt.Errorf("failed to convert application server id from string to uuid: %v", err)
-	}
-
 	pb.RegisterFUOTADeploymentServiceServer(srv.gs, NewFUOTADeploymentAPI(h))
 	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h))
-	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(rpID, h))
+	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(conf.ApplicationServerID, h))
 	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h))
 	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h))
 	// device
-	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(rpID, h))
+	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(conf.ApplicationServerID, h, conf.MXPCli, conf.PSCli))
 	// gateway
-	psCli, err := pscli.GetPServerClient()
-	if err != nil {
-		return err
-	}
 	api.RegisterGatewayServiceServer(srv.gs, NewGatewayAPI(
 		h.PgStore,
 		grpcAuth,
 		GwConfig{
-			ApplicationServerID: rpID,
+			ApplicationServerID: conf.ApplicationServerID,
 			ServerAddr:          conf.ServerAddr,
 			EnableSTC:           conf.EnableSTC,
 		},
-		psCli,
+		conf.PSCli,
+		conf.MXPCli,
+		conf.ServerAddr,
+		conf.BindOldGateway,
+		conf.BindNewGateway,
+	))
+	// device provision
+	api.RegisterProvisionedDeviceServiceServer(srv.gs, NewDeviceProvisionAPI(
+		h,
+		grpcAuth,
+		conf.ApplicationServerID,
+		conf.ServerAddr,
+		conf.PSCli,
+		conf.MXPCli,
 	))
 
 	// gateway profile
@@ -376,6 +383,9 @@ func (srv *ExtAPIServer) getJSONGateway(ctx context.Context, conf ExtAPIConfig) 
 
 	err = pb.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register device-profile handler: %v", err)
+
+	err = api.RegisterProvisionedDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register device-provision handler: %v", err)
 
 	err = pb.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register multicast-group handler: %v", err)
