@@ -12,7 +12,6 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -47,7 +46,7 @@ func NewApplicationServerAPI(h *store.Handler, gIntegrations []models.Integratio
 // HandleUplinkData handles incoming (uplink) data.
 func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.HandleUplinkDataRequest) (*empty.Empty, error) {
 	if err := uplink.Handle(ctx, *req, a.st, a.gIntegrations); err != nil {
-		return nil, grpc.Errorf(codes.Internal, "handle uplink data error: %s", err)
+		return nil, status.Errorf(codes.Internal, "handle uplink data error: %s", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -62,13 +61,13 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		logrus.WithField("dev_eui", devEUI).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		logrus.WithField("id", d.ApplicationID).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -116,13 +115,13 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		logrus.WithField("dev_eui", devEUI).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		logrus.WithField("id", d.ApplicationID).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -169,14 +168,14 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		logrus.WithField("dev_eui", devEUI).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		logrus.WithField("id", d.ApplicationID).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -231,7 +230,7 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	if err != nil {
 		errStr := fmt.Sprintf("send error notification to integration error: %s", err)
 		logrus.Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	return &empty.Empty{}, nil
@@ -341,7 +340,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 // SetDeviceLocation updates the device-location.
 func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.SetDeviceLocationRequest) (*empty.Empty, error) {
 	if req.Location == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "location must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "location must not be nil")
 	}
 
 	var devEUI lorawan.EUI64

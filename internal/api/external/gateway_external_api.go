@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"math"
 	"strconv"
 	"strings"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/lib/pq/hstore"
 
@@ -514,37 +515,32 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		tags.Map[k] = sql.NullString{Valid: true, String: v}
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		store := st.(*pgstore.PgStore)
-		if err := gw.AddGateway(ctx, store, &Gateway{
-			MAC:                mac,
-			Name:               req.Name,
-			Description:        req.Description,
-			OrganizationID:     req.OrganizationId,
-			Ping:               req.DiscoveryEnabled,
-			NetworkServerID:    req.NetworkServerId,
-			GatewayProfileID:   &req.GatewayProfileId,
-			Latitude:           req.Location.Latitude,
-			Longitude:          req.Location.Longitude,
-			Altitude:           req.Location.Altitude,
-			Tags:               tags,
-			Metadata:           metadata,
-			Model:              defaultGw.Model,
-			FirstHeartbeat:     0,
-			LastHeartbeat:      0,
-			Config:             defaultGw.Config,
-			OsVersion:          defaultGw.OsVersion,
-			Statistics:         defaultGw.Statistics,
-			SerialNumber:       defaultGw.SerialNumber,
-			FirmwareHash:       types.MD5SUM{},
-			AutoUpdateFirmware: true,
-		}, createReq, a.mxpCli); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	if err := gw.AddGateway(ctx, a.st, &Gateway{
+		MAC:                mac,
+		Name:               req.Name,
+		Description:        req.Description,
+		OrganizationID:     req.OrganizationId,
+		Ping:               req.DiscoveryEnabled,
+		NetworkServerID:    req.NetworkServerId,
+		GatewayProfileID:   &req.GatewayProfileId,
+		Latitude:           req.Location.Latitude,
+		Longitude:          req.Location.Longitude,
+		Altitude:           req.Location.Altitude,
+		Tags:               tags,
+		Metadata:           metadata,
+		Model:              defaultGw.Model,
+		FirstHeartbeat:     0,
+		LastHeartbeat:      0,
+		Config:             defaultGw.Config,
+		OsVersion:          defaultGw.OsVersion,
+		Statistics:         defaultGw.Statistics,
+		SerialNumber:       defaultGw.SerialNumber,
+		FirmwareHash:       types.MD5SUM{},
+		AutoUpdateFirmware: true,
+	}, createReq, a.mxpCli); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -902,9 +898,8 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, err
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		handler := st.(*pgstore.PgStore)
-		gw, err := handler.GetGateway(ctx, mac, true)
+	if err := a.st.Tx(ctx, func(ctx context.Context, ps *pgstore.PgStore) error {
+		gw, err := ps.GetGateway(ctx, mac, true)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -917,7 +912,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		gw.Altitude = req.Gateway.Location.Altitude
 		//gw.Tags = tags
 
-		err = handler.UpdateGateway(ctx, &gw)
+		err = ps.UpdateGateway(ctx, &gw)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -959,7 +954,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 			updateReq.Gateway.Boards = append(updateReq.Gateway.Boards, &gwBoard)
 		}
 
-		n, err := handler.GetNetworkServer(ctx, gw.NetworkServerID)
+		n, err := ps.GetNetworkServer(ctx, gw.NetworkServerID)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -1000,13 +995,7 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, err
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		store := st.(*pgstore.PgStore)
-		if err := gw.DeleteGateway(ctx, mac, store, a.pscli); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	if err := gw.DeleteGateway(ctx, mac, a.st, a.pscli); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 

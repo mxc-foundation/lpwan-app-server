@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+
 	/* #nosec */
 	"crypto/md5"
 	"strings"
@@ -161,8 +163,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 		osVersion:    gateway.OsVersion,
 		statistics:   gateway.Statistics,
 	}
-	if err := a.st.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		store := st.(Store)
+	if err := a.st.Tx(ctx, func(ctx context.Context, st *pgstore.PgStore) error {
 		// compare config hash
 		/* #nosec */
 		configHash := md5.Sum([]byte(gateway.Config))
@@ -178,7 +179,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 
 		// check if firmware updated
 		if gateway.AutoUpdateFirmware {
-			firmware, err := store.GetGatewayFirmware(ctx, gateway.Model, false)
+			firmware, err := st.GetGatewayFirmware(ctx, gateway.Model, false)
 			if err != nil {
 				return status.Errorf(codes.Internal, "Failed to get firmware information for model: %s", gateway.Model)
 			}
@@ -196,7 +197,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 		if !bytes.Equal(updatedGateway.firmwareHash[:], gateway.FirmwareHash[:]) ||
 			updatedGateway.osVersion != gateway.OsVersion ||
 			updatedGateway.statistics != gateway.Statistics {
-			if err := store.UpdateGatewayAttributes(ctx, gateway.MAC, updatedGateway.firmwareHash,
+			if err := st.UpdateGatewayAttributes(ctx, gateway.MAC, updatedGateway.firmwareHash,
 				updatedGateway.osVersion, updatedGateway.statistics); err != nil {
 				return status.Errorf(codes.Internal, err.Error())
 			}

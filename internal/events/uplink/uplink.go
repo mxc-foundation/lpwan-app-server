@@ -8,7 +8,6 @@ import (
 	"time"
 
 	keywrap "github.com/NickBall/go-aes-key-wrap"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -222,11 +221,12 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 
 			for _, rxInfo := range ctx.uplinkDataReq.RxInfo {
 				if rxInfo.TimeSinceGpsEpoch != nil {
-					timeSinceGPSEpoch, err = ptypes.Duration(rxInfo.TimeSinceGpsEpoch)
+					err = rxInfo.TimeSinceGpsEpoch.CheckValid()
 					if err != nil {
 						log.WithError(err).Error("time since gps epoch to duration error")
 						continue
 					}
+					timeSinceGPSEpoch = rxInfo.TimeSinceGpsEpoch.AsDuration()
 				} else if rxInfo.Time != nil {
 					timeField = rxInfo.Time.AsTime()
 				}

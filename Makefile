@@ -21,7 +21,7 @@ test: internal/statics internal/migrations
 	go test -cover -coverprofile coverage.out -coverpkg ./internal/... ./...
 	# IMPORTANT: required coverage can only be increased
 	go tool cover -func coverage.out | \
-		awk 'END { print "Coverage: " $$3; if ($$3+0 < 12.7) { print "Insufficient coverage"; exit 1; } }'
+		awk 'END { print "Coverage: " $$3; if ($$3+0 < 12.9) { print "Insufficient coverage"; exit 1; } }'
 
 lint:
 	@echo "Running code syntax check"

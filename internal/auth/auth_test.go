@@ -61,11 +61,11 @@ func TestCredentials(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	malory, err := NewCredentials(ctx, ts, "malory@example.com", 5, EMAIL, 0, "")
+	malory, err := NewCredentials(ctx, ts, "malory@example.com", 5, EMAIL)
 	if err == nil {
 		t.Errorf("got credentials for mallory: %v", *malory)
 	}
-	alice, err := NewCredentials(ctx, ts, "alice@example.com", 111, EMAIL, 0, "")
+	alice, err := NewCredentials(ctx, ts, "alice@example.com", 111, EMAIL)
 	if err == nil {
 		t.Errorf("expected db error, but got: %v", *alice)
 	}
@@ -154,7 +154,7 @@ func TestCredentials(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Logf(tc.name)
-		cred, err := NewCredentials(ctx, ts, tc.username, tc.orgid, EMAIL, 0, "")
+		cred, err := NewCredentials(ctx, ts, tc.username, tc.orgid, EMAIL)
 		if err != nil {
 			t.Errorf("couldn't get credentials: %v", err)
 		}

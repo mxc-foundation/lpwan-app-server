@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/mmcloughlin/geohash"
@@ -75,10 +74,7 @@ func (i *Integration) HandleUplinkEvent(ctx context.Context, _ models.Integratio
 	rxTime := time.Now()
 	for _, rxInfo := range pl.RxInfo {
 		if rxInfo.Time != nil {
-			ts, err := ptypes.Timestamp(rxInfo.Time)
-			if err != nil {
-				return errors.Wrap(err, "protobuf timestamp error")
-			}
+			ts := rxInfo.Time.AsTime()
 			rxTime = ts
 		}
 	}
@@ -436,11 +432,7 @@ func getRXInfoJSON(rxInfo []*gw.UplinkRXInfo) (json.RawMessage, error) {
 		copy(rx.UplinkID[:], rxInfo[i].UplinkId)
 
 		if rxInfo[i].Time != nil {
-			ts, err := ptypes.Timestamp(rxInfo[i].Time)
-			if err != nil {
-				return nil, errors.Wrap(err, "proto timestamp error")
-			}
-
+			ts := rxInfo[i].Time.AsTime()
 			rx.Time = &ts
 		}
 

@@ -50,7 +50,7 @@ func GetSettings() Config {
 }
 
 func Setup(name string, h *store.Handler) (err error) {
-	if ctrl.moduleUp == true {
+	if ctrl.moduleUp {
 		return nil
 	}
 	defer func() {

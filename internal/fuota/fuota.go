@@ -5,8 +5,9 @@ import (
 	"crypto/aes"
 	"crypto/rand"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -83,7 +84,7 @@ func SettingsSetup(name string, conf config.Config) (err error) {
 
 // Setup configures the package.
 func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
+	if ctrl.moduleUp {
 		return nil
 	}
 	defer func() {

@@ -3,8 +3,9 @@ package clocksync
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

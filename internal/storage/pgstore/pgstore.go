@@ -52,7 +52,7 @@ func New() *PgStore {
 // error, it calls the function again. In order for serialization errors
 // handling to work, the function should return Handler errors
 // unchanged, or wrap them using %w.
-func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, interface{}) error) error {
+func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, *PgStore) error) error {
 	for {
 		pst, err := ps.TxBegin(ctx)
 		if err != nil {

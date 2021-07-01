@@ -2,6 +2,7 @@ package mxpapisrv
 
 import (
 	"context"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brocaar/lorawan"

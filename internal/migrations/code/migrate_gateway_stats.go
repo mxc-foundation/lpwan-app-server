@@ -3,10 +3,10 @@ package code
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -105,11 +105,7 @@ func migrateGatewayStatsForGatewayIDInterval(nsClient ns.NetworkServerServiceCli
 	}
 
 	for _, m := range metrics.Result {
-		ts, err := ptypes.Timestamp(m.Timestamp)
-		if err != nil {
-			return err
-		}
-
+		ts := m.Timestamp.AsTime()
 		err = metricsmod.SaveMetricsForInterval(context.Background(), metricsmod.AggregationInterval(interval.String()), fmt.Sprintf("gw:%s", gatewayID), metricsmod.MetricsRecord{
 			Time: ts,
 			Metrics: map[string]float64{

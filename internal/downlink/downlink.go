@@ -2,6 +2,7 @@ package downlink
 
 import (
 	"fmt"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 
 	"github.com/gofrs/uuid"

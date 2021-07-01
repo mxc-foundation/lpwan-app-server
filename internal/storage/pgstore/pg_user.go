@@ -197,8 +197,7 @@ func (ps *PgStore) SetUserLastLogin(ctx context.Context, userID int64, displayNa
 
 // CreateUser creates the given user.
 func (ps *PgStore) CreateUser(ctx context.Context, u user.User, ou []user.OrganizationUser) (user.User, error) {
-	err := ps.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		ps := st.(*PgStore)
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
 		nu, err := ps.createUser(ctx, u)
 		if err != nil {
 			return err
@@ -445,8 +444,7 @@ func (ps *PgStore) setPasswordResetRecord(ctx context.Context, userID int64, pr 
 // GetOrSetPasswordResetOTP if the password reset OTP has been generated
 // already then returns it, otherwise sets the new OTP and returns it
 func (ps *PgStore) GetOrSetPasswordResetOTP(ctx context.Context, userID int64, otp string) (string, error) {
-	err := ps.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		ps := st.(*PgStore)
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
 		pr, err := ps.getPasswordResetRecord(ctx, userID)
 		if err != nil && err != sql.ErrNoRows {
 			return err
@@ -473,8 +471,7 @@ func (ps *PgStore) GetOrSetPasswordResetOTP(ctx context.Context, userID int64, o
 // SetUserPasswordIfOTPMatch sets the user's password if the OTP provided is correct
 func (ps *PgStore) SetUserPasswordIfOTPMatch(ctx context.Context, userID int64, otp, passwordHash string) error {
 	var invalidOTP bool
-	err := ps.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		ps := st.(*PgStore)
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
 		pr, err := ps.getPasswordResetRecord(ctx, userID)
 		if err != nil {
 			return err
@@ -547,8 +544,7 @@ func (ps *PgStore) createOrganization(ctx context.Context, org user.Organization
 // ActivateUser creates the organization for the new user, adds the user to
 // the org and activates the user
 func (ps *PgStore) ActivateUser(ctx context.Context, userID int64, passwordHash, orgName, orgDisplayName string) error {
-	err := ps.Tx(ctx, func(ctx context.Context, st interface{}) error {
-		ps := st.(*PgStore)
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
 		org := user.Organization{
 			Name:            orgName,
 			DisplayName:     orgDisplayName,

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+
 	"google.golang.org/grpc"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -74,7 +76,7 @@ type Store interface {
 	UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI64, firmware types.MD5SUM,
 		osVersion, statistics string) error
 
-	Tx(ctx context.Context, f func(context.Context, interface{}) error) error
+	Tx(ctx context.Context, f func(context.Context, *pgstore.PgStore) error) error
 
 	InTx() bool
 }
@@ -252,17 +254,9 @@ func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Co
 	return nil
 }
 
-// AddGateway add new gateway and sync across all relevant servers. Must be called from within transaction
+// AddGateway add new gateway and sync across all relevant servers
 func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns.CreateGatewayRequest,
 	mxpCli pb.GSGatewayServiceClient) error {
-	// A transaction is needed as:
-	//  * A remote gRPC call is performed and in case of error, we want to
-	//    rollback the transaction.
-	//  * We want to lock the organization so that we can validate the
-	//    max gateway count.
-	if !st.InTx() {
-		return fmt.Errorf("AddGateway must be called from within transaction")
-	}
 	organization, err := st.GetOrganization(ctx, gateway.OrganizationID, true)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
@@ -330,9 +324,6 @@ func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns
 
 // DeleteGateway deletes gateway and sync across all relevant servers. Must be called from within transaction
 func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.ProvisionClient) error {
-	if !st.InTx() {
-		return fmt.Errorf("DeleteGateway must be called from within transaction")
-	}
 	// if the gateway is MatchX gateway, unregister it from provisioning server
 	obj, err := st.GetGateway(ctx, mac, false)
 	if err != nil {

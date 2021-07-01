@@ -3,6 +3,7 @@ package device
 import (
 	"context"
 	"encoding/hex"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
 	"github.com/brocaar/lorawan"

@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 
 	"github.com/brocaar/lorawan"
 	"github.com/pkg/errors"

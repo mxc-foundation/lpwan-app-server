@@ -2,12 +2,12 @@ package external
 
 import (
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -73,7 +73,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 			dp, err := handler.GetDeviceProfile(ctx, dev.DeviceProfileID, false)
 			if err != nil {
 				log.WithError(err).WithField("id", dev.DeviceProfileID).Error("get device-profile error")
-				return grpc.Errorf(codes.Internal, "get device-profile error: %s", err)
+				return status.Errorf(codes.Internal, "get device-profile error: %s", err)
 			}
 
 			// TODO: in the next major release, remove this and always use the
@@ -149,7 +149,7 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 func (d *DeviceQueueAPI) List(ctx context.Context, req *pb.ListDeviceQueueItemsRequest) (*pb.ListDeviceQueueItemsResponse, error) {
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, auth.List); !valid || err != nil {

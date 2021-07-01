@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
-
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -87,10 +85,11 @@ func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 
 	var statsInterval time.Duration
 	if gp.GatewayProfile.StatsInterval != nil {
-		statsInterval, err = ptypes.Duration(gp.GatewayProfile.StatsInterval)
+		err := gp.GatewayProfile.StatsInterval.CheckValid()
 		if err != nil {
 			return uuid.UUID{}, errors.Wrap(err, "stats interval error")
 		}
+		statsInterval = gp.GatewayProfile.StatsInterval.AsDuration()
 	}
 
 	_, err = ps.db.ExecContext(ctx, `
@@ -153,10 +152,11 @@ func (ps *PgStore) UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 
 	var statsInterval time.Duration
 	if gp.GatewayProfile.StatsInterval != nil {
-		statsInterval, err = ptypes.Duration(gp.GatewayProfile.StatsInterval)
+		err = gp.GatewayProfile.StatsInterval.CheckValid()
 		if err != nil {
 			return errors.Wrap(err, "stats interval error")
 		}
+		statsInterval = gp.GatewayProfile.StatsInterval.AsDuration()
 	}
 
 	res, err := ps.db.ExecContext(ctx, `

@@ -2,8 +2,9 @@ package external
 
 import (
 	"database/sql"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"google.golang.org/grpc/status"
 
@@ -51,10 +52,10 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 	var err error
 	var uplinkInterval time.Duration
 	if req.DeviceProfile.UplinkInterval != nil {
-		uplinkInterval, err = ptypes.Duration(req.DeviceProfile.UplinkInterval)
-		if err != nil {
+		if err := req.DeviceProfile.UplinkInterval.CheckValid(); err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
+		uplinkInterval = req.DeviceProfile.UplinkInterval.AsDuration()
 	}
 
 	dp := DeviceProfile{
@@ -253,10 +254,11 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 
 	var uplinkInterval time.Duration
 	if req.DeviceProfile.UplinkInterval != nil {
-		uplinkInterval, err = ptypes.Duration(req.DeviceProfile.UplinkInterval)
+		err := req.DeviceProfile.UplinkInterval.CheckValid()
 		if err != nil {
 			return nil, err
 		}
+		uplinkInterval = req.DeviceProfile.UplinkInterval.AsDuration()
 	}
 
 	dp.Name = req.DeviceProfile.Name

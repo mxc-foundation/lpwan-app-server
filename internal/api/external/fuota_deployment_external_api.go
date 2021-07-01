@@ -147,10 +147,10 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 		return nil, status.Errorf(codes.InvalidArgument, "group_type %s is not supported", req.FuotaDeployment.GroupType)
 	}
 
-	fd.UnicastTimeout, err = ptypes.Duration(req.FuotaDeployment.UnicastTimeout)
-	if err != nil {
+	if err := req.FuotaDeployment.UnicastTimeout.CheckValid(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "unicast_timeout: %s", err)
 	}
+	fd.UnicastTimeout = req.FuotaDeployment.UnicastTimeout.AsDuration()
 
 	err = f.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		return handler.CreateFUOTADeploymentForDevice(ctx, &fd, devEUI)
