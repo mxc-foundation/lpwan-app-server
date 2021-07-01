@@ -228,11 +228,7 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 						continue
 					}
 				} else if rxInfo.Time != nil {
-					timeField, err = ptypes.Timestamp(rxInfo.Time)
-					if err != nil {
-						log.WithError(err).Error("time to timestamp error")
-						continue
-					}
+					timeField = rxInfo.Time.AsTime()
 				}
 			}
 

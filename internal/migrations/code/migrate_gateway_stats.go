@@ -3,6 +3,7 @@ package code
 import (
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -90,15 +91,8 @@ func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.E
 }
 
 func migrateGatewayStatsForGatewayIDInterval(nsClient ns.NetworkServerServiceClient, gatewayID lorawan.EUI64, interval ns.AggregationInterval, start, end time.Time) error {
-	startPB, err := ptypes.TimestampProto(start)
-	if err != nil {
-		return err
-	}
-
-	endPB, err := ptypes.TimestampProto(end)
-	if err != nil {
-		return err
-	}
+	startPB := timestamppb.New(start)
+	endPB := timestamppb.New(end)
 
 	metrics, err := nsClient.GetGatewayStats(context.Background(), &ns.GetGatewayStatsRequest{
 		GatewayId:      gatewayID[:],

@@ -4,11 +4,6 @@ package app
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
-	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,14 +11,19 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/shopify"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
@@ -271,6 +271,7 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		Mailer:                 app.mailer,
 		MXPCli:                 app.mxpCli,
 		PSCli:                  app.psCli,
+		NSCli:                  app.nsCli,
 	}); err != nil {
 		return err
 	}

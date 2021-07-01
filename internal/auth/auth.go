@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-
-	"github.com/gofrs/uuid"
 )
 
 // Authenticator authenticates the user and returns Credentials
@@ -16,8 +14,6 @@ type Options struct {
 	RequireOTP       bool
 	AllowNonExisting bool
 	OrgID            int64
-	ApplicationID    int64
-	DeviceProfileID  string
 
 	// when GetOrgIDFromToken is true, extract organization id from jwt then assign it to user's credential
 	GetOrgIDFromToken bool
@@ -57,18 +53,6 @@ func (o *Options) WithOrgID(orgID int64) *Options {
 	return o
 }
 
-// WithApplicationID will take applicationID into consideration
-func (o *Options) WithApplicationID(applicationID int64) *Options {
-	o.ApplicationID = applicationID
-	return o
-}
-
-// WithDeviceProfileID will take DeviceProfileID into consideration
-func (o *Options) WithDeviceProfileID(deviceProfileID string) *Options {
-	o.DeviceProfileID = deviceProfileID
-	return o
-}
-
 // WithExternalLimited restricts checking external credentials only
 func (o *Options) WithExternalLimited() *Options {
 	o.ExternalLimited = true
@@ -103,10 +87,6 @@ type Credentials struct {
 	IsDeviceAdmin bool
 	// IsGatewayAdmin is true if the user is device admin for the org
 	IsGatewayAdmin bool
-	// IsApplicationUser is true if the user's organization owns the given application
-	IsApplicationUser bool
-	// DeviceProfileIsValid is true if the user's organization owns the given device profile
-	DeviceProfileIsValid bool
 	// ExternalUserID is the id of external user
 	ExternalUserID string
 	// Service is the name of external user's service
@@ -137,15 +117,10 @@ type Store interface {
 	AuthGetUser(ctx context.Context, username string) (User, error)
 	// AuthGetOrgUser returns user's role in the listed organization
 	AuthGetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
-	// ApplicationOwnedByOrganization returns true when given orgID owns given applicationID
-	ApplicationOwnedByOrganization(ctx context.Context, orgID, applicationID int64) (bool, error)
-	// DeviceProfileOwnedByOrganization returns true when given orgID owns given device profile
-	DeviceProfileOwnedByOrganization(ctx context.Context, orgID int64, deviceProfile uuid.UUID) (bool, error)
 }
 
 // NewCredentials returns credential set of an user
-func NewCredentials(ctx context.Context, st Store, username string, orgID int64, service string,
-	applicationID int64, deviceProfileID string) (*Credentials, error) {
+func NewCredentials(ctx context.Context, st Store, username string, orgID int64, service string) (*Credentials, error) {
 	user, err := st.AuthGetUser(ctx, username)
 	if err != nil {
 		return nil, err
@@ -167,26 +142,6 @@ func NewCredentials(ctx context.Context, st Store, username string, orgID int64,
 		c.IsOrgAdmin = orgUser.IsOrgAdmin || c.IsGlobalAdmin
 		c.IsDeviceAdmin = orgUser.IsDeviceAdmin || c.IsOrgAdmin
 		c.IsGatewayAdmin = orgUser.IsGatewayAdmin || c.IsOrgAdmin
-
-		if applicationID > 0 {
-			appOwnedByOrg, err := st.ApplicationOwnedByOrganization(ctx, orgID, applicationID)
-			if err != nil {
-				return nil, err
-			}
-			c.IsApplicationUser = appOwnedByOrg
-		}
-
-		if deviceProfileID != "" {
-			dpID, err := uuid.FromString(deviceProfileID)
-			if err != nil {
-				return nil, err
-			}
-			dpOwnedByOrg, err := st.DeviceProfileOwnedByOrganization(ctx, orgID, dpID)
-			if err != nil {
-				return nil, err
-			}
-			c.DeviceProfileIsValid = dpOwnedByOrg
-		}
 	}
 	return c, nil
 }

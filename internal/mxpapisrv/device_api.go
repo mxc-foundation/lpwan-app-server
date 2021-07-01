@@ -2,9 +2,9 @@ package mxpapisrv
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brocaar/lorawan"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -61,7 +61,7 @@ func (a *DeviceM2MAPI) GetDeviceByDevEui(ctx context.Context, req *pb.GetDeviceB
 	resp.DevProfile.DevEui = req.DevEui
 	resp.DevProfile.Name = device.Name
 	resp.DevProfile.ApplicationId = device.ApplicationID
-	resp.DevProfile.CreatedAt, _ = ptypes.TimestampProto(device.CreatedAt)
+	resp.DevProfile.CreatedAt = timestamppb.New(device.CreatedAt)
 
 	return &resp, nil
 }

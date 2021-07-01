@@ -2,6 +2,7 @@ package external
 
 import (
 	"database/sql"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 
 	"google.golang.org/grpc/status"
@@ -188,14 +189,8 @@ func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProf
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(dp.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(dp.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(dp.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(dp.UpdatedAt)
 
 	for k, v := range dp.Tags.Map {
 		resp.DeviceProfile.Tags[k] = v.String
@@ -378,14 +373,8 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 			NetworkServerName: dp.NetworkServerName,
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(dp.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(dp.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		row.CreatedAt = timestamppb.New(dp.CreatedAt)
+		row.UpdatedAt = timestamppb.New(dp.UpdatedAt)
 
 		resp.Result = append(resp.Result, &row)
 	}

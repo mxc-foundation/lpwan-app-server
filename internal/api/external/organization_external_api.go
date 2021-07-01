@@ -1,11 +1,11 @@
 package external
 
 import (
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -78,14 +78,8 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(org.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(org.UpdatedAt)
 
 	return &resp, nil
 }
@@ -133,14 +127,8 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 			CanHaveGateways: org.CanHaveGateways,
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		row.CreatedAt = timestamppb.New(org.CreatedAt)
+		row.UpdatedAt = timestamppb.New(org.UpdatedAt)
 
 		resp.Result = append(resp.Result, &row)
 	}
@@ -254,14 +242,8 @@ func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizatio
 			IsGatewayAdmin: u.IsGatewayAdmin,
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(u.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(u.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		row.CreatedAt = timestamppb.New(u.CreatedAt)
+		row.UpdatedAt = timestamppb.New(u.UpdatedAt)
 
 		resp.Result = append(resp.Result, &row)
 	}
@@ -353,14 +335,8 @@ func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUs
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(u.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(u.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(u.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(u.UpdatedAt)
 
 	return &resp, nil
 }

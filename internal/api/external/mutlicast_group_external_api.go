@@ -2,11 +2,11 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -134,15 +134,8 @@ func (a *MulticastGroupAPI) Get(ctx context.Context, req *pb.GetMulticastGroupRe
 		},
 	}
 
-	out.CreatedAt, err = ptypes.TimestampProto(mg.CreatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
-
-	out.UpdatedAt, err = ptypes.TimestampProto(mg.UpdatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
+	out.CreatedAt = timestamppb.New(mg.CreatedAt)
+	out.UpdatedAt = timestamppb.New(mg.UpdatedAt)
 
 	return &out, nil
 }

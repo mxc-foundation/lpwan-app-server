@@ -40,10 +40,7 @@ func (hb *HEXBytes) UnmarshalText(text []byte) error {
 func GetTimestamp(rxInfo []*gw.UplinkRXInfo) time.Time {
 	for i := range rxInfo {
 		if rxInfo[i].Time != nil {
-			t, err := ptypes.Timestamp(rxInfo[i].Time)
-			if err == nil {
-				return t
-			}
+			return rxInfo[i].Time.AsTime()
 		}
 	}
 

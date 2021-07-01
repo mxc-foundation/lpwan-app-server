@@ -37,7 +37,7 @@ func Connect(nscfg []NetworkServerConfig) (*Client, error) {
 		}
 		cli.nsConn[v.NetworkServerID] = nsConn
 	}
-	return nil, nil
+	return &cli, nil
 }
 
 // Close closes connection to network server

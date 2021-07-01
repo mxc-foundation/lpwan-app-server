@@ -2,9 +2,8 @@ package storage
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"time"
-
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 
 	"github.com/brocaar/lorawan"
 	"github.com/pkg/errors"
@@ -223,7 +222,7 @@ func DeleteAllDevicesForApplicationID(ctx context.Context, handler *store.Handle
 // EnqueueDownlinkPayload adds the downlink payload to the network-server
 // device-queue.
 func EnqueueDownlinkPayload(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, confirmed bool, fPort uint8, data []byte) (uint32, error) {
-	return devmod.EnqueueDownlinkPayload(ctx, handler, devEUI, confirmed, fPort, data)
+	return device.EnqueueDownlinkPayload(ctx, handler, devEUI, confirmed, fPort, data)
 }
 
 // GetDevicesActiveInactive returns the active / inactive devices.

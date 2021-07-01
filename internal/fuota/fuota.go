@@ -5,9 +5,8 @@ import (
 	"crypto/aes"
 	"crypto/rand"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"time"
-
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -478,7 +477,7 @@ func stepStatusRequest(ctx context.Context, handler *store.Handler, item fds.FUO
 			return errors.Wrap(err, "marshal binary error")
 		}
 
-		_, err = devmod.EnqueueDownlinkPayload(ctx, handler, devEUI, false, fragmentation.DefaultFPort, b)
+		_, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, false, fragmentation.DefaultFPort, b)
 		if err != nil {
 			return errors.Wrap(err, "enqueue downlink payload error")
 		}

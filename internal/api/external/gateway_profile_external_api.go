@@ -2,10 +2,10 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -97,14 +97,8 @@ func (a *GatewayProfileAPI) Get(ctx context.Context, req *pb.GetGatewayProfileRe
 		},
 	}
 
-	out.CreatedAt, err = ptypes.TimestampProto(gp.CreatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
-	out.UpdatedAt, err = ptypes.TimestampProto(gp.UpdatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
+	out.CreatedAt = timestamppb.New(gp.CreatedAt)
+	out.UpdatedAt = timestamppb.New(gp.UpdatedAt)
 
 	for _, ec := range gp.GatewayProfile.ExtraChannels {
 		out.GatewayProfile.ExtraChannels = append(out.GatewayProfile.ExtraChannels, &pb.GatewayProfileExtraChannel{
@@ -223,14 +217,8 @@ func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfile
 			NetworkServerId:   gp.NetworkServerID,
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(gp.CreatedAt)
-		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%s", err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(gp.UpdatedAt)
-		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%s", err)
-		}
+		row.CreatedAt = timestamppb.New(gp.CreatedAt)
+		row.UpdatedAt = timestamppb.New(gp.UpdatedAt)
 
 		out.Result = append(out.Result, &row)
 	}

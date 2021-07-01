@@ -3,21 +3,19 @@ package external
 import (
 	"database/sql"
 	"encoding/json"
-	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"strconv"
 
 	"google.golang.org/grpc/status"
 
 	"github.com/gobuffalo/packr/v2/file/resolver/encoding/hex"
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -25,17 +23,22 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
@@ -45,15 +48,18 @@ type DeviceAPI struct {
 	ApplicationServerID uuid.UUID
 	mxpCli              pb.DSDeviceServiceClient
 	psCli               psPb.DeviceProvisionClient
+	nsCli               *nscli.Client
 }
 
 // NewDeviceAPI creates a new NodeAPI.
-func NewDeviceAPI(applicationID uuid.UUID, h *store.Handler, mxpCli *mxpcli.Client, psCli *pscli.Client) *DeviceAPI {
+func NewDeviceAPI(applicationID uuid.UUID, h *store.Handler, mxpCli *mxpcli.Client,
+	psCli *pscli.Client, nsCli *nscli.Client) *DeviceAPI {
 	return &DeviceAPI{
 		st:                  h,
 		ApplicationServerID: applicationID,
 		mxpCli:              mxpCli.GetM2MDeviceServiceClient(),
 		psCli:               psCli.GetDeviceProvisionServiceClient(),
+		nsCli:               nsCli,
 	}
 }
 
@@ -122,12 +128,12 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := devmod.CreateDevice(ctx, handler, &d, &app, a.ApplicationServerID, a.mxpCli); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	nsCli, err := a.nsCli.GetNetworkServerServiceClient(dp.NetworkServerID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get network server client: %v", err)
+	}
+
+	if err := device.CreateDevice(ctx, a.st, &d, &app, a.ApplicationServerID, a.mxpCli, nsCli); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
@@ -154,19 +160,12 @@ func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.Ge
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	res, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
+	res, err := nsClient.GetDevice(ctx, &ns.GetDeviceRequest{
 		DevEui: d.DevEUI[:],
 	})
 	if err != nil {
@@ -202,10 +201,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.Ge
 		response.DeviceStatusMargin = int32(*d.DeviceStatusMargin)
 	}
 	if d.LastSeenAt != nil {
-		response.LastSeenAt, err = ptypes.TimestampProto(*d.LastSeenAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		response.LastSeenAt = timestamppb.New(*d.LastSeenAt)
 	}
 
 	if d.Latitude != nil && d.Longitude != nil && d.Altitude != nil {
@@ -327,114 +323,103 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	dpID, err := uuid.FromString(req.Device.DeviceProfileId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
 	if valid, err := devmod.NewValidator(a.st).ValidateNodeAccess(ctx, authcus.Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	app, err := application.GetApplication(ctx, req.Device.ApplicationId)
+	// get device
+	d, err := a.st.GetDevice(ctx, devEUI, true)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	// If the device is moved to a different application, validate that
+	// the new application is assigned to the same service-profile.
+	// This to guarantee that the new application is still on the same
+	// network-server and is not assigned to a different organization.
+	var appNew, appOld appd.Application
+	if req.Device.ApplicationId != d.ApplicationID {
+		appOld, err = a.st.GetApplication(ctx, d.ApplicationID)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		appNew, err = a.st.GetApplication(ctx, req.Device.ApplicationId)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		if appOld.ServiceProfileID != appNew.ServiceProfileID {
+			return nil, status.Errorf(codes.InvalidArgument,
+				"when moving a device from application A to B, both A and B must share the same service-profile")
+		}
 	}
 
-	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
+	var dpNew, dpOld dps.DeviceProfile
+	dpIDNew, err := uuid.FromString(req.Device.DeviceProfileId)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+	if dpIDNew != d.DeviceProfileID {
+		dpOld, err = a.st.GetDeviceProfile(ctx, d.DeviceProfileID, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		dpNew, err = a.st.GetDeviceProfile(ctx, dpIDNew, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		if dpOld.NetworkServerID != dpNew.NetworkServerID || dpOld.OrganizationID != dpNew.OrganizationID {
+			return nil, status.Errorf(codes.InvalidArgument,
+				"when updating device profile for a device, "+
+					"new device profile and old device profile must share same network server and organization")
+		}
 	}
 
-	if app.OrganizationID != dp.OrganizationID {
-		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
+	/* new application and old application share the same service profile,
+	   so both applications share same network server and organization;
+	   new device profile and old device profile share same organization and network server;
+	   when device is created, same organization is guaranted to be shared between application and device profile,
+	   so there is no need to check application's organization against device profile again
+	*/
+
+	// get network server client
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(dpNew.NetworkServerID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	// update device attributes
+	d.ApplicationID = req.Device.ApplicationId
+	d.DeviceProfileID = dpIDNew
+	d.Name = req.Device.Name
+	d.Description = req.Device.Description
+	d.SkipFCntCheck = req.Device.SkipFCntCheck
+	d.ReferenceAltitude = req.Device.ReferenceAltitude
+	d.Variables = hstore.Hstore{
+		Map: make(map[string]sql.NullString),
+	}
+	d.Tags = hstore.Hstore{
+		Map: make(map[string]sql.NullString),
+	}
+
+	for k, v := range req.Device.Variables {
+		d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
+	}
+
+	for k, v := range req.Device.Tags {
+		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
 	}
 
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-
-		d, err := handler.GetDevice(ctx, devEUI, true)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
-
-		n, err := handler.GetNetworkServerForDevEUI(ctx, d.DevEUI)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		nStruct := &nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		client, err := nStruct.GetNetworkServiceClient()
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		res, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
-			DevEui: d.DevEUI[:],
-		})
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		if res.Device != nil {
-			d.SkipFCntCheck = res.Device.SkipFCntCheck
-			d.ReferenceAltitude = res.Device.ReferenceAltitude
-		}
-
-		// If the device is moved to a different application, validate that
-		// the new application is assigned to the same service-profile.
-		// This to guarantee that the new application is still on the same
-		// network-server and is not assigned to a different organization.
-		if req.Device.ApplicationId != d.ApplicationID {
-			appOld, err := handler.GetApplication(ctx, d.ApplicationID)
-			if err != nil {
-				return status.Errorf(codes.Unknown, "%v", err)
-			}
-
-			appNew, err := handler.GetApplication(ctx, req.Device.ApplicationId)
-			if err != nil {
-				return status.Errorf(codes.Unknown, "%v", err)
-			}
-
-			if appOld.ServiceProfileID != appNew.ServiceProfileID {
-				return status.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
-			}
-		}
-
-		d.ApplicationID = req.Device.ApplicationId
-		d.DeviceProfileID = dpID
-		d.Name = req.Device.Name
-		d.Description = req.Device.Description
-		d.SkipFCntCheck = req.Device.SkipFCntCheck
-		d.ReferenceAltitude = req.Device.ReferenceAltitude
-		d.Variables = hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		}
-		d.Tags = hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		}
-
-		for k, v := range req.Device.Variables {
-			d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
-		}
-
-		for k, v := range req.Device.Tags {
-			d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
-		}
-
 		if err := handler.UpdateDevice(ctx, &d); err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
+			return status.Errorf(codes.Internal, "%v", err)
 		}
-
-		_, err = client.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
+		// update external server at last, if internal process succeeds, but external service call fails,
+		// then internal process will roll back, no changes on both sides.
+		// If internal process fails, external service won't be called, still no changes on both sides.
+		_, err = nsClient.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
 			Device: &ns.Device{
 				DevEui:            d.DevEUI[:],
 				DeviceProfileId:   d.DeviceProfileID.Bytes(),
-				ServiceProfileId:  app.ServiceProfileID.Bytes(),
+				ServiceProfileId:  appNew.ServiceProfileID.Bytes(),
 				RoutingProfileId:  a.ApplicationServerID.Bytes(),
 				SkipFCntCheck:     d.SkipFCntCheck,
 				ReferenceAltitude: d.ReferenceAltitude,
@@ -446,7 +431,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 
 		return nil
 	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, err
 	}
 
 	return &response, nil
@@ -466,13 +451,8 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *api.DeleteDeviceRequest) (*
 
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		err := devmod.DeleteDevice(ctx, handler, eui, a.mxpCli, a.psCli)
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	err := device.DeleteDevice(ctx, a.st, eui, a.mxpCli, a.psCli)
+	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
@@ -654,18 +634,12 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceReq
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	_, _ = client.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
+	_, _ = nsClient.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
 		DevEui: d.DevEUI[:],
 	})
 
@@ -709,63 +683,52 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *api.ActivateDeviceRequest
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		d, err := handler.GetDevice(ctx, devEUI, false)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		n, err := handler.GetNetworkServerForDevEUI(ctx, devEUI)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		nStruct := &nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		client, err := nStruct.GetNetworkServiceClient()
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		_, _ = client.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
-			DevEui: d.DevEUI[:],
-		})
-
-		actReq := ns.ActivateDeviceRequest{
-			DeviceActivation: &ns.DeviceActivation{
-				DevEui:      d.DevEUI[:],
-				DevAddr:     devAddr[:],
-				NwkSEncKey:  nwkSEncKey[:],
-				SNwkSIntKey: sNwkSIntKey[:],
-				FNwkSIntKey: fNwkSIntKey[:],
-				FCntUp:      req.DeviceActivation.FCntUp,
-				NFCntDown:   req.DeviceActivation.NFCntDown,
-				AFCntDown:   req.DeviceActivation.AFCntDown,
-			},
-		}
-
-		if err := handler.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
-
-		_, err = client.ActivateDevice(ctx, &actReq)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
-
-		log.WithFields(log.Fields{
-			"dev_addr": devAddr,
-			"dev_eui":  d.DevEUI,
-			"ctx_id":   ctx.Value(logging.ContextIDKey),
-		}).Info("device activated")
-		return nil
-	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+	d, err := a.st.GetDevice(ctx, devEUI, false)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
+
+	n, err := a.st.GetNetworkServerForDevEUI(ctx, devEUI)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	_, _ = nsClient.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
+		DevEui: d.DevEUI[:],
+	})
+
+	actReq := ns.ActivateDeviceRequest{
+		DeviceActivation: &ns.DeviceActivation{
+			DevEui:      d.DevEUI[:],
+			DevAddr:     devAddr[:],
+			NwkSEncKey:  nwkSEncKey[:],
+			SNwkSIntKey: sNwkSIntKey[:],
+			FNwkSIntKey: fNwkSIntKey[:],
+			FCntUp:      req.DeviceActivation.FCntUp,
+			NFCntDown:   req.DeviceActivation.NFCntDown,
+			AFCntDown:   req.DeviceActivation.AFCntDown,
+		},
+	}
+
+	if err := a.st.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	_, err = nsClient.ActivateDevice(ctx, &actReq)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"dev_addr": devAddr,
+		"dev_eui":  d.DevEUI,
+		"ctx_id":   ctx.Value(logging.ContextIDKey),
+	}).Info("device activated")
 
 	return &response, nil
 }
@@ -796,18 +759,12 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *api.GetDeviceActivat
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	devAct, err := client.GetDeviceActivation(ctx, &ns.GetDeviceActivationRequest{
+	devAct, err := nsClient.GetDeviceActivation(ctx, &ns.GetDeviceActivationRequest{
 		DevEui: d.DevEUI[:],
 	})
 	if err != nil {
@@ -852,18 +809,12 @@ func (a *DeviceAPI) StreamFrameLogs(req *api.StreamDeviceFrameLogsRequest, srv a
 		return helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
-		return helpers.ErrToRPCError(err)
+		return status.Errorf(codes.Internal, err.Error())
 	}
 
-	streamClient, err := client.StreamFrameLogsForDevice(srv.Context(), &ns.StreamFrameLogsForDeviceRequest{
+	streamClient, err := nsClient.StreamFrameLogsForDevice(srv.Context(), &ns.StreamFrameLogsForDeviceRequest{
 		DevEui: devEUI[:],
 	})
 	if err != nil {
@@ -961,19 +912,13 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *api.GetRandomDevA
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	var emptyReqeust empty.Empty
-	resp, err := client.GetRandomDevAddr(ctx, &emptyReqeust)
+	resp, err := nsClient.GetRandomDevAddr(ctx, &emptyReqeust)
 	if err != nil {
 		return nil, err
 	}
@@ -1024,11 +969,7 @@ func (a *DeviceAPI) returnList(count int, devices []DeviceListItem) (*api.ListDe
 			item.DeviceStatusMargin = int32(*device.DeviceStatusMargin)
 		}
 		if device.LastSeenAt != nil {
-			var err error
-			item.LastSeenAt, err = ptypes.TimestampProto(*device.LastSeenAt)
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
+			item.LastSeenAt = timestamppb.New(*device.LastSeenAt)
 		}
 
 		resp.Result = append(resp.Result, &item)

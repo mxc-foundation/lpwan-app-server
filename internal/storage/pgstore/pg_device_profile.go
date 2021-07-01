@@ -273,6 +273,57 @@ func (ps *PgStore) DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
+// GetDeviceProfileWithIDAndOrganizationID returns the device-profile matching the given id and organization id
+func (ps *PgStore) GetDeviceProfileWithIDAndOrganizationID(ctx context.Context, id uuid.UUID,
+	orgID int64, forUpdate bool) (DeviceProfile, error) {
+	var fu string
+	if forUpdate {
+		fu = " for update"
+	}
+
+	var dp DeviceProfile
+
+	row := ps.db.QueryRowxContext(ctx, `
+		select
+			network_server_id,
+			organization_id,
+			created_at,
+			updated_at,
+			name,
+			payload_codec,
+			payload_encoder_script,
+			payload_decoder_script,
+			tags,
+			uplink_interval
+		from device_profile
+		where
+			device_profile_id = $1 and organization_id = $2`+fu,
+		id,
+		orgID,
+	)
+	if err := row.Err(); err != nil {
+		return dp, handlePSQLError(Select, err, "select error")
+	}
+
+	err := row.Scan(
+		&dp.NetworkServerID,
+		&dp.OrganizationID,
+		&dp.CreatedAt,
+		&dp.UpdatedAt,
+		&dp.Name,
+		&dp.PayloadCodec,
+		&dp.PayloadEncoderScript,
+		&dp.PayloadDecoderScript,
+		&dp.Tags,
+		&dp.UplinkInterval,
+	)
+	if err != nil {
+		return dp, handlePSQLError(Scan, err, "scan error")
+	}
+
+	return dp, nil
+}
+
 // GetDeviceProfile returns the device-profile matching the given id.
 // When forUpdate is set to true, then db must be a db transaction.
 // When localOnly is set to true, no call to the network-server is made to

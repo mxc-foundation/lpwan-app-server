@@ -16,18 +16,20 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/mqttauth"
@@ -40,6 +42,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
@@ -72,6 +75,7 @@ type ExtAPIConfig struct {
 	Mailer                 *email.Mailer
 	MXPCli                 *mxpcli.Client
 	PSCli                  *pscli.Client
+	NSCli                  *nscli.Client
 }
 
 // Stop gracefully stops gRPC server
@@ -177,7 +181,13 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h))
 	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h))
 	// device
-	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(conf.ApplicationServerID, h, conf.MXPCli, conf.PSCli))
+	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(
+		conf.ApplicationServerID,
+		h,
+		conf.MXPCli,
+		conf.PSCli,
+		conf.NSCli,
+	))
 	// gateway
 	api.RegisterGatewayServiceServer(srv.gs, NewGatewayAPI(
 		h.PgStore,
@@ -194,13 +204,14 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 		conf.BindNewGateway,
 	))
 	// device provision
-	api.RegisterProvisionedDeviceServiceServer(srv.gs, NewDeviceProvisionAPI(
+	api.RegisterDeviceProvisioningServiceServer(srv.gs, device.NewDeviceProvisionAPI(
 		h,
 		grpcAuth,
 		conf.ApplicationServerID,
 		conf.ServerAddr,
 		conf.PSCli,
 		conf.MXPCli,
+		conf.NSCli,
 	))
 
 	// gateway profile
@@ -384,7 +395,7 @@ func (srv *ExtAPIServer) getJSONGateway(ctx context.Context, conf ExtAPIConfig) 
 	err = pb.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register device-profile handler: %v", err)
 
-	err = api.RegisterProvisionedDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	err = api.RegisterDeviceProvisioningServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register device-provision handler: %v", err)
 
 	err = pb.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)

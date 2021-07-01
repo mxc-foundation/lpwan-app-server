@@ -7,6 +7,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
@@ -193,18 +194,9 @@ func (f *FUOTADeploymentAPI) Get(ctx context.Context, req *pb.GetFUOTADeployment
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(fd.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(fd.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.FuotaDeployment.NextStepAfter, err = ptypes.TimestampProto(fd.NextStepAfter)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(fd.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(fd.UpdatedAt)
+	resp.FuotaDeployment.NextStepAfter = timestamppb.New(fd.NextStepAfter)
 
 	switch fd.GroupType {
 	case FUOTADeploymentGroupTypeB:
@@ -320,14 +312,8 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *pb.Ge
 		return nil, status.Errorf(codes.Internal, "unexpected state: %s", fdd.State)
 	}
 
-	resp.DeploymentDevice.CreatedAt, err = ptypes.TimestampProto(fdd.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.DeploymentDevice.UpdatedAt, err = ptypes.TimestampProto(fdd.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.DeploymentDevice.CreatedAt = timestamppb.New(fdd.CreatedAt)
+	resp.DeploymentDevice.UpdatedAt = timestamppb.New(fdd.UpdatedAt)
 
 	return &resp, nil
 }
@@ -359,8 +345,6 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 	}
 
 	for i := range devices {
-		var err error
-
 		dd := pb.FUOTADeploymentDeviceListItem{
 			DevEui:       devices[i].DevEUI.String(),
 			DeviceName:   devices[i].DeviceName,
@@ -378,15 +362,8 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 			return nil, status.Errorf(codes.Internal, "unexpected state: %s", devices[i].State)
 		}
 
-		dd.CreatedAt, err = ptypes.TimestampProto(devices[i].CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		dd.UpdatedAt, err = ptypes.TimestampProto(devices[i].UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		dd.CreatedAt = timestamppb.New(devices[i].CreatedAt)
+		dd.UpdatedAt = timestamppb.New(devices[i].UpdatedAt)
 
 		out.Result[i] = &dd
 	}
@@ -395,8 +372,6 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 }
 
 func (f *FUOTADeploymentAPI) returnList(count int, deployments []FUOTADeploymentListItem) (*pb.ListFUOTADeploymentResponse, error) {
-	var err error
-
 	resp := pb.ListFUOTADeploymentResponse{
 		TotalCount: int64(count),
 	}
@@ -408,18 +383,9 @@ func (f *FUOTADeploymentAPI) returnList(count int, deployments []FUOTADeployment
 			State: string(fd.State),
 		}
 
-		item.CreatedAt, err = ptypes.TimestampProto(fd.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		item.UpdatedAt, err = ptypes.TimestampProto(fd.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		item.NextStepAfter, err = ptypes.TimestampProto(fd.NextStepAfter)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		item.CreatedAt = timestamppb.New(fd.CreatedAt)
+		item.UpdatedAt = timestamppb.New(fd.UpdatedAt)
+		item.NextStepAfter = timestamppb.New(fd.NextStepAfter)
 
 		resp.Result = append(resp.Result, &item)
 	}

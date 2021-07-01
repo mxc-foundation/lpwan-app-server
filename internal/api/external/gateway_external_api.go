@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"math"
 	"strconv"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -638,27 +638,15 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(gw.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(gw.UpdatedAt)
 
 	if gw.FirstSeenAt != nil {
-		resp.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		resp.FirstSeenAt = timestamppb.New(*gw.FirstSeenAt)
 	}
 
 	if gw.LastSeenAt != nil {
-		resp.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		resp.LastSeenAt = timestamppb.New(*gw.LastSeenAt)
 	}
 
 	if len(getResp.Gateway.GatewayProfileId) != 0 {
@@ -731,26 +719,14 @@ func (a *GatewayAPI) listGateways(ctx context.Context, filters GatewayFilters) (
 			row.Name = "STC_" + row.Name
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
-		if err != nil {
-			return 0, nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
-		if err != nil {
-			return 0, nil, helpers.ErrToRPCError(err)
-		}
+		row.CreatedAt = timestamppb.New(gw.CreatedAt)
+		row.UpdatedAt = timestamppb.New(gw.UpdatedAt)
 
 		if gw.FirstSeenAt != nil {
-			row.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
-			if err != nil {
-				return 0, nil, helpers.ErrToRPCError(err)
-			}
+			row.FirstSeenAt = timestamppb.New(*gw.FirstSeenAt)
 		}
 		if gw.LastSeenAt != nil {
-			row.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
-			if err != nil {
-				return 0, nil, helpers.ErrToRPCError(err)
-			}
+			row.LastSeenAt = timestamppb.New(*gw.LastSeenAt)
 		}
 
 		gwList = append(gwList, &row)
@@ -1047,15 +1023,8 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *api.GetGatewayStatsReque
 		return nil, err
 	}
 
-	start, err := ptypes.Timestamp(req.StartTimestamp)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	end, err := ptypes.Timestamp(req.EndTimestamp)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
+	start := req.StartTimestamp.AsTime()
+	end := req.EndTimestamp.AsTime()
 
 	_, ok := ns.AggregationInterval_value[strings.ToUpper(req.Interval)]
 	if !ok {
@@ -1076,10 +1045,7 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *api.GetGatewayStatsReque
 			TxPacketsEmitted:    int32(m.Metrics["tx_ok_count"]),
 		}
 
-		result[i].Timestamp, err = ptypes.TimestampProto(m.Time)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		result[i].Timestamp = timestamppb.New(m.Time)
 	}
 
 	return &api.GetGatewayStatsResponse{
@@ -1108,10 +1074,7 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *api.GetLastPingReques
 		Dr:        uint32(ping.DR),
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(ping.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(ping.CreatedAt)
 
 	for _, rx := range pingRX {
 		resp.PingRx = append(resp.PingRx, &api.PingRX{

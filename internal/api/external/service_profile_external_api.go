@@ -2,7 +2,7 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"golang.org/x/net/context"
@@ -129,14 +129,8 @@ func (a *ServiceProfileServiceAPI) Get(ctx context.Context, req *pb.GetServicePr
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(sp.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(sp.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(sp.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(sp.UpdatedAt)
 
 	return &resp, nil
 }
@@ -272,14 +266,8 @@ func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListService
 			NetworkServerName: sp.NetworkServerName,
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(sp.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(sp.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		row.CreatedAt = timestamppb.New(sp.CreatedAt)
+		row.UpdatedAt = timestamppb.New(sp.UpdatedAt)
 
 		resp.Result = append(resp.Result, &row)
 	}

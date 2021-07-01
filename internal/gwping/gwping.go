@@ -11,7 +11,6 @@ import (
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -102,10 +101,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 
 			var receivedAt *time.Time
 			if rx.Time != nil {
-				ts, err := ptypes.Timestamp(rx.Time)
-				if err != nil {
-					return err
-				}
+				ts := rx.Time.AsTime()
 				receivedAt = &ts
 			}
 

@@ -2,6 +2,7 @@ package external
 
 import (
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -91,7 +92,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 			}
 		}
 
-		fCnt, err = devmod.EnqueueDownlinkPayload(ctx, handler, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
+		fCnt, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
 		if err != nil {
 			return status.Errorf(codes.Internal, "enqueue downlink payload error: %s", err)
 		}

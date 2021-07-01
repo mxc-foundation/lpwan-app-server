@@ -2,9 +2,9 @@ package mxpapisrv
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/brocaar/lorawan"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -57,7 +57,7 @@ func (a *GatewayM2MAPI) GetGatewayByMac(ctx context.Context, req *pb.GetGatewayB
 	resp.GwProfile.Mac = req.Mac
 	resp.GwProfile.Name = gateway.Name
 	resp.GwProfile.Description = gateway.Description
-	resp.GwProfile.CreatedAt, _ = ptypes.TimestampProto(gateway.CreatedAt)
+	resp.GwProfile.CreatedAt = timestamppb.New(gateway.CreatedAt)
 
 	return &resp, nil
 }

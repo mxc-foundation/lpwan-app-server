@@ -1,12 +1,12 @@
 package external
 
 import (
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
@@ -136,14 +136,8 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 		Version: n.Version,
 	}
 
-	response.CreatedAt, err = ptypes.TimestampProto(n.CreatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
-	response.UpdatedAt, err = ptypes.TimestampProto(n.UpdatedAt)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
+	response.CreatedAt = timestamppb.New(n.CreatedAt)
+	response.UpdatedAt = timestamppb.New(n.UpdatedAt)
 
 	return &response, nil
 }
@@ -258,14 +252,8 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 			Server: ns.Server,
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(ns.CreatedAt)
-		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%s", err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(ns.UpdatedAt)
-		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%s", err)
-		}
+		row.CreatedAt = timestamppb.New(ns.CreatedAt)
+		row.UpdatedAt = timestamppb.New(ns.UpdatedAt)
 
 		resp.Result = append(resp.Result, &row)
 	}

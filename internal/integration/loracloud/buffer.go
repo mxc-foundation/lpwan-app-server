@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 
 	"github.com/brocaar/chirpstack-api/go/v3/gw"
@@ -87,10 +86,7 @@ func GetGeolocBuffer(ctx context.Context, devEUI lorawan.EUI64, ttl time.Duratio
 				break
 			}
 
-			ts, err := ptypes.Timestamp(rxInfo.Time)
-			if err != nil {
-				return nil, errors.Wrap(err, "get timestamp error")
-			}
+			ts := rxInfo.Time.AsTime()
 
 			// Ignore items before TTL as the TTL is set on the key of the buffer,
 			// not on the item.

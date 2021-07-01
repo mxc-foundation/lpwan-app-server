@@ -124,10 +124,8 @@ func jsonv3MarshalUplinkEvent(msg *integration.UplinkEvent) ([]byte, error) {
 		copy(rxInfo.UplinkID[:], msg.RxInfo[i].UplinkId)
 
 		if msg.RxInfo[i].Time != nil {
-			t, err := ptypes.Timestamp(msg.RxInfo[i].Time)
-			if err == nil {
-				rxInfo.Time = &t
-			}
+			t := msg.RxInfo[i].Time.AsTime()
+			rxInfo.Time = &t
 		}
 
 		if msg.RxInfo[i].Location != nil {
