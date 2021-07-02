@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
@@ -21,6 +19,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/loracloud"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mydevices"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
+	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
 	app "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
@@ -29,13 +29,15 @@ import (
 
 // ApplicationAPI exports the Application related functions.
 type ApplicationAPI struct {
-	st *store.Handler
+	st    *store.Handler
+	nsCli *nscli.Client
 }
 
 // NewApplicationAPI creates a new ApplicationAPI.
-func NewApplicationAPI(h *store.Handler) *ApplicationAPI {
+func NewApplicationAPI(h *store.Handler, nsCli *nscli.Client) *ApplicationAPI {
 	return &ApplicationAPI{
-		st: h,
+		st:    h,
+		nsCli: nsCli,
 	}
 }
 
@@ -54,7 +56,7 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	sp, err := spmod.GetServiceProfile(ctx, spID, true)
+	sp, err := spmod.GetServiceProfile(ctx, a.st, spID, a.nsCli, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -129,7 +131,7 @@ func (a *ApplicationAPI) Update(ctx context.Context, req *pb.UpdateApplicationRe
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	sp, err := spmod.GetServiceProfile(ctx, spID, true)
+	sp, err := spmod.GetServiceProfile(ctx, a.st, spID, a.nsCli, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

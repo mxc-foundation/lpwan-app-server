@@ -154,12 +154,17 @@ func DeleteNetworkServer(ctx context.Context, id int64, st *store.Handler, nsCli
 	if err != nil {
 		return fmt.Errorf("failed to get ns client for network server %d: %v", id, err)
 	}
-	// TODO: check whether routing profile is already deleted
-	_, err = nsClient.DeleteRoutingProfile(ctx, &ns.DeleteRoutingProfileRequest{
+
+	_, err = nsClient.GetRoutingProfile(ctx, &ns.GetRoutingProfileRequest{
 		Id: applicationServerID.Bytes(),
 	})
-	if err != nil {
-		return errors.Wrap(err, "delete routing-profile error")
+	if err == nil {
+		_, err = nsClient.DeleteRoutingProfile(ctx, &ns.DeleteRoutingProfileRequest{
+			Id: applicationServerID.Bytes(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "delete routing-profile error")
+		}
 	}
 
 	// delete remote routing profile first, so that user can try again if local change fails to be done
@@ -214,7 +219,7 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 	}
-	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+	if !cred.IsGlobalAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 

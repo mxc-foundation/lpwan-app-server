@@ -203,15 +203,10 @@ func (ps *PgStore) CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) e
 		return errors.Wrap(err, "validate error")
 	}
 
-	dpID, err := uuid.NewV4()
+	dpID, err := uuid.FromBytes(dp.DeviceProfile.Id)
 	if err != nil {
-		return errors.Wrap(err, "new uuid v4 error")
+		return err
 	}
-
-	now := time.Now()
-	dp.DeviceProfile.Id = dpID.Bytes()
-	dp.CreatedAt = now
-	dp.UpdatedAt = now
 
 	_, err = ps.db.ExecContext(ctx, `
         insert into device_profile (

@@ -2,6 +2,7 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -13,7 +14,7 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 
 	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile/data"
@@ -22,13 +23,17 @@ import (
 
 // ServiceProfileServiceAPI export the ServiceProfile related functions.
 type ServiceProfileServiceAPI struct {
-	st *store.Handler
+	st    *store.Handler
+	auth  auth.Authenticator
+	nsCli *nscli.Client
 }
 
 // NewServiceProfileServiceAPI creates a new ServiceProfileServiceAPI.
-func NewServiceProfileServiceAPI(h *store.Handler) *ServiceProfileServiceAPI {
+func NewServiceProfileServiceAPI(h *store.Handler, auth auth.Authenticator, nsCli *nscli.Client) *ServiceProfileServiceAPI {
 	return &ServiceProfileServiceAPI{
-		st: h,
+		st:    h,
+		auth:  auth,
+		nsCli: nsCli,
 	}
 }
 
@@ -37,9 +42,12 @@ func (a *ServiceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateSer
 	if req.ServiceProfile == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "service_profile must not be nil")
 	}
-
-	if valid, err := spmod.NewValidator().ValidateServiceProfilesAccess(ctx, auth.Create, req.ServiceProfile.OrganizationId); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.ServiceProfile.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	sp := ServiceProfile{
@@ -71,7 +79,7 @@ func (a *ServiceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateSer
 
 	// as this also performs a remote call to create the service-profile
 	// on the network-server, wrap it in a transaction
-	if err := spmod.CreateServiceProfile(ctx, &sp); err != nil {
+	if err := spmod.CreateServiceProfile(ctx, a.st, &sp, a.nsCli); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -91,14 +99,16 @@ func (a *ServiceProfileServiceAPI) Get(ctx context.Context, req *pb.GetServicePr
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
-
-	if valid, err := spmod.NewValidator().ValidateServiceProfileAccess(ctx, auth.Read, spID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	sp, err := spmod.GetServiceProfile(ctx, spID, false)
+	sp, err := spmod.GetServiceProfile(ctx, a.st, spID, a.nsCli, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
+	}
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(sp.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp := pb.GetServiceProfileResponse{
@@ -141,16 +151,20 @@ func (a *ServiceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateSer
 		return nil, status.Errorf(codes.InvalidArgument, "service_profile must not be nil")
 	}
 
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
 	spID, err := uuid.FromString(req.ServiceProfile.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
-	if valid, err := spmod.NewValidator().ValidateServiceProfileAccess(ctx, auth.Update, spID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	sp, err := spmod.GetServiceProfile(ctx, spID, false)
+	sp, err := spmod.GetServiceProfile(ctx, a.st, spID, a.nsCli, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -181,7 +195,7 @@ func (a *ServiceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateSer
 
 	// as this also performs a remote call to create the service-profile
 	// on the network-server, wrap it in a transaction
-	if err = spmod.UpdateServiceProfile(ctx, &sp); err != nil {
+	if err = spmod.UpdateServiceProfile(ctx, a.st, a.nsCli, sp); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -195,11 +209,15 @@ func (a *ServiceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteSer
 		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
-	if valid, err := spmod.NewValidator().ValidateServiceProfileAccess(ctx, auth.Delete, spID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	if err = spmod.DeleteServiceProfile(ctx, spID); err != nil {
+	if err = spmod.DeleteServiceProfile(ctx, a.st, a.nsCli, spID); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -208,41 +226,39 @@ func (a *ServiceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteSer
 
 // List lists the available service-profiles.
 func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListServiceProfileRequest) (*pb.ListServiceProfileResponse, error) {
-	if valid, err := spmod.NewValidator().ValidateServiceProfilesAccess(ctx, auth.List, req.OrganizationId); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	user, err := spmod.NewValidator().GetUser(ctx)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
 	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	var count int
 	var sps []ServiceProfileMeta
-
-	if req.OrganizationId == 0 {
-		if user.IsGlobalAdmin {
-			sps, err = a.st.GetServiceProfiles(ctx, int(req.Limit), int(req.Offset))
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
-
-			count, err = a.st.GetServiceProfileCount(ctx)
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
-		} else {
-			sps, err = a.st.GetServiceProfilesForUser(ctx, user.ID, int(req.Limit), int(req.Offset))
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
-
-			count, err = a.st.GetServiceProfileCountForUser(ctx, user.ID)
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
+	if req.OrganizationId == 0 && cred.IsGlobalAdmin {
+		sps, err = a.st.GetServiceProfiles(ctx, int(req.Limit), int(req.Offset))
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
 		}
-	} else {
+
+		count, err = a.st.GetServiceProfileCount(ctx)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+	} else if req.OrganizationId == 0 && cred.IsOrgUser {
+		sps, err = a.st.GetServiceProfilesForUser(ctx, cred.UserID, int(req.Limit), int(req.Offset))
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		count, err = a.st.GetServiceProfileCountForUser(ctx, cred.UserID)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+	}
+
+	if req.OrganizationId != 0 {
 		sps, err = a.st.GetServiceProfilesForOrganizationID(ctx, req.OrganizationId, int(req.Limit), int(req.Offset))
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)

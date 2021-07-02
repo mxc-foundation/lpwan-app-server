@@ -180,9 +180,9 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 
 	pb.RegisterFUOTADeploymentServiceServer(srv.gs, NewFUOTADeploymentAPI(h))
 	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h))
-	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(conf.ApplicationServerID, h))
-	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h))
-	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h))
+	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(conf.ApplicationServerID, h, conf.NSCli))
+	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h, grpcAuth, conf.NSCli))
+	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h, grpcAuth, conf.NSCli))
 	// device
 	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(
 		conf.ApplicationServerID,
@@ -220,7 +220,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	// gateway profile
 	api.RegisterGatewayProfileServiceServer(srv.gs, gp.NewGatewayProfileAPI(h, conf.NSCli, grpcAuth))
 	// application
-	api.RegisterApplicationServiceServer(srv.gs, NewApplicationAPI(h))
+	api.RegisterApplicationServiceServer(srv.gs, NewApplicationAPI(h, conf.NSCli))
 	// network server
 	api.RegisterNetworkServerServiceServer(srv.gs, ns.NewNetworkServerAPI(
 		h,

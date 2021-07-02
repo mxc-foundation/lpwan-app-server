@@ -20,22 +20,26 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	dpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // DeviceProfileServiceAPI exports the ServiceProfile related functions.
 type DeviceProfileServiceAPI struct {
-	st *store.Handler
+	st    *store.Handler
+	auth  auth.Authenticator
+	nsCli *nscli.Client
 }
 
 // NewDeviceProfileServiceAPI creates a new DeviceProfileServiceAPI.
-func NewDeviceProfileServiceAPI(h *store.Handler) *DeviceProfileServiceAPI {
+func NewDeviceProfileServiceAPI(h *store.Handler, auth auth.Authenticator, nsCli *nscli.Client) *DeviceProfileServiceAPI {
 	return &DeviceProfileServiceAPI{
-		st: h,
+		st:    h,
+		auth:  auth,
+		nsCli: nsCli,
 	}
 }
 
@@ -44,12 +48,14 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 	if req.DeviceProfile == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "deviceProfile expected")
 	}
-
-	if valid, err := dpmod.NewValidator().ValidateDeviceProfilesAccess(ctx, auth.Create, req.DeviceProfile.OrganizationId, 0); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.DeviceProfile.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	var err error
 	var uplinkInterval time.Duration
 	if req.DeviceProfile.UplinkInterval != nil {
 		if err := req.DeviceProfile.UplinkInterval.CheckValid(); err != nil {
@@ -98,7 +104,7 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 
 	// as this also performs a remote call to create the device-profile
 	// on the network-server, wrap it in a transaction
-	if err := dpmod.CreateDeviceProfile(ctx, &dp); err != nil {
+	if err := dpmod.CreateDeviceProfile(ctx, a.st, a.nsCli, &dp); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -118,33 +124,23 @@ func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProf
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
-
-	if valid, err := dpmod.NewValidator().ValidateDeviceProfileAccess(ctx, auth.Read, dpID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := a.st.GetNetworkServer(ctx, dp.NetworkServerID)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(dp.OrganizationID))
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	nstruct := nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-
-	nsClient, err := nstruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(dp.NetworkServerID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
-
 	res, err := nsClient.GetDeviceProfile(ctx, &ns.GetDeviceProfileRequest{
 		Id: dpID.Bytes(),
 	})
@@ -210,34 +206,22 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
-
-	if valid, err := dpmod.NewValidator().ValidateDeviceProfileAccess(ctx, auth.Update, dpID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	// As this also performs a remote call to update the device-profile
-	// on the network-server, wrap it in a transaction.
-	// This also locks the local device-profile record in the database.
 	dp, err := a.st.GetDeviceProfile(ctx, dpID, true)
 	if err != nil {
 		return nil, err
 	}
 
-	n, err := a.st.GetNetworkServer(ctx, dp.NetworkServerID)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(dp.OrganizationID))
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	nstruct := nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-
-	nsClient, err := nstruct.GetNetworkServiceClient()
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(dp.NetworkServerID)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	res, err := nsClient.GetDeviceProfile(ctx, &ns.GetDeviceProfileRequest{
@@ -296,7 +280,7 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 		dp.Tags.Map[k] = sql.NullString{Valid: true, String: v}
 	}
 
-	if err := dpmod.UpdateDeviceProfile(ctx, &dp); err != nil {
+	if err := dpmod.UpdateDeviceProfile(ctx, a.st, a.nsCli, &dp); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -309,13 +293,21 @@ func (a *DeviceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteDevi
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
-
-	if valid, err := dpmod.NewValidator().ValidateDeviceProfileAccess(ctx, auth.Delete, dpID); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	dp, err := a.st.GetDeviceProfile(ctx, dpID, true)
+	if err != nil {
+		return nil, err
 	}
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(dp.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
 	// as this also performs a remote call to delete the device-profile
 	// on the network-server, wrap it in a transaction
-	if err := dpmod.DeleteDeviceProfile(ctx, dpID); err != nil {
+	if err := dpmod.DeleteDeviceProfile(ctx, a.st, a.nsCli, dpID); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -324,13 +316,18 @@ func (a *DeviceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteDevi
 
 // List lists the available device-profiles.
 func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDeviceProfileRequest) (*pb.ListDeviceProfileResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
 	if req.ApplicationId != 0 {
-		if valid, err := dpmod.NewValidator().ValidateDeviceProfilesAccess(ctx, auth.List, 0, req.ApplicationId); !valid || err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-		}
-	} else {
-		if valid, err := dpmod.NewValidator().ValidateDeviceProfilesAccess(ctx, auth.List, req.OrganizationId, 0); !valid || err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		_, err := a.st.GetApplicationWithIDAndOrganizationID(ctx, req.ApplicationId, req.OrganizationId)
+		if err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied: %v", err)
 		}
 	}
 
@@ -339,17 +336,6 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		Offset:         int(req.Offset),
 		OrganizationID: req.OrganizationId,
 		ApplicationID:  req.ApplicationId,
-	}
-
-	user, err := dpmod.NewValidator().GetUser(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
-
-	// Filter on user ID when org and app ID are not set and user is not
-	// global admin.
-	if !user.IsGlobalAdmin && filters.OrganizationID == 0 && filters.ApplicationID == 0 {
-		filters.UserID = user.ID
 	}
 
 	count, err := a.st.GetDeviceProfileCount(ctx, filters)

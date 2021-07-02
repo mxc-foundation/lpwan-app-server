@@ -164,12 +164,9 @@ func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayPro
 
 // Get returns the gateway-profile matching the given id.
 func (a *GatewayProfileAPI) Get(ctx context.Context, req *pb.GetGatewayProfileRequest) (*pb.GetGatewayProfileResponse, error) {
-	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
-	}
-	if !cred.IsGlobalAdmin {
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	gpID, err := uuid.FromString(req.Id)
@@ -313,12 +310,9 @@ func (a *GatewayProfileAPI) Delete(ctx context.Context, req *pb.DeleteGatewayPro
 
 // List returns the existing gateway-profiles.
 func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfilesRequest) (*pb.ListGatewayProfilesResponse, error) {
-	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
-	}
-	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	var count int

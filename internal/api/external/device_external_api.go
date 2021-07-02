@@ -282,7 +282,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 		idFilter = true
 
 		// validate that the client has access to the given service-profile
-		if valid, err := serviceprofile.NewValidator().ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
+		if valid, err := serviceprofile.NewValidator(a.st).ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}

@@ -150,16 +150,10 @@ func (ps *PgStore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile)
 		return errors.Wrap(err, "validate error")
 	}
 
-	spID, err := uuid.NewV4()
+	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
 	if err != nil {
-		return errors.Wrap(err, "new uuid v4 error")
+		return err
 	}
-
-	now := time.Now()
-	sp.CreatedAt = now
-	sp.UpdatedAt = now
-	sp.ServiceProfile.Id = spID.Bytes()
-
 	_, err = ps.db.ExecContext(ctx, `
 		insert into service_profile (
 			service_profile_id,

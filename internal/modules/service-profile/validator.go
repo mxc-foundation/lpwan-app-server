@@ -7,45 +7,23 @@ import (
 	"github.com/pkg/errors"
 
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 type Validator struct {
 	Credentials *auth.Credentials
+	st          *store.Handler
 }
 
 type Validate interface {
-	GetUser(ctx context.Context) (auth.User, error)
-	ValidateServiceProfilesAccess(ctx context.Context, flag auth.Flag, organizationID int64) (bool, error)
 	ValidateServiceProfileAccess(ctx context.Context, flag auth.Flag, id uuid.UUID) (bool, error)
 }
 
-func NewValidator() Validate {
+func NewValidator(st *store.Handler) Validate {
 	return &Validator{
 		Credentials: auth.NewCredentials(),
+		st:          st,
 	}
-}
-
-func (v *Validator) GetUser(ctx context.Context) (auth.User, error) {
-	return v.Credentials.GetUser(ctx)
-}
-
-// ValidateServiceProfilesAccess validates if the client has access to the
-// service-profiles.
-func (v *Validator) ValidateServiceProfilesAccess(ctx context.Context, flag auth.Flag, organizationID int64) (bool, error) {
-	u, err := v.Credentials.GetUser(ctx)
-	if err != nil {
-		return false, errors.Wrap(err, "ValidateServiceProfilesAccess")
-	}
-
-	switch flag {
-	case auth.Create:
-		return ctrl.st.CheckCreateServiceProfilesAccess(ctx, u.Email, organizationID, u.ID)
-	case auth.List:
-		return ctrl.st.CheckListServiceProfilesAccess(ctx, u.Email, organizationID, u.ID)
-	default:
-		panic("ValidateServiceProfilesAccess: not supported flag")
-	}
-
 }
 
 // ValidateServiceProfileAccess validates if the client has access to the
@@ -58,9 +36,9 @@ func (v *Validator) ValidateServiceProfileAccess(ctx context.Context, flag auth.
 
 	switch flag {
 	case auth.Read:
-		return ctrl.st.CheckReadServiceProfileAccess(ctx, u.Email, id, u.ID)
+		return v.st.CheckReadServiceProfileAccess(ctx, u.Email, id, u.ID)
 	case auth.Update, auth.Delete:
-		return ctrl.st.CheckUpdateDeleteServiceProfileAccess(ctx, u.Email, id, u.ID)
+		return v.st.CheckUpdateDeleteServiceProfileAccess(ctx, u.Email, id, u.ID)
 	default:
 		panic("ValidateServiceProfileAccess: not supported flag")
 	}

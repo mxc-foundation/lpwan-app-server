@@ -3,6 +3,7 @@ package external
 import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,13 +26,15 @@ import (
 type MulticastGroupAPI struct {
 	st               *store.Handler
 	routingProfileID uuid.UUID
+	nsCli            *nscli.Client
 }
 
 // NewMulticastGroupAPI creates a new multicast-group API.
-func NewMulticastGroupAPI(routingProfileID uuid.UUID, h *store.Handler) *MulticastGroupAPI {
+func NewMulticastGroupAPI(routingProfileID uuid.UUID, h *store.Handler, nsCli *nscli.Client) *MulticastGroupAPI {
 	return &MulticastGroupAPI{
 		st:               h,
 		routingProfileID: routingProfileID,
+		nsCli:            nsCli,
 	}
 }
 
@@ -46,7 +49,7 @@ func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	sp, err := serviceprofile.GetServiceProfile(ctx, spID, true) // local-only, as we only want to fetch the org. id
+	sp, err := serviceprofile.GetServiceProfile(ctx, a.st, spID, a.nsCli, true) // local-only, as we only want to fetch the org. id
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
@@ -239,7 +242,7 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 			return nil, status.Errorf(codes.InvalidArgument, "service_profile_id: %s", err)
 		}
 
-		if valid, err := serviceprofile.NewValidator().ValidateServiceProfileAccess(ctx, auth.Read, filters.ServiceProfileID); !valid || err != nil {
+		if valid, err := serviceprofile.NewValidator(a.st).ValidateServiceProfileAccess(ctx, auth.Read, filters.ServiceProfileID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication error: %s", err)
 		}
 	}
