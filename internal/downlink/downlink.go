@@ -55,8 +55,6 @@ func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) {
 			}(pl)
 		}
 	}()
-
-	return
 }
 
 func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {
