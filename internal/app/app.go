@@ -4,7 +4,6 @@ package app
 
 import (
 	"context"
-
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
-	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
@@ -22,7 +20,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpapisrv"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/shopify"
@@ -158,24 +155,7 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 	}
 	mxpcli.Global = app.mxpCli
 	// network server client (also used by code migration)
-	// get network server list (normally there should be only one network server saved in db)
-	nsList, err := app.pgstore.GetNetworkServers(ctx, nsd.NetworkServerFilters{Limit: 999, Offset: 0})
-	if err != nil {
-		return err
-	}
-	var nscfg []nscli.NetworkServerConfig
-	for _, v := range nsList {
-		nscfg = append(nscfg, nscli.NetworkServerConfig{
-			NetworkServerID: v.ID,
-			ConnOptions: grpccli.ConnectionOpts{
-				Server:  v.Server,
-				CACert:  v.CACert,
-				TLSCert: v.TLSCert,
-				TLSKey:  v.TLSKey,
-			},
-		})
-	}
-	if app.nsCli, err = nscli.Connect(nscfg); err != nil {
+	if err = app.networkServer(ctx, cfg); err != nil {
 		return err
 	}
 	// provisioning server client
@@ -238,7 +218,6 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 	if err != nil {
 		return err
 	}
-	// start bonus distribution service
 	return nil
 }
 

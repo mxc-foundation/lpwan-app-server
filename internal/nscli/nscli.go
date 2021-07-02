@@ -23,21 +23,23 @@ type NetworkServerConfig struct {
 }
 
 // Connect connects to given network server config and add connection to pool
-func Connect(nscfg []NetworkServerConfig) (*Client, error) {
-	var cli Client
-
-	if cli.nsConn == nil {
-		cli.nsConn = make(map[int64]*grpc.ClientConn)
+func (c *Client) Connect(nscfg []NetworkServerConfig) error {
+	if c.nsConn == nil {
+		c.nsConn = make(map[int64]*grpc.ClientConn)
 	}
 
 	for _, v := range nscfg {
+		if c.nsConn[v.NetworkServerID] != nil {
+			// skip if this network server already exists
+			continue
+		}
 		nsConn, err := grpccli.Connect(v.ConnOptions)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't create network server client: %v", err)
+			return fmt.Errorf("couldn't create network server client: %v", err)
 		}
-		cli.nsConn[v.NetworkServerID] = nsConn
+		c.nsConn[v.NetworkServerID] = nsConn
 	}
-	return &cli, nil
+	return nil
 }
 
 // Close closes connection to network server

@@ -71,25 +71,19 @@ func (ps *PgStore) CheckReadListGatewayProfileAccess(ctx context.Context, userna
 // CreateGatewayProfile creates the given gateway-profile.
 // This will create the gateway-profile at the network-server side and will
 // create a local reference record.
-func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error) {
-	gpID, err := uuid.NewV4()
-	if err != nil {
-		return uuid.UUID{}, errors.Wrap(err, "new uuid v4 error")
-	}
-
-	now := time.Now()
-
-	gp.GatewayProfile.Id = gpID.Bytes()
-	gp.CreatedAt = now
-	gp.UpdatedAt = now
-
+func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
 	var statsInterval time.Duration
 	if gp.GatewayProfile.StatsInterval != nil {
 		err := gp.GatewayProfile.StatsInterval.CheckValid()
 		if err != nil {
-			return uuid.UUID{}, errors.Wrap(err, "stats interval error")
+			return errors.Wrap(err, "stats interval error")
 		}
 		statsInterval = gp.GatewayProfile.StatsInterval.AsDuration()
+	}
+
+	gpID, err := uuid.FromBytes(gp.GatewayProfile.Id)
+	if err != nil {
+		return err
 	}
 
 	_, err = ps.db.ExecContext(ctx, `
@@ -110,7 +104,7 @@ func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 		statsInterval,
 	)
 	if err != nil {
-		return uuid.UUID{}, handlePSQLError(Insert, err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -118,7 +112,7 @@ func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("gateway-profile created")
 
-	return gpID, nil
+	return nil
 }
 
 // GetGatewayProfile returns the gateway-profile matching the given id.

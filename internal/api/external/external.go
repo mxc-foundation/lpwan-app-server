@@ -32,7 +32,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/mqttauth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/report"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
@@ -59,23 +61,24 @@ type ExtAPIServer struct {
 
 // ExtAPIConfig defines all attributes for ext api service
 type ExtAPIConfig struct {
-	S                      ExternalAPIStruct
-	ApplicationServerID    uuid.UUID
-	ServerAddr             string
-	BindNewGateway         string
-	BindOldGateway         string
-	Recaptcha              user.RecaptchaConfig
-	Enable2FA              bool
-	ServerRegion           string
-	PasswordHashIterations int
-	EnableSTC              bool
-	ExternalAuth           user.ExternalAuthentication
-	ShopifyConfig          user.Shopify
-	OperatorLogo           string
-	Mailer                 *email.Mailer
-	MXPCli                 *mxpcli.Client
-	PSCli                  *pscli.Client
-	NSCli                  *nscli.Client
+	S                           ExternalAPIStruct
+	ApplicationServerID         uuid.UUID
+	ApplicationServerPublicHost string
+	ServerAddr                  string
+	BindNewGateway              string
+	BindOldGateway              string
+	Recaptcha                   user.RecaptchaConfig
+	Enable2FA                   bool
+	ServerRegion                string
+	PasswordHashIterations      int
+	EnableSTC                   bool
+	ExternalAuth                user.ExternalAuthentication
+	ShopifyConfig               user.Shopify
+	OperatorLogo                string
+	Mailer                      *email.Mailer
+	MXPCli                      *mxpcli.Client
+	PSCli                       *pscli.Client
+	NSCli                       *nscli.Client
 }
 
 // Stop gracefully stops gRPC server
@@ -215,11 +218,17 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	))
 
 	// gateway profile
-	api.RegisterGatewayProfileServiceServer(srv.gs, NewGatewayProfileAPI(h))
+	api.RegisterGatewayProfileServiceServer(srv.gs, gp.NewGatewayProfileAPI(h, conf.NSCli, grpcAuth))
 	// application
 	api.RegisterApplicationServiceServer(srv.gs, NewApplicationAPI(h))
 	// network server
-	api.RegisterNetworkServerServiceServer(srv.gs, NewNetworkServerAPI(h))
+	api.RegisterNetworkServerServiceServer(srv.gs, ns.NewNetworkServerAPI(
+		h,
+		conf.NSCli,
+		grpcAuth,
+		conf.ApplicationServerID,
+		conf.ApplicationServerPublicHost,
+	))
 	// orgnization
 	api.RegisterOrganizationServiceServer(srv.gs, NewOrganizationAPI(h))
 	// user
