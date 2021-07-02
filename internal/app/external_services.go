@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	setdefault "github.com/mxc-foundation/lpwan-app-server/internal/modules/set_default"

@@ -2,11 +2,12 @@ package ns
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 

@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/bonus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
+	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
@@ -131,6 +133,11 @@ func (app *App) Close() error {
 	}
 	if app.shopify != nil {
 		app.shopify.Stop()
+	}
+	for _, v := range app.integrations {
+		if err := v.Close(); err != nil {
+			logrus.Warnf("error shutting down integrations: %v", err)
+		}
 	}
 	return nil
 }
@@ -265,5 +272,6 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
+	downlink.Start(store.NewStore(), app.integrations)
 	return nil
 }
