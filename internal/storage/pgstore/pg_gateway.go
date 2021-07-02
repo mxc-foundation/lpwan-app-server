@@ -17,6 +17,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	mining "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
 // OrganizationCanAccessNetworkServer returns true if the organization has access to the specified network server
@@ -1069,5 +1070,24 @@ func (ps *PgStore) BindResellerToGateway(ctx context.Context, stcOrgID int64, sn
 		return errHandler.ErrDoesNotExist
 	}
 
+	return nil
+}
+
+// UpdateGatewayAttributes updates attributes of gateway updated during processing heart beat,
+//  no need to update whole gateway object every time
+func (ps *PgStore) UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI64,
+	firmware types.MD5SUM, osVersion, statistics string) error {
+	query := `update gateway set firmware_hash = $1, os_version=$2, statistics=$3 where mac=$4`
+	res, err := ps.db.ExecContext(ctx, query, firmware[:], osVersion, statistics, mac[:])
+	if err != nil {
+		return err
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if ra == 0 {
+		return errHandler.ErrDoesNotExist
+	}
 	return nil
 }
