@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 
 	"github.com/sirupsen/logrus"
 
@@ -95,6 +96,11 @@ func (app *App) Close() error {
 	}
 	if app.shopify != nil {
 		app.shopify.Stop()
+	}
+	for _, v := range app.integrations {
+		if err := v.Close(); err != nil {
+			logrus.Warnf("error shutting down integrations: %v", err)
+		}
 	}
 	return nil
 }
@@ -207,5 +213,6 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
+	downlink.Start(store.NewStore(), app.integrations)
 	return nil
 }
