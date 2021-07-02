@@ -3,7 +3,6 @@
 PARENT_PATH=$(dirname $0)
 MXPROTOCOL_SERVER_PATH=$PARENT_PATH/../mxprotocol-server
 CONFIG=$PARENT_PATH/config
-TAG=$(git describe --tags)
 SERVICENAME=appserver
 
 
@@ -27,11 +26,20 @@ fi
 
 build_image()
 {
-  echo "build image with version $TAG"
+  VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
+  echo "build image with version $VERSION"
 
   rm -f out.txt error.txt
   # build image
-  docker-compose -f docker-compose-create-image.yml build $SERVICENAME 2>>error.txt 1>>out.txt|tee
+  DOCKER_HUB_USERNAME=$(cat "./.dockerhub" | awk -F '=' '/docker_hub_username/{print $NF}')
+  DOCKER_HUB_PASSWORD=$(cat "./.dockerhub" | awk -F '=' '/docker_hub_password/{print $NF}')
+  DOCKER_HUB_REPOSITORY="mxcdocker/appserver"
+
+  docker logout
+  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD docker.io
+
+  docker build --pull -t $DOCKER_HUB_REPOSITORY:$VERSION . 2>>error.txt 1>>out.txt|tee
+
   # it error.txt contains error, exit
   ERROR=$(cat error.txt| awk '/^Building /{next}{print "error occurs"; exit}')
   if [ "$ERROR"x = "error occurs"x ]; then
@@ -49,13 +57,11 @@ build_image()
 
   echo "re-login docker.io"
   # push image to docker hub
-  docker logout
-  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD docker.io
 
   echo "docker push image"
-  docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
-  docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
-  docker image rm $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+  docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$VERSION && \
+  docker push $DOCKER_HUB_REPOSITORY:$VERSION && \
+  docker image rm $IMAGE_ID
 
   echo "Build image successfully, rm error.txt"
   # delete error message only when everything is done successfully
@@ -117,26 +123,6 @@ elif [ "$*" = "create_image" ]; then
   if [ -f "/.dockerenv" ]; then
      echo "Command '$0 $*' only runs outside of a docker container, nothing is executed. "
      exit
-  fi
-
-  if ! [ -f "$PARENT_PATH"/docker-compose-create-image.yml ]; then
-     echo "Cannot create docker image, $PARENT_PATH/docker-compose-create-image.yml not exists "
-     exit
-  fi
-
-  if [ -z "$DOCKER_HUB_USERNAME" ]; then
-    read -rp "Insert docker hub username: " USERNAME
-    export DOCKER_HUB_USERNAME=$USERNAME
-  fi
-
-  if [ -z "$DOCKER_HUB_PASSWORD" ]; then
-    read -rp "Insert docker hub password: " PASSWORD
-    export DOCKER_HUB_PASSWORD=$PASSWORD
-  fi
-
-  if [ -z "$DOCKER_HUB_REPOSITORY" ]; then
-    read -rp "Insert docker hub repository: " REPOSITORY
-    export DOCKER_HUB_REPOSITORY=$REPOSITORY
   fi
 
   build_image
