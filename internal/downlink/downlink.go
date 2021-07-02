@@ -25,39 +25,36 @@ type controller struct {
 	gIntegrations []models.IntegrationHandler
 }
 
-// Setup sets up downlink service, starts HandleDataDownPayloads which handles received downlink payloads to be emitted to the
-// devices.
-func Setup(h *store.Handler, gIntegrations []models.IntegrationHandler) {
+// Start starts service which handles received downlink payloads to be emitted to the devices.
+func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) {
 	ctrl := &controller{
 		h:             h,
 		gIntegrations: gIntegrations,
 	}
-	go ctrl.HandleDataDownPayloads()
-}
+	downChan := make(chan models.DataDownPayload)
 
-// HandleDataDownPayloads handles received downlink payloads to be emitted to the
-// devices.
-func (c *controller) HandleDataDownPayloads() {
-	downChan := integration.ForApplicationID(0, c.gIntegrations).DataDownChan()
-	for pl := range downChan {
-		go func(pl models.DataDownPayload) {
-			ctxID, err := uuid.NewV4()
-			if err != nil {
-				log.WithError(err).Error("new uuid error")
-				return
-			}
+	go func() {
+		downChan = integration.ForApplicationID(0, gIntegrations).DataDownChan()
+		for pl := range downChan {
+			go func(pl models.DataDownPayload) {
+				ctxID, err := uuid.NewV4()
+				if err != nil {
+					log.WithError(err).Error("new uuid error")
+					return
+				}
 
-			ctx := context.Background()
-			ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
+				ctx := context.Background()
+				ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-			if err := c.handleDataDownPayload(ctx, pl); err != nil {
-				log.WithFields(log.Fields{
-					"dev_eui":        pl.DevEUI,
-					"application_id": pl.ApplicationID,
-				}).Errorf("handle data-down payload error: %s", err)
-			}
-		}(pl)
-	}
+				if err := ctrl.handleDataDownPayload(ctx, pl); err != nil {
+					log.WithFields(log.Fields{
+						"dev_eui":        pl.DevEUI,
+						"application_id": pl.ApplicationID,
+					}).Errorf("handle data-down payload error: %s", err)
+				}
+			}(pl)
+		}
+	}()
 }
 
 func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {

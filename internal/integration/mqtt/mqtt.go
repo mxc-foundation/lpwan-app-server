@@ -333,7 +333,7 @@ func (i *Integration) getTopic(applicationID uint64, devEUI lorawan.EUI64, event
 	err := i.eventTopicTemplate.Execute(topic, struct {
 		ApplicationID uint64
 		DevEUI        lorawan.EUI64
-		EventType     string
+		Type          string
 	}{applicationID, devEUI, eventType})
 	if err != nil {
 		return "", errors.Wrap(err, "execute template error")
