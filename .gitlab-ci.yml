@@ -36,14 +36,16 @@ variables:
 
 build_image:
   stage: build
-  image: docker:19.03.0
+  image: docker:20.10.7
   before_script:
     - apk add --no-cache ca-certificates make git bash
-  services:
-    - docker:19.03.0-dind
   variables:
-    DOCKER_HOST: tcp://localhost:2375
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  services:
+    - docker:20.10.7-dind
   script:
     - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - echo $CONTAINER_IMAGE
@@ -56,7 +58,8 @@ build_image:
     - /crowdin/
     - /l10n/
   tags:
-    - kubernetes
+    - docker #FIXME! temp solution using shared runners
+    #- kubernetes
 
 tag_gitlab_image:
   stage: release-private
