@@ -50,8 +50,11 @@ func NewDeviceProvisionAPI(st Store, auth auth.Authenticator, applicationID uuid
 // Create - creates the given device.
 func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
 	log.WithFields(log.Fields{
-		"provision_id":   req.ProvisionId,
-		"application_id": req.ApplicationId,
+		"provision_id":      req.ProvisionId,
+		"application_id":    req.ApplicationId,
+		"organization_id":   req.OrganizationId,
+		"device_profile_id": req.DeviceProfileId,
+		"device_name":       req.DeviceName,
 	}).Debugf("ProvisionedDeviceServiceServer.Create() called")
 
 	// first check whether user is an authorized user
@@ -79,7 +82,7 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateReques
 	}
 
 	// get device
-	d, dKeys, err := a.getDeviceAttributes(ctx, req.ProvisionId, req.DeviceProfileId, req.ApplicationId)
+	d, dKeys, err := a.getDeviceAttributes(ctx, req.ProvisionId, req.DeviceProfileId, req.ApplicationId, req.DeviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -104,11 +107,11 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateReques
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	return &api.CreateResponse{}, nil
+	return &api.CreateResponse{DevEui: d.DevEUI.String()}, nil
 }
 
 func (a *ProvisionedDeviceAPI) getDeviceAttributes(ctx context.Context, provisionID,
-	deviceProfileID string, applicationID int64) (*data.Device, *data.DeviceKeys, error) {
+	deviceProfileID string, applicationID int64, deviceName string) (*data.Device, *data.DeviceKeys, error) {
 	respcheck, err := a.psCli.IsDeviceExist(ctx, &psPb.IsDeviceExistRequest{ProvisionId: provisionID})
 	if err != nil {
 		return nil, nil, status.Errorf(codes.Internal, "Failed to check device existence: %v, %v", provisionID, err)
@@ -149,8 +152,8 @@ func (a *ProvisionedDeviceAPI) getDeviceAttributes(ctx context.Context, provisio
 		DevEUI:          devEUI,
 		ApplicationID:   applicationID,
 		DeviceProfileID: dpID,
-		Name:            respdev.Model + "_" + respdev.SerialNumber,
-		Description:     "",
+		Name:            deviceName,
+		Description:     respdev.Model + "_" + respdev.SerialNumber,
 		// attributes for device provisioning only
 		ProvisionID:  provisionID,
 		Model:        respdev.Model,

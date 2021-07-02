@@ -65,11 +65,19 @@
         "deviceProfileId": {
           "type": "string",
           "description": "DeviceProfileID attached to the device."
+        },
+        "deviceName": {
+          "type": "string"
         }
       }
     },
     "extapiCreateResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "devEui": {
+          "type": "string"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",

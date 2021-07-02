@@ -27,7 +27,9 @@ message CreateRequest {
     int64 application_id = 3;
     // DeviceProfileID attached to the device.
     string device_profile_id = 4;
+    string device_name = 5;
 }
 
 message CreateResponse {
+    string dev_eui = 1;
 }
