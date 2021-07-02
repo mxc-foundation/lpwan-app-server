@@ -2,9 +2,11 @@ package ns
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strings"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -48,45 +50,41 @@ func NewNetworkServerAPI(st *store.Handler, nsCli *nscli.Client, auth auth.Authe
 func CreateNetworkServer(ctx context.Context, n *nsd.NetworkServer, st *store.Handler,
 	nsCli *nscli.Client, applicationServerID uuid.UUID, applicationServerPublicHost string) error {
 	// adding new network server connection if not exists yet
-	err := nsCli.Connect([]nscli.NetworkServerConfig{
-		{
-			NetworkServerID: n.ID,
-			ConnOptions: grpccli.ConnectionOpts{
-				Server:  n.Server,
-				CACert:  n.CACert,
-				TLSCert: n.TLSCert,
-				TLSKey:  n.TLSKey,
-			},
-		},
+	conn, err := grpccli.Connect(grpccli.ConnectionOpts{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
 	})
 	if err != nil {
 		return err
 	}
-	nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
-	if err != nil {
-		return fmt.Errorf("failed to get ns client for network server %d: %v", n.ID, err)
-	}
-
+	nsClient := ns.NewNetworkServerServiceClient(conn)
 	// adding application server id of local appserver to network server, this is unique in network server
 	// check whether application server id already exists
 	_, err = nsClient.GetRoutingProfile(ctx, &ns.GetRoutingProfileRequest{
 		Id: applicationServerID.Bytes(),
 	})
-
-	// TODO
-
-	_, err = nsClient.CreateRoutingProfile(ctx, &ns.CreateRoutingProfileRequest{
-		RoutingProfile: &ns.RoutingProfile{
-			Id:      applicationServerID.Bytes(),
-			AsId:    applicationServerPublicHost,
-			CaCert:  n.RoutingProfileCACert,
-			TlsCert: n.RoutingProfileTLSCert,
-			TlsKey:  n.RoutingProfileTLSKey,
-		},
-	})
 	if err != nil {
-		return fmt.Errorf("create routing-profile error: %v", err)
-	}
+		if strings.Contains(err.Error(), "code = NotFound") {
+			// create routing profile if none exists
+			if _, err = nsClient.CreateRoutingProfile(ctx, &ns.CreateRoutingProfileRequest{
+				RoutingProfile: &ns.RoutingProfile{
+					Id:      applicationServerID.Bytes(),
+					AsId:    applicationServerPublicHost,
+					CaCert:  n.RoutingProfileCACert,
+					TlsCert: n.RoutingProfileTLSCert,
+					TlsKey:  n.RoutingProfileTLSKey,
+				},
+			}); err != nil {
+				return err
+			}
+		} else {
+			// unknow error
+			return err
+		}
+	} // do not create routing profile if there is one existing already
+
 	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
 	if err != nil {
 		return err
@@ -99,6 +97,11 @@ func CreateNetworkServer(ctx context.Context, n *nsd.NetworkServer, st *store.Ha
 	// when adding routing profile succeeds, creating network server locally fails, user can try again later
 	if err := st.CreateNetworkServer(ctx, n); err != nil {
 		return err
+	}
+
+	// save network server connection
+	if err = nsCli.Save(n.ID, conn); err != nil {
+		logrus.WithError(err).Warnf("save network server connection error")
 	}
 
 	// create default gatway profile for this network server

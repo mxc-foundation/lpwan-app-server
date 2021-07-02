@@ -23,13 +23,13 @@ type NetworkServerConfig struct {
 }
 
 // Connect connects to given network server config and add connection to pool
-func (c *Client) Connect(nscfg []NetworkServerConfig) error {
-	if c.nsConn == nil {
-		c.nsConn = make(map[int64]*grpc.ClientConn)
+func (cli *Client) Connect(nscfg []NetworkServerConfig) error {
+	if cli.nsConn == nil {
+		cli.nsConn = make(map[int64]*grpc.ClientConn)
 	}
 
 	for _, v := range nscfg {
-		if c.nsConn[v.NetworkServerID] != nil {
+		if cli.nsConn[v.NetworkServerID] != nil {
 			// skip if this network server already exists
 			continue
 		}
@@ -37,7 +37,7 @@ func (c *Client) Connect(nscfg []NetworkServerConfig) error {
 		if err != nil {
 			return fmt.Errorf("couldn't create network server client: %v", err)
 		}
-		c.nsConn[v.NetworkServerID] = nsConn
+		cli.nsConn[v.NetworkServerID] = nsConn
 	}
 	return nil
 }
@@ -50,6 +50,15 @@ func (cli *Client) Close() error {
 		}
 	}
 	return nil
+}
+
+// Save saves new connection
+func (cli *Client) Save(id int64, conn *grpc.ClientConn) error {
+	if cli.nsConn[id] == nil {
+		cli.nsConn[id] = conn
+		return nil
+	}
+	return fmt.Errorf("connection to network server for id=%d already exists", id)
 }
 
 // GetNumberOfNetworkServerClients returns number of network server clients, used for set default network server
