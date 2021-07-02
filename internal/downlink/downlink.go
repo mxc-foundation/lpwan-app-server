@@ -25,13 +25,8 @@ type controller struct {
 	gIntegrations []models.IntegrationHandler
 }
 
-// Server represents downlink service
-type Server struct {
-	downLinkChan chan models.DataDownPayload
-}
-
 // Start starts service which handles received downlink payloads to be emitted to the devices.
-func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) *Server {
+func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) {
 	ctrl := &controller{
 		h:             h,
 		gIntegrations: gIntegrations,
@@ -61,18 +56,7 @@ func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) *Server 
 		}
 	}()
 
-	return &Server{downLinkChan: downChan}
-}
-
-// Stop closes down link channel
-func (s *Server) Stop() {
-	select {
-	case <-s.downLinkChan:
-		return
-	default:
-	}
-	// close a closed channel will cause panic
-	close(s.downLinkChan)
+	return
 }
 
 func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {
