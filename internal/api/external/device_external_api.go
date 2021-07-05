@@ -25,6 +25,8 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
@@ -32,9 +34,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
@@ -91,7 +91,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 
 	// Validate that application and device-profile are under the same
 	// organization ID.
-	app, err := application.GetApplication(ctx, req.Device.ApplicationId)
+	app, err := a.st.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -264,7 +264,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 		idFilter = true
 
 		// validate that the client has access to the given application
-		if valid, err := application.NewValidator().ValidateApplicationAccess(ctx, authcus.Read, req.ApplicationId); !valid || err != nil {
+		if valid, err := application.NewValidator(a.st).ValidateApplicationAccess(ctx, authcus.Read, req.ApplicationId); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1049,7 +1049,7 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListReq
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1111,7 +1111,7 @@ func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDevicePr
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1153,7 +1153,7 @@ func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHist
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1188,7 +1188,7 @@ func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeReq
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}

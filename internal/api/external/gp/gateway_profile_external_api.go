@@ -16,20 +16,66 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	gwpd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+// Modulations
+const (
+	ModulationFSK  = "FSK"
+	ModulationLoRa = "LORA"
+)
+
+// ExtraChannel defines an extra channel for the gateway-profile.
+type ExtraChannel struct {
+	Modulation       string
+	Frequency        int
+	Bandwidth        int
+	Bitrate          int
+	SpreadingFactors []int
+}
+
+// GatewayProfile defines a gateway-profile.
+type GatewayProfile struct {
+	NetworkServerID int64             `db:"network_server_id"`
+	CreatedAt       time.Time         `db:"created_at"`
+	UpdatedAt       time.Time         `db:"updated_at"`
+	Name            string            `db:"name"`
+	GatewayProfile  ns.GatewayProfile `db:"-"`
+}
+
+// GatewayProfileMeta defines the gateway-profile meta record.
+type GatewayProfileMeta struct {
+	GatewayProfileID  uuid.UUID     `db:"gateway_profile_id"`
+	NetworkServerID   int64         `db:"network_server_id"`
+	NetworkServerName string        `db:"network_server_name"`
+	CreatedAt         time.Time     `db:"created_at"`
+	UpdatedAt         time.Time     `db:"updated_at"`
+	Name              string        `db:"name"`
+	StatsInterval     time.Duration `db:"stats_interval"`
+}
 
 // GatewayProfileAPI exports the GatewayProfile related functions.
 type GatewayProfileAPI struct {
-	st    *store.Handler
+	st    Store
 	nsCli *nscli.Client
 	auth  auth.Authenticator
 }
 
+// Store defines db APIs used by this package
+type Store interface {
+	GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error)
+	CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
+	UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
+	GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]GatewayProfileMeta, error)
+	GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error)
+	GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error)
+	GetGatewayProfileCount(ctx context.Context) (int, error)
+	GetNetworkServerIDForGatewayProfileID(ctx context.Context, id uuid.UUID) (int64, error)
+	DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
+}
+
 // NewGatewayProfileAPI creates a new GatewayProfileAPI.
-func NewGatewayProfileAPI(st *store.Handler, nsCli *nscli.Client, auth auth.Authenticator) *GatewayProfileAPI {
+func NewGatewayProfileAPI(st Store, nsCli *nscli.Client, auth auth.Authenticator) *GatewayProfileAPI {
 	return &GatewayProfileAPI{
 		st:    st,
 		nsCli: nsCli,
@@ -38,8 +84,8 @@ func NewGatewayProfileAPI(st *store.Handler, nsCli *nscli.Client, auth auth.Auth
 }
 
 // GetGatewayProfile returns the gateway-profile matching the given id.
-func GetGatewayProfile(ctx context.Context, id uuid.UUID, st *store.Handler, nsCli *nscli.Client) (*gwpd.GatewayProfile, error) {
-	var gp gwpd.GatewayProfile
+func GetGatewayProfile(ctx context.Context, id uuid.UUID, st Store, nsCli *nscli.Client) (*GatewayProfile, error) {
+	var gp GatewayProfile
 	var err error
 	// this function only returns gp.NetworkServerID, gp.CreatedAt, gp.UpdatedAt, gp.Name
 	if gp, err = st.GetGatewayProfile(ctx, id); err != nil {
@@ -65,8 +111,8 @@ func GetGatewayProfile(ctx context.Context, id uuid.UUID, st *store.Handler, nsC
 }
 
 // CreateGatewayProfile creates new gateway profile locally and in network server
-func CreateGatewayProfile(ctx context.Context, st *store.Handler, nsCli *nscli.Client,
-	gp *gwpd.GatewayProfile) (*uuid.UUID, error) {
+func CreateGatewayProfile(ctx context.Context, st Store, nsCli *nscli.Client,
+	gp *GatewayProfile) (*uuid.UUID, error) {
 	var err error
 	gpID, err := uuid.NewV4()
 	if err != nil {
@@ -100,8 +146,8 @@ func CreateGatewayProfile(ctx context.Context, st *store.Handler, nsCli *nscli.C
 
 // UpdateGatewayProfile updates channels, extra channel and statsinternal in network server
 //  updates name, statsinternal in appserver
-func UpdateGatewayProfile(ctx context.Context, st *store.Handler, nsCli *nscli.Client,
-	gp *gwpd.GatewayProfile) error {
+func UpdateGatewayProfile(ctx context.Context, st Store, nsCli *nscli.Client,
+	gp *GatewayProfile) error {
 
 	nsClient, err := nsCli.GetNetworkServerServiceClient(gp.NetworkServerID)
 	if err != nil {
@@ -135,7 +181,7 @@ func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayPro
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	gp := gwpd.GatewayProfile{
+	gp := GatewayProfile{
 		NetworkServerID: req.GatewayProfile.NetworkServerId,
 		Name:            req.GatewayProfile.Name,
 		GatewayProfile: ns.GatewayProfile{
@@ -258,9 +304,9 @@ func (a *GatewayProfileAPI) Update(ctx context.Context, req *pb.UpdateGatewayPro
 }
 
 // DeleteGatewayProfile deletes gateway profile from local server then from network server
-func DeleteGatewayProfile(ctx context.Context, st *store.Handler, gpID uuid.UUID, nsCli *nscli.Client) error {
+func DeleteGatewayProfile(ctx context.Context, st Store, gpID uuid.UUID, nsCli *nscli.Client) error {
 	// get network server before gateway profile gets deleted
-	n, err := st.GetNetworkServerForGatewayProfileID(ctx, gpID)
+	nID, err := st.GetNetworkServerIDForGatewayProfileID(ctx, gpID)
 	if err != nil {
 		return err
 	}
@@ -271,7 +317,7 @@ func DeleteGatewayProfile(ctx context.Context, st *store.Handler, gpID uuid.UUID
 		return err
 	}
 
-	nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
+	nsClient, err := nsCli.GetNetworkServerServiceClient(nID)
 	if err != nil {
 		return err
 	}
@@ -316,7 +362,7 @@ func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfile
 	}
 
 	var count int
-	var gps []gwpd.GatewayProfileMeta
+	var gps []GatewayProfileMeta
 
 	if req.NetworkServerId == 0 {
 		count, err = a.st.GetGatewayProfileCount(ctx)

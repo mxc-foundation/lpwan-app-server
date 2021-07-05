@@ -7,19 +7,18 @@ import (
 	"github.com/pkg/errors"
 
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 type Validator struct {
 	Credentials *auth.Credentials
-	st          *store.Handler
+	st          Store
 }
 
 type Validate interface {
 	ValidateServiceProfileAccess(ctx context.Context, flag auth.Flag, id uuid.UUID) (bool, error)
 }
 
-func NewValidator(st *store.Handler) Validate {
+func NewValidator(st Store) Validate {
 	return &Validator{
 		Credentials: auth.NewCredentials(),
 		st:          st,

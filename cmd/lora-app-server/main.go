@@ -29,12 +29,9 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/set_default"
 )
 
 // grpcLogger implements a wrapper around the logrus Logger to make it

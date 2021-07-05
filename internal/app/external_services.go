@@ -2,18 +2,18 @@ package app
 
 import (
 	"context"
+	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
-	setdefault "github.com/mxc-foundation/lpwan-app-server/internal/modules/set_default"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 func (app *App) networkServer(ctx context.Context, cfg config.Config) error {
 	// get network server list (normally there should be only one network server saved in db)
-	nsList, err := app.pgstore.GetNetworkServers(ctx, nsd.NetworkServerFilters{Limit: 999, Offset: 0})
+	nsList, err := app.pgstore.GetNetworkServers(ctx, ns.NetworkServerFilters{Limit: 999, Offset: 0})
 	if err != nil {
 		return err
 	}
@@ -34,10 +34,16 @@ func (app *App) networkServer(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	// set default networkserver, gateway profile
-	err = setdefault.Setup(ctx, store.NewStore(), app.applicationServerID,
-		cfg.ApplicationServer.API.PublicHost, app.nsCli)
-	if err != nil {
-		return err
+	if 0 == app.nsCli.GetNumberOfNetworkServerClients() {
+		// create default network server
+		if err := ns.CreateNetworkServer(ctx, &ns.NetworkServer{
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			Name:      ns.DefaultNetworkServerName,
+			Server:    ns.DefaultNetworkServerAddress,
+		}, store.NewStore(), app.pgstore, app.nsCli, app.applicationServerID, cfg.ApplicationServer.API.PublicHost); err != nil {
+			return err
+		}
 	}
 	return nil
 }

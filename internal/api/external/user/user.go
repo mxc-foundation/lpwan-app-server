@@ -5,6 +5,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
+
+	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -12,6 +19,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
@@ -76,7 +84,7 @@ type SearchResult struct {
 type Store interface {
 	// ActivateUser creates the organization for the new user, adds the user to
 	// the org and activates the user
-	ActivateUser(ctx context.Context, userID int64, passwordHash, orgName, orgDisplayName string) error
+	ActivateUser(ctx context.Context, userID int64, passwordHash, orgName, orgDisplayName string) (OrganizationUser, error)
 	// CreateUser creates a new user and adds it to all organization listed
 	CreateUser(ctx context.Context, user User, orgUser []OrganizationUser) (User, error)
 	// GetUserByID returns the user with the given ID
@@ -132,7 +140,7 @@ type Store interface {
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
 	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
-
+	GetDefaultNetworkServer(ctx context.Context) (nsd.NetworkServer, error)
 	// ShopifyStore defines db apis for shopify service
 	ShopifyStore
 }
@@ -174,24 +182,33 @@ type Config struct {
 // Server implements Internal User Service
 type Server struct {
 	store    Store
+	orgStore organization.Store
+	spStore  spmod.Store
+	dpStore  dp.Store
 	mailer   Mailer
 	config   Config
 	auth     auth.Authenticator
 	jwtv     *jwt.Validator
 	otpv     *otp.Validator
 	pwhasher *pwhash.PasswordHasher
+	nsCli    *nscli.Client
 }
 
 // NewServer creates a new server instance
-func NewServer(store Store, mailer Mailer, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, pwhasher *pwhash.PasswordHasher, config Config) *Server {
+func NewServer(store Store, orgStore organization.Store, spStore spmod.Store, dpStore dp.Store, mailer Mailer, auth auth.Authenticator,
+	jwtv *jwt.Validator, otpv *otp.Validator, pwhasher *pwhash.PasswordHasher, config Config, nsCli *nscli.Client) *Server {
 	return &Server{
 		store:    store,
+		spStore:  spStore,
+		orgStore: orgStore,
+		dpStore:  dpStore,
 		mailer:   mailer,
 		config:   config,
 		auth:     auth,
 		jwtv:     jwtv,
 		otpv:     otpv,
 		pwhasher: pwhasher,
+		nsCli:    nsCli,
 	}
 }
 

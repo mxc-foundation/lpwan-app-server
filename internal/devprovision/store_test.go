@@ -17,8 +17,8 @@ import (
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/networkserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 )
 
 // Mock for LoRa frame sending

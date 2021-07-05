@@ -2,23 +2,24 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
@@ -228,7 +229,7 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 	if filters.OrganizationID != 0 {
 		idFilter = true
 
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, auth.Read, req.OrganizationId); !valid || err != nil {
+		if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Read, req.OrganizationId); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}

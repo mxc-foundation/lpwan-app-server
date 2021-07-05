@@ -11,9 +11,9 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
 )
 
 func (ps *PgStore) CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {

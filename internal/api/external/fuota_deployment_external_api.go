@@ -225,7 +225,7 @@ func (f *FUOTADeploymentAPI) List(ctx context.Context, req *pb.ListFUOTADeployme
 		filters.ApplicationID = req.ApplicationId
 
 		// validate that the client has access to the given application
-		if valid, err := application.NewValidator().ValidateApplicationAccess(ctx, auth.Read, req.ApplicationId); !valid || err != nil {
+		if valid, err := application.NewValidator(f.st).ValidateApplicationAccess(ctx, auth.Read, req.ApplicationId); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}

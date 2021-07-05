@@ -543,7 +543,9 @@ func (ps *PgStore) createOrganization(ctx context.Context, org user.Organization
 
 // ActivateUser creates the organization for the new user, adds the user to
 // the org and activates the user
-func (ps *PgStore) ActivateUser(ctx context.Context, userID int64, passwordHash, orgName, orgDisplayName string) error {
+func (ps *PgStore) ActivateUser(ctx context.Context, userID int64,
+	passwordHash, orgName, orgDisplayName string) (user.OrganizationUser, error) {
+	var ou user.OrganizationUser
 	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
 		org := user.Organization{
 			Name:            orgName,
@@ -555,10 +557,12 @@ func (ps *PgStore) ActivateUser(ctx context.Context, userID int64, passwordHash,
 		if err != nil {
 			return err
 		}
-		ou := user.OrganizationUser{
-			OrganizationID: org.ID,
-			UserID:         userID,
-			IsOrgAdmin:     true,
+		ou = user.OrganizationUser{
+			OrganizationID:          org.ID,
+			UserID:                  userID,
+			IsOrgAdmin:              true,
+			OrganizationName:        orgName,
+			OrganizationDisplayName: orgDisplayName,
 		}
 		if err := ps.createOrganizationUser(ctx, ou); err != nil {
 			return err
@@ -574,5 +578,5 @@ func (ps *PgStore) ActivateUser(ctx context.Context, userID int64, passwordHash,
 		}
 		return nil
 	})
-	return err
+	return ou, err
 }

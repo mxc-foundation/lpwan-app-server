@@ -18,13 +18,13 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
+	orgd "github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
-	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	devd "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
-	orgd "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
@@ -43,6 +43,8 @@ type Store interface {
 	DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
 	GetApplicationWithIDAndOrganizationID(ctx context.Context, id, orgID int64) (appd.Application, error)
 	GetDeviceProfileWithIDAndOrganizationID(ctx context.Context, id uuid.UUID, orgID int64, forUpdate bool) (dps.DeviceProfile, error)
+	GetDefaultDeviceProfileID(ctx context.Context, orgID, nsID int64, forUpdate bool) (*uuid.UUID, error)
+	GetDefaultNetworkServer(ctx context.Context) (nsd.NetworkServer, error)
 }
 
 // CreateDevice add new device and sync across all relevant servers

@@ -3,6 +3,7 @@ package ns
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -19,27 +20,96 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
-	gpd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+// NetworkServer defines the information to connect to a network-server.
+type NetworkServer struct {
+	ID                          int64     `db:"id"`
+	CreatedAt                   time.Time `db:"created_at"`
+	UpdatedAt                   time.Time `db:"updated_at"`
+	Name                        string    `db:"name"`
+	Server                      string    `db:"server"`
+	CACert                      string    `db:"ca_cert"`
+	TLSCert                     string    `db:"tls_cert"`
+	TLSKey                      string    `db:"tls_key"`
+	RoutingProfileCACert        string    `db:"routing_profile_ca_cert"`
+	RoutingProfileTLSCert       string    `db:"routing_profile_tls_cert"`
+	RoutingProfileTLSKey        string    `db:"routing_profile_tls_key"`
+	GatewayDiscoveryEnabled     bool      `db:"gateway_discovery_enabled"`
+	GatewayDiscoveryInterval    int       `db:"gateway_discovery_interval"`
+	GatewayDiscoveryTXFrequency int       `db:"gateway_discovery_tx_frequency"`
+	GatewayDiscoveryDR          int       `db:"gateway_discovery_dr"`
+	Version                     string    `db:"version"`
+	Region                      string    `db:"region"`
+}
+
+// Validate validates the network-server data.
+func (ns NetworkServer) Validate() error {
+	if strings.TrimSpace(ns.Name) == "" || len(ns.Name) > 100 {
+		return errHandler.ErrNetworkServerInvalidName
+	}
+
+	if ns.GatewayDiscoveryEnabled && ns.GatewayDiscoveryInterval <= 0 {
+		return errHandler.ErrInvalidGatewayDiscoveryInterval
+	}
+	return nil
+}
+
+// NetworkServerFilters provides filters for filtering network-servers.
+type NetworkServerFilters struct {
+	OrganizationID int64 `db:"organization_id"`
+
+	// Limit and Offset are added for convenience so that this struct can
+	// be given as the arguments.
+	Limit  int `db:"limit"`
+	Offset int `db:"offset"`
+}
+
+// SQL returns the SQL filters.
+func (f NetworkServerFilters) SQL() string {
+	var filters []string
+
+	if f.OrganizationID != 0 {
+		filters = append(filters, "sp.organization_id = :organization_id")
+	}
+
+	if len(filters) == 0 {
+		return ""
+	}
+
+	return "where " + strings.Join(filters, " and ")
+}
 
 // NetworkServerAPI exports the NetworkServer related functions.
 type NetworkServerAPI struct {
-	st                          *store.Handler
+	st                          Store
+	gpSt                        gp.Store
 	auth                        auth.Authenticator
 	nsCli                       *nscli.Client
 	applicationServerID         uuid.UUID
 	applicationServerPublicHost string
 }
 
+type Store interface {
+	CreateNetworkServer(ctx context.Context, n *NetworkServer) error
+	UpdateNetworkServer(ctx context.Context, n *NetworkServer) error
+	GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error)
+	GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error)
+	GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error)
+	GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error)
+	GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error)
+	DeleteNetworkServer(ctx context.Context, id int64) error
+}
+
 // NewNetworkServerAPI creates a new NetworkServerAPI.
-func NewNetworkServerAPI(st *store.Handler, nsCli *nscli.Client, auth auth.Authenticator,
+func NewNetworkServerAPI(st Store, gpSt gp.Store, nsCli *nscli.Client, auth auth.Authenticator,
 	applicationServerID uuid.UUID, applicationServerPublicHost string) *NetworkServerAPI {
 	return &NetworkServerAPI{
 		st:                          st,
+		gpSt:                        gpSt,
 		auth:                        auth,
 		nsCli:                       nsCli,
 		applicationServerID:         applicationServerID,
@@ -47,8 +117,23 @@ func NewNetworkServerAPI(st *store.Handler, nsCli *nscli.Client, auth auth.Authe
 	}
 }
 
+// DefaultNetworkServerName defines name of the default network server
+const DefaultNetworkServerName = "default_network_server"
+
+// DefaultNetworkServerAddress defines address of the default network server,
+// this value is unique for the same supernode
+const DefaultNetworkServerAddress = "network-server:8000"
+
+// DefaultGatewayProfileName defines name of the default gateway profile for default network server,
+// this value is unique
+const DefaultGatewayProfileName = "default_gateway_profile"
+
+// DefaultServiceProfileName defines name of the default service profile for default network server with given org id
+// this value is unique: default_service_profile_ORGID
+const DefaultServiceProfileName = "default_service_profile_"
+
 // CreateNetworkServer creates network server config in appserver and network server
-func CreateNetworkServer(ctx context.Context, n *nsd.NetworkServer, st *store.Handler,
+func CreateNetworkServer(ctx context.Context, n *NetworkServer, st Store, gpSt gp.Store,
 	nsCli *nscli.Client, applicationServerID uuid.UUID, applicationServerPublicHost string) error {
 	// adding new network server connection if not exists yet
 	conn, err := grpccli.Connect(grpccli.ConnectionOpts{
@@ -106,14 +191,14 @@ func CreateNetworkServer(ctx context.Context, n *nsd.NetworkServer, st *store.Ha
 	}
 
 	// create default gatway profile for this network server
-	gatewayProfile := gpd.GatewayProfile{
+	gatewayProfile := gp.GatewayProfile{
 		NetworkServerID: n.ID,
-		Name:            "default_gateway_profile",
+		Name:            DefaultGatewayProfileName,
 		GatewayProfile: ns.GatewayProfile{
 			Channels: []uint32{0, 1, 2},
 		},
 	}
-	_, err = gp.CreateGatewayProfile(ctx, st, nsCli, &gatewayProfile)
+	_, err = gp.CreateGatewayProfile(ctx, gpSt, nsCli, &gatewayProfile)
 	if err != nil {
 		return fmt.Errorf("create default gateway profile for network server returns error: %v", err)
 	}
@@ -122,8 +207,8 @@ func CreateNetworkServer(ctx context.Context, n *nsd.NetworkServer, st *store.Ha
 }
 
 // UpdateNetworkServer updates network server config in appserver and network server
-func UpdateNetworkServer(ctx context.Context, n *nsd.NetworkServer,
-	st *store.Handler, nsCli *nscli.Client, applicationServerID uuid.UUID, applicationServerPublicHost string) error {
+func UpdateNetworkServer(ctx context.Context, n *NetworkServer,
+	st Store, nsCli *nscli.Client, applicationServerID uuid.UUID, applicationServerPublicHost string) error {
 	nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get ns client for network server %d: %v", n.ID, err)
@@ -148,7 +233,7 @@ func UpdateNetworkServer(ctx context.Context, n *nsd.NetworkServer,
 }
 
 // DeleteNetworkServer deletes network server config from appserver and network server
-func DeleteNetworkServer(ctx context.Context, id int64, st *store.Handler, nsCli *nscli.Client, applicationServerID uuid.UUID) error {
+func DeleteNetworkServer(ctx context.Context, id int64, st Store, nsCli *nscli.Client, applicationServerID uuid.UUID) error {
 
 	nsClient, err := nsCli.GetNetworkServerServiceClient(id)
 	if err != nil {
@@ -189,7 +274,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	networkServer := nsd.NetworkServer{
+	networkServer := NetworkServer{
 		Name:                        req.NetworkServer.Name,
 		Server:                      req.NetworkServer.Server,
 		CACert:                      req.NetworkServer.CaCert,
@@ -203,7 +288,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		GatewayDiscoveryTXFrequency: int(req.NetworkServer.GatewayDiscoveryTxFrequency),
 		GatewayDiscoveryDR:          int(req.NetworkServer.GatewayDiscoveryDr),
 	}
-	if err := CreateNetworkServer(ctx, &networkServer, a.st, a.nsCli, a.applicationServerID,
+	if err := CreateNetworkServer(ctx, &networkServer, a.st, a.gpSt, a.nsCli, a.applicationServerID,
 		a.applicationServerPublicHost); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -331,15 +416,15 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	}
 
 	var count int
-	var nss []nsd.NetworkServer
+	var nss []NetworkServer
 
 	if req.OrganizationId == 0 {
 		if cred.IsGlobalAdmin {
-			count, err = a.st.GetNetworkServerCount(ctx, nsd.NetworkServerFilters{})
+			count, err = a.st.GetNetworkServerCount(ctx, NetworkServerFilters{})
 			if err != nil {
 				return nil, status.Errorf(codes.Unknown, "%s", err)
 			}
-			nss, err = a.st.GetNetworkServers(ctx, nsd.NetworkServerFilters{
+			nss, err = a.st.GetNetworkServers(ctx, NetworkServerFilters{
 				Limit:  int(req.Limit),
 				Offset: int(req.Offset),
 			})

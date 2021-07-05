@@ -28,6 +28,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/mannr"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
+	nsapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
@@ -35,12 +36,10 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
+	orgs "github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
-
 	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
-	orgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
@@ -155,14 +154,14 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := organization.GetOrganizationCount(ctx, orgs.OrganizationFilters{})
+		count, err := a.st.GetOrganizationCount(ctx, orgs.OrganizationFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		limit := 100
 		for offset := 0; offset <= count/limit; offset += limit {
-			list, err := organization.GetOrganizationIDList(ctx, limit, offset, "")
+			list, err := a.st.GetOrganizationIDList(ctx, limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -1293,7 +1292,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	}
 
 	for _, v := range gpList {
-		if v.Name != "default_gateway_profile" {
+		if v.Name != nsapi.DefaultGatewayProfileName {
 			continue
 		}
 

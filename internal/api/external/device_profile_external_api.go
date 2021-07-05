@@ -19,10 +19,10 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
+	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
+	dpmod "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	dpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )

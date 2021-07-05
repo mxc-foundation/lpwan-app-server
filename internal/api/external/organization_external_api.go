@@ -1,30 +1,32 @@
 package external
 
 import (
-	"github.com/golang/protobuf/ptypes/empty"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-
-	org "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // OrganizationAPI exports the organization related functions.
 type OrganizationAPI struct {
-	st *store.Handler
+	st    *store.Handler
+	nsCli *nscli.Client
 }
 
 // NewOrganizationAPI creates a new OrganizationAPI.
-func NewOrganizationAPI(h *store.Handler) *OrganizationAPI {
+func NewOrganizationAPI(h *store.Handler, nsCli *nscli.Client) *OrganizationAPI {
 	return &OrganizationAPI{
-		st: h,
+		st:    h,
+		nsCli: nsCli,
 	}
 }
 
@@ -34,11 +36,11 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
-	if valid, err := org.NewValidator().ValidateOrganizationsAccess(ctx, auth.Create); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationsAccess(ctx, auth.Create); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	org := Organization{
+	org := organization.Organization{
 		Name:            req.Organization.Name,
 		DisplayName:     req.Organization.DisplayName,
 		CanHaveGateways: req.Organization.CanHaveGateways,
@@ -50,7 +52,8 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 	if err != nil {
 		return nil, err
 	}
-
+	// set all default settings for new organization, this step should not interrupt creating organization
+	organization.ActivateOrganization(ctx, a.st, a.st, a.st, org.ID, a.nsCli)
 	return &pb.CreateOrganizationResponse{
 		Id: org.ID,
 	}, nil
@@ -58,7 +61,7 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 
 // Get returns the organization matching the given ID.
 func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationRequest) (*pb.GetOrganizationResponse, error) {
-	if valid, err := org.NewValidator().ValidateOrganizationAccess(ctx, auth.Read, req.Id); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Read, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -86,17 +89,17 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 
 // List lists the organizations to which the user has access.
 func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequest) (*pb.ListOrganizationResponse, error) {
-	if valid, err := org.NewValidator().ValidateOrganizationsAccess(ctx, auth.List); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationsAccess(ctx, auth.List); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	filters := OrganizationFilters{
+	filters := organization.OrganizationFilters{
 		Search: req.Search,
 		Limit:  int(req.Limit),
 		Offset: int(req.Offset),
 	}
 
-	u, err := org.NewValidator().GetUser(ctx)
+	u, err := organization.NewValidator(a.st).GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -142,11 +145,11 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
-	if valid, err := org.NewValidator().ValidateOrganizationAccess(ctx, auth.Update, req.Organization.Id); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Update, req.Organization.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	u, err := org.NewValidator().GetUser(ctx)
+	u, err := organization.NewValidator(a.st).GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -177,7 +180,7 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 // Delete deletes the organization matching the given ID.
 // Note: this should never happen, when there are still items in the organization, the organization should not be deleted
 func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganizationRequest) (*empty.Empty, error) {
-	if valid, err := org.NewValidator().ValidateOrganizationAccess(ctx, auth.Delete, req.Id); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Delete, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -215,7 +218,7 @@ func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganization
 
 // ListUsers lists the users assigned to the given organization.
 func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizationUsersRequest) (*pb.ListOrganizationUsersResponse, error) {
-	if valid, err := org.NewValidator().ValidateOrganizationUsersAccess(ctx, auth.List, req.OrganizationId); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationUsersAccess(ctx, auth.List, req.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -257,7 +260,7 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 		return nil, status.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
-	if valid, err := org.NewValidator().ValidateOrganizationUsersAccess(ctx, auth.Create, req.OrganizationUser.OrganizationId); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationUsersAccess(ctx, auth.Create, req.OrganizationUser.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -281,7 +284,7 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 		return nil, status.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
-	if valid, err := org.NewValidator().ValidateOrganizationAccess(ctx, auth.Update, req.OrganizationUser.OrganizationId); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Update, req.OrganizationUser.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -301,7 +304,7 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 
 // DeleteUser deletes the given user from the organization.
 func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganizationUserRequest) (*empty.Empty, error) {
-	if valid, err := org.NewValidator().ValidateOrganizationAccess(ctx, auth.Delete, req.OrganizationId); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Delete, req.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -315,7 +318,7 @@ func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganiza
 
 // GetUser returns the user details for the given user ID.
 func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUserRequest) (*pb.GetOrganizationUserResponse, error) {
-	if valid, err := org.NewValidator().ValidateOrganizationAccess(ctx, auth.Read, req.OrganizationId); !valid || err != nil {
+	if valid, err := organization.NewValidator(a.st).ValidateOrganizationAccess(ctx, auth.Read, req.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 

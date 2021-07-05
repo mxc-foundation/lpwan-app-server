@@ -13,15 +13,27 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
+// Store defines the db APIs used by this package
+type Store interface {
+	CreateServiceProfile(ctx context.Context, sp *ServiceProfile) (*uuid.UUID, error)
+	GetServiceProfile(ctx context.Context, id uuid.UUID) (ServiceProfile, error)
+	UpdateServiceProfile(ctx context.Context, sp *ServiceProfile) error
+	GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (nsd.NetworkServer, error)
+	DeleteServiceProfile(ctx context.Context, id uuid.UUID) error
+
+	CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
+	CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
+}
+
 // CreateServiceProfile creates the given service-profile.
-func CreateServiceProfile(ctx context.Context, st *store.Handler, sp *ServiceProfile, nsCli *nscli.Client) error {
+func CreateServiceProfile(ctx context.Context, st Store, sp *ServiceProfile, nsCli *nscli.Client) (*uuid.UUID, error) {
 	spID, err := uuid.NewV4()
 	if err != nil {
-		return errors.Wrap(err, "new uuid v4 error")
+		return nil, errors.Wrap(err, "new uuid v4 error")
 	}
 	now := time.Now()
 	sp.CreatedAt = now
@@ -30,20 +42,20 @@ func CreateServiceProfile(ctx context.Context, st *store.Handler, sp *ServicePro
 
 	nsClient, err := nsCli.GetNetworkServerServiceClient(sp.NetworkServerID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = nsClient.CreateServiceProfile(ctx, &ns.CreateServiceProfileRequest{
 		ServiceProfile: &sp.ServiceProfile,
 	})
 	if err != nil {
-		return errors.Wrap(err, "create service-profile error")
+		return nil, errors.Wrap(err, "create service-profile error")
 	}
 
 	return st.CreateServiceProfile(ctx, sp)
 }
 
 // GetServiceProfile returns the service-profile matching the given id.
-func GetServiceProfile(ctx context.Context, st *store.Handler, id uuid.UUID, nsCli *nscli.Client, localOnly bool) (*ServiceProfile, error) {
+func GetServiceProfile(ctx context.Context, st Store, id uuid.UUID, nsCli *nscli.Client, localOnly bool) (*ServiceProfile, error) {
 	var sp ServiceProfile
 	var err error
 
@@ -77,7 +89,7 @@ func GetServiceProfile(ctx context.Context, st *store.Handler, id uuid.UUID, nsC
 }
 
 // UpdateServiceProfile updates the given service-profile.
-func UpdateServiceProfile(ctx context.Context, st *store.Handler, nsCli *nscli.Client, sp *ServiceProfile) error {
+func UpdateServiceProfile(ctx context.Context, st Store, nsCli *nscli.Client, sp *ServiceProfile) error {
 	nsClient, err := nsCli.GetNetworkServerServiceClient(sp.NetworkServerID)
 	if err != nil {
 		return err
@@ -93,7 +105,7 @@ func UpdateServiceProfile(ctx context.Context, st *store.Handler, nsCli *nscli.C
 }
 
 // DeleteServiceProfile deletes the service-profile matching the given id.
-func DeleteServiceProfile(ctx context.Context, st *store.Handler, nsCli *nscli.Client, id uuid.UUID) error {
+func DeleteServiceProfile(ctx context.Context, st Store, nsCli *nscli.Client, id uuid.UUID) error {
 	n, err := st.GetNetworkServerForServiceProfileID(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")

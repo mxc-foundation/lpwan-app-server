@@ -8,3 +8,9 @@ alter table device
     add column serial_number text;
 alter table device
     add column manufacturer text;
+
+alter table gateway_profile
+    add constraint gateway_profile_name unique (name);
+
+alter table service_profile
+    add constraint service_profile_name unique (name);

@@ -25,9 +25,9 @@ import (
 	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
-	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )

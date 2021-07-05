@@ -12,9 +12,10 @@ import (
 
 	"github.com/brocaar/lorawan"
 
+	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
+	nsapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 )
 
 func (ps *PgStore) CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
@@ -155,7 +156,8 @@ func (ps *PgStore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, use
 // GetDefaultNetworkServer returns the network-server matching the given name.
 func (ps *PgStore) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error) {
 	var n NetworkServer
-	err := sqlx.GetContext(ctx, ps.db, &n, "select * from network_server where name = 'default_network_server'")
+	err := sqlx.GetContext(ctx, ps.db, &n, "select * from network_server where name = $1 and server = $2",
+		nsapi.DefaultNetworkServerName, nsapi.DefaultNetworkServerAddress)
 	if err != nil {
 		return n, errors.Wrap(err, "select error")
 	}
@@ -515,6 +517,27 @@ func (ps *PgStore) GetNetworkServerForGatewayProfileID(ctx context.Context, id u
 		return n, handlePSQLError(Select, err, "select errror")
 	}
 	return n, nil
+}
+
+// GetNetworkServerIDForGatewayProfileID returns the network-server ID for the given
+// gateway-profile id.
+func (ps *PgStore) GetNetworkServerIDForGatewayProfileID(ctx context.Context, id uuid.UUID) (int64, error) {
+	var nID int64
+	err := sqlx.GetContext(ctx, ps.db, &nID, `
+		select
+			ns.id
+		from
+			network_server ns
+		inner join gateway_profile gp
+			on gp.network_server_id = ns.id
+		where
+			gp.gateway_profile_id = $1`,
+		id,
+	)
+	if err != nil {
+		return nID, handlePSQLError(Select, err, "select errror")
+	}
+	return nID, nil
 }
 
 // GetNetworkServerForMulticastGroupID returns the network-server for the given

@@ -61,13 +61,6 @@
           "type": "string",
           "format": "int64",
           "description": "ID of the application to which the device must be added.\nIt is possible to move a device to a different application on update,\ngiven that both the old and the new application share the same\nservice-profile."
-        },
-        "deviceProfileId": {
-          "type": "string",
-          "description": "DeviceProfileID attached to the device."
-        },
-        "deviceName": {
-          "type": "string"
         }
       }
     },

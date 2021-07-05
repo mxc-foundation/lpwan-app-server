@@ -2,7 +2,6 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -18,6 +17,7 @@ import (
 
 	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
@@ -79,12 +79,8 @@ func (a *ServiceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateSer
 
 	// as this also performs a remote call to create the service-profile
 	// on the network-server, wrap it in a transaction
-	if err := spmod.CreateServiceProfile(ctx, a.st, &sp, a.nsCli); err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
-	if err != nil {
+	var spID *uuid.UUID
+	if spID, err = spmod.CreateServiceProfile(ctx, a.st, &sp, a.nsCli); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 

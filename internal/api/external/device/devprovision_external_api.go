@@ -50,11 +50,9 @@ func NewDeviceProvisionAPI(st Store, auth auth.Authenticator, applicationID uuid
 // Create - creates the given device.
 func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
 	log.WithFields(log.Fields{
-		"provision_id":      req.ProvisionId,
-		"application_id":    req.ApplicationId,
-		"organization_id":   req.OrganizationId,
-		"device_profile_id": req.DeviceProfileId,
-		"device_name":       req.DeviceName,
+		"provision_id":    req.ProvisionId,
+		"application_id":  req.ApplicationId,
+		"organization_id": req.OrganizationId,
 	}).Debugf("ProvisionedDeviceServiceServer.Create() called")
 
 	// first check whether user is an authorized user
@@ -72,22 +70,24 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateReques
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	dpID, err := uuid.FromString(req.DeviceProfileId)
+	// get default network server
+	n, err := a.st.GetDefaultNetworkServer(ctx)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, "couldn't get default network server: %v", err)
 	}
-	deviceProfile, err := a.st.GetDeviceProfileWithIDAndOrganizationID(ctx, dpID, req.OrganizationId, false)
+	// get default device profile
+	dpID, err := a.st.GetDefaultDeviceProfileID(ctx, req.OrganizationId, n.ID, false)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, "couldn't get default device profile: %v", err)
 	}
 
 	// get device
-	d, dKeys, err := a.getDeviceAttributes(ctx, req.ProvisionId, req.DeviceProfileId, req.ApplicationId, req.DeviceName)
+	d, dKeys, err := a.getDeviceAttributes(ctx, req.ProvisionId, dpID, req.ApplicationId)
 	if err != nil {
 		return nil, err
 	}
 
-	nsClient, err := a.nsCli.GetNetworkServerServiceClient(deviceProfile.NetworkServerID)
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -110,8 +110,8 @@ func (a *ProvisionedDeviceAPI) Create(ctx context.Context, req *api.CreateReques
 	return &api.CreateResponse{DevEui: d.DevEUI.String()}, nil
 }
 
-func (a *ProvisionedDeviceAPI) getDeviceAttributes(ctx context.Context, provisionID,
-	deviceProfileID string, applicationID int64, deviceName string) (*data.Device, *data.DeviceKeys, error) {
+func (a *ProvisionedDeviceAPI) getDeviceAttributes(ctx context.Context, provisionID string,
+	deviceProfileID *uuid.UUID, applicationID int64) (*data.Device, *data.DeviceKeys, error) {
 	respcheck, err := a.psCli.IsDeviceExist(ctx, &psPb.IsDeviceExistRequest{ProvisionId: provisionID})
 	if err != nil {
 		return nil, nil, status.Errorf(codes.Internal, "Failed to check device existence: %v, %v", provisionID, err)
@@ -142,17 +142,13 @@ func (a *ProvisionedDeviceAPI) getDeviceAttributes(ctx context.Context, provisio
 	if len(respdev.DevEUI) != 8 {
 		return nil, nil, status.Errorf(codes.InvalidArgument, "Invalid DevEUI %v", hex.EncodeToString(respdev.DevEUI))
 	}
-	dpID, err := uuid.FromString(deviceProfileID)
-	if err != nil {
-		return nil, nil, status.Errorf(codes.InvalidArgument, err.Error())
-	}
 
 	// Set Device struct.
 	d := data.Device{
 		DevEUI:          devEUI,
 		ApplicationID:   applicationID,
-		DeviceProfileID: dpID,
-		Name:            deviceName,
+		DeviceProfileID: *deviceProfileID,
+		Name:            respdev.Model + "_" + respdev.SerialNumber,
 		Description:     respdev.Model + "_" + respdev.SerialNumber,
 		// attributes for device provisioning only
 		ProvisionID:  provisionID,

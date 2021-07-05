@@ -25,9 +25,6 @@ message CreateRequest {
     // given that both the old and the new application share the same
     // service-profile.
     int64 application_id = 3;
-    // DeviceProfileID attached to the device.
-    string device_profile_id = 4;
-    string device_name = 5;
 }
 
 message CreateResponse {

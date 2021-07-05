@@ -224,20 +224,24 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	// network server
 	api.RegisterNetworkServerServiceServer(srv.gs, ns.NewNetworkServerAPI(
 		h,
+		pgs,
 		conf.NSCli,
 		grpcAuth,
 		conf.ApplicationServerID,
 		conf.ApplicationServerPublicHost,
 	))
 	// orgnization
-	api.RegisterOrganizationServiceServer(srv.gs, NewOrganizationAPI(h))
+	api.RegisterOrganizationServiceServer(srv.gs, NewOrganizationAPI(h, conf.NSCli))
 	// user
 	pwhasher, err := pwhash.New(16, conf.PasswordHashIterations)
 	if err != nil {
 		return err
 	}
 	userSrv := user.NewServer(
-		pgs,
+		pgs, // user.Store
+		pgs, // org.Store
+		pgs, // sp.Store
+		pgs, // dp.Store
 		conf.Mailer,
 		grpcAuth,
 		jwtValidator,
@@ -251,6 +255,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 			DebugWeChatLogin: conf.ExternalAuth.DebugWechatAuth,
 			ShopifyConfig:    conf.ShopifyConfig,
 		},
+		conf.NSCli,
 	)
 	api.RegisterUserServiceServer(srv.gs, userSrv)
 	api.RegisterInternalServiceServer(srv.gs, userSrv)

@@ -10,9 +10,9 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 )
 
 func (ps *PgStore) CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
@@ -369,6 +369,35 @@ func (ps *PgStore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate
 	}
 
 	return dp, nil
+}
+
+// GetDefaultDeviceProfileID returns the default device profile id with given organization id and network server id
+func (ps *PgStore) GetDefaultDeviceProfileID(ctx context.Context, orgID, nsID int64, forUpdate bool) (*uuid.UUID, error) {
+	var fu string
+	if forUpdate {
+		fu = " for update"
+	}
+
+	var dpID uuid.UUID
+
+	row := ps.db.QueryRowxContext(ctx, `
+		select
+			device_profile_id
+		from device_profile
+		where
+			network_server_id = $1 and organization_id = $2`+fu,
+		nsID, orgID,
+	)
+	if err := row.Err(); err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	err := row.Scan(&dpID)
+	if err != nil {
+		return nil, handlePSQLError(Scan, err, "scan error")
+	}
+
+	return &dpID, nil
 }
 
 // UpdateDeviceProfile updates the given device-profile.
