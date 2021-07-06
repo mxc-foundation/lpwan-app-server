@@ -152,8 +152,12 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 	if err != nil {
 		return err
 	}
+	// network server client (also used by code migration)
+	if err = app.networkServer(ctx, cfg); err != nil {
+		return err
+	}
 	// data migrations
-	err = code.Setup(store.NewStore(), cfg.PostgreSQL.Automigrate)
+	err = code.Setup(store.NewStore(), cfg.PostgreSQL.Automigrate, app.nsCli)
 	if err != nil {
 		return err
 	}
@@ -163,10 +167,6 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 	mxpcli.Global = app.mxpCli
-	// network server client (also used by code migration)
-	if err = app.networkServer(ctx, cfg); err != nil {
-		return err
-	}
 	// provisioning server client
 	app.psCli, err = pscli.Connect(cfg.ProvisionServer)
 	if err != nil {
