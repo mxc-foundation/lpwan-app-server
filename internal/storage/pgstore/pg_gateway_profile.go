@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
+	gpapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
@@ -71,7 +71,7 @@ func (ps *PgStore) CheckReadListGatewayProfileAccess(ctx context.Context, userna
 // CreateGatewayProfile creates the given gateway-profile.
 // This will create the gateway-profile at the network-server side and will
 // create a local reference record.
-func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *gpapi.GatewayProfile) error {
 	var statsInterval time.Duration
 	if gp.GatewayProfile.StatsInterval != nil {
 		err := gp.GatewayProfile.StatsInterval.CheckValid()
@@ -116,8 +116,8 @@ func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 }
 
 // GetGatewayProfile returns the gateway-profile matching the given id.
-func (ps *PgStore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error) {
-	var gp GatewayProfile
+func (ps *PgStore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpapi.GatewayProfile, error) {
+	var gp gpapi.GatewayProfile
 	err := sqlx.GetContext(ctx, ps.db, &gp, `
 		select
 			network_server_id,
@@ -137,7 +137,7 @@ func (ps *PgStore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (Gateway
 }
 
 // UpdateGatewayProfile updates the given gateway-profile.
-func (ps *PgStore) UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+func (ps *PgStore) UpdateGatewayProfile(ctx context.Context, gp *gpapi.GatewayProfile) error {
 	gp.UpdatedAt = time.Now()
 	gpID, err := uuid.FromBytes(gp.GatewayProfile.Id)
 	if err != nil {
@@ -243,8 +243,8 @@ func (ps *PgStore) GetGatewayProfileCountForNetworkServerID(ctx context.Context,
 }
 
 // GetGatewayProfiles returns a slice of gateway-profiles.
-func (ps *PgStore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error) {
-	var gps []GatewayProfileMeta
+func (ps *PgStore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]gpapi.GatewayProfileMeta, error) {
+	var gps []gpapi.GatewayProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
 			gp.*,
@@ -270,8 +270,8 @@ func (ps *PgStore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([
 
 // GetGatewayProfilesForNetworkServerID returns a slice of gateway-profiles
 // for the given network-server ID.
-func (ps *PgStore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]GatewayProfileMeta, error) {
-	var gps []GatewayProfileMeta
+func (ps *PgStore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]gpapi.GatewayProfileMeta, error) {
+	var gps []gpapi.GatewayProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
 			gp.*,

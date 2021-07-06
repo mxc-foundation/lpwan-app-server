@@ -46,8 +46,8 @@ func (o Organization) Validate() error {
 	return nil
 }
 
-// OrganizationUser represents an organization user.
-type OrganizationUser struct {
+// OrgUser represents an organization user.
+type OrgUser struct {
 	UserID         int64     `db:"user_id"`
 	Email          string    `db:"email"`
 	IsAdmin        bool      `db:"is_admin"`
@@ -57,8 +57,8 @@ type OrganizationUser struct {
 	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-// OrganizationFilters provides filters for filtering organizations.
-type OrganizationFilters struct {
+// OrgFilters provides filters for filtering organizations.
+type OrgFilters struct {
 	UserID int64  `db:"user_id"`
 	Search string `db:"search"`
 
@@ -69,7 +69,7 @@ type OrganizationFilters struct {
 }
 
 // SQL returns the SQL filters.
-func (f OrganizationFilters) SQL() string {
+func (f OrgFilters) SQL() string {
 	var filters []string
 
 	if f.UserID != 0 {
@@ -87,11 +87,13 @@ func (f OrganizationFilters) SQL() string {
 	return "where " + strings.Join(filters, " and ")
 }
 
+// Validator defines struct type for vadidating user access to APIs provided by this package
 type Validator struct {
 	Credentials *auth.Credentials
 	st          Store
 }
 
+// Validate defines methods used on struct Validator
 type Validate interface {
 	ValidateOrganizationAccess(ctx context.Context, flag auth.Flag, organizationID int64) (bool, error)
 	ValidateOrganizationsAccess(ctx context.Context, flag auth.Flag) (bool, error)
@@ -99,6 +101,7 @@ type Validate interface {
 	GetUser(ctx context.Context) (auth.User, error)
 }
 
+// NewValidator returns new Validate instance for this package
 func NewValidator(st Store) Validate {
 	return &Validator{
 		Credentials: auth.NewCredentials(),
@@ -106,6 +109,7 @@ func NewValidator(st Store) Validate {
 	}
 }
 
+// GetUser returns user and corresponding attributes after authenticating the user
 func (v *Validator) GetUser(ctx context.Context) (auth.User, error) {
 	return v.Credentials.GetUser(ctx)
 }
@@ -166,6 +170,7 @@ func (v *Validator) ValidateOrganizationUsersAccess(ctx context.Context, flag au
 	}
 }
 
+// Store defines db APIs used by this package
 type Store interface {
 	GetDefaultNetworkServer(ctx context.Context) (nsd.NetworkServer, error)
 	CreateApplication(ctx context.Context, item *appd.Application) error

@@ -12,7 +12,6 @@ import (
 
 	"github.com/brocaar/lorawan"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	nsapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -154,8 +153,8 @@ func (ps *PgStore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, use
 }
 
 // GetDefaultNetworkServer returns the network-server matching the given name.
-func (ps *PgStore) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetDefaultNetworkServer(ctx context.Context) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, "select * from network_server where name = $1 and server = $2",
 		nsapi.DefaultNetworkServerName, nsapi.DefaultNetworkServerAddress)
 	if err != nil {
@@ -166,7 +165,7 @@ func (ps *PgStore) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, 
 }
 
 // CreateNetworkServer creates the given network-server.
-func (ps *PgStore) CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
+func (ps *PgStore) CreateNetworkServer(ctx context.Context, n *nsapi.NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -226,8 +225,8 @@ func (ps *PgStore) CreateNetworkServer(ctx context.Context, n *NetworkServer) er
 }
 
 // GetNetworkServerByRegion returns the network-server matching the given region
-func (ps *PgStore) GetNetworkServerByRegion(ctx context.Context, region string) (NetworkServer, error) {
-	var networkServer NetworkServer
+func (ps *PgStore) GetNetworkServerByRegion(ctx context.Context, region string) (nsapi.NetworkServer, error) {
+	var networkServer nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &networkServer, "select * from network_server where region = $1", region)
 	if err != nil {
 		return networkServer, handlePSQLError(Select, err, "select error")
@@ -237,8 +236,8 @@ func (ps *PgStore) GetNetworkServerByRegion(ctx context.Context, region string) 
 }
 
 // GetNetworkServer returns the network-server matching the given id.
-func (ps *PgStore) GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error) {
-	var networkServer NetworkServer
+func (ps *PgStore) GetNetworkServer(ctx context.Context, id int64) (nsapi.NetworkServer, error) {
+	var networkServer nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &networkServer, "select * from network_server where id = $1", id)
 	if err != nil {
 		return networkServer, handlePSQLError(Select, err, "select error")
@@ -248,7 +247,7 @@ func (ps *PgStore) GetNetworkServer(ctx context.Context, id int64) (NetworkServe
 }
 
 // UpdateNetworkServer updates the given network-server.
-func (ps *PgStore) UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
+func (ps *PgStore) UpdateNetworkServer(ctx context.Context, n *nsapi.NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -334,7 +333,7 @@ func (ps *PgStore) DeleteNetworkServer(ctx context.Context, id int64) error {
 }
 
 // GetNetworkServerCount returns the total number of network-servers.
-func (ps *PgStore) GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error) {
+func (ps *PgStore) GetNetworkServerCount(ctx context.Context, filters nsapi.NetworkServerFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct ns.id)
@@ -380,7 +379,7 @@ func (ps *PgStore) GetNetworkServerCountForOrganizationID(ctx context.Context, o
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func (ps *PgStore) GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error) {
+func (ps *PgStore) GetNetworkServers(ctx context.Context, filters nsapi.NetworkServerFilters) ([]nsapi.NetworkServer, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			distinct ns.*
@@ -397,7 +396,7 @@ func (ps *PgStore) GetNetworkServers(ctx context.Context, filters NetworkServerF
 		return nil, errors.Wrap(err, "named query error")
 	}
 
-	var nss []NetworkServer
+	var nss []nsapi.NetworkServer
 	err = sqlx.SelectContext(ctx, ps.db, &nss, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
@@ -410,8 +409,8 @@ func (ps *PgStore) GetNetworkServers(ctx context.Context, filters NetworkServerF
 // accessible for the given organization id.
 // A network-server is accessible for an organization when it is used by one
 // of its service-profiles.
-func (ps *PgStore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error) {
-	var nss []NetworkServer
+func (ps *PgStore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]nsapi.NetworkServer, error) {
+	var nss []nsapi.NetworkServer
 	err := sqlx.SelectContext(ctx, ps.db, &nss, `
 		select
 			ns.*
@@ -436,8 +435,8 @@ func (ps *PgStore) GetNetworkServersForOrganizationID(ctx context.Context, organ
 }
 
 // GetNetworkServerForDevEUI returns the network-server for the given DevEUI.
-func (ps *PgStore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -459,8 +458,8 @@ func (ps *PgStore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan
 
 // GetNetworkServerForDeviceProfileID returns the network-server for the given
 // device-profile id.
-func (ps *PgStore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -480,8 +479,8 @@ func (ps *PgStore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uu
 
 // GetNetworkServerForGatewayMAC returns the network-server for a given
 // gateway mac.
-func (ps *PgStore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -500,8 +499,8 @@ func (ps *PgStore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawa
 
 // GetNetworkServerForGatewayProfileID returns the network-server for the given
 // gateway-profile id.
-func (ps *PgStore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -542,8 +541,8 @@ func (ps *PgStore) GetNetworkServerIDForGatewayProfileID(ctx context.Context, id
 
 // GetNetworkServerForMulticastGroupID returns the network-server for the given
 // multicast-group id.
-func (ps *PgStore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -564,8 +563,8 @@ func (ps *PgStore) GetNetworkServerForMulticastGroupID(ctx context.Context, id u
 
 // GetNetworkServerForServiceProfileID returns the network-server for the given
 // service-profile id.
-func (ps *PgStore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
-	var n NetworkServer
+func (ps *PgStore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (nsapi.NetworkServer, error) {
+	var n nsapi.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*

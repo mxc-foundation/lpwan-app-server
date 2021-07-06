@@ -91,6 +91,7 @@ func (f DeviceProfileFilters) SQL() string {
 	return "where " + strings.Join(filters, " and ")
 }
 
+// Store defines db APIs used by this package
 type Store interface {
 	CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error
 	UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error

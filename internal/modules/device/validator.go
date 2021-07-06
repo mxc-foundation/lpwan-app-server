@@ -13,11 +13,13 @@ import (
 	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
+// Validator defines struct type for vadidating user access to APIs provided by this package
 type Validator struct {
 	h           *store.Handler
 	Credentials *cred.Credentials
 }
 
+// Validate defines methods used on struct Validator
 type Validate interface {
 	ValidateGlobalNodesAccess(ctx context.Context, flag auth.Flag, applicationID int64) (bool, error)
 	ValidateNodeAccess(ctx context.Context, flag auth.Flag, devEUI lorawan.EUI64) (bool, error)
@@ -27,6 +29,7 @@ type Validate interface {
 	ValidateMulticastGroupAccess(ctx context.Context, flag auth.Flag, multicastGroupID uuid.UUID) (bool, error)
 }
 
+// NewValidator returns new Validate instance for this package
 func NewValidator(h *store.Handler) Validate {
 	return &Validator{
 		h:           h,

@@ -93,7 +93,7 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	filters := organization.OrganizationFilters{
+	filters := organization.OrgFilters{
 		Search: req.Search,
 		Limit:  int(req.Limit),
 		Offset: int(req.Offset),

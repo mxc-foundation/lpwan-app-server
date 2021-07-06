@@ -81,6 +81,7 @@ type SearchResult struct {
 	GatewayName      *string        `db:"gateway_name"`
 }
 
+// Store defines db APIs used by this package
 type Store interface {
 	// ActivateUser creates the organization for the new user, adds the user to
 	// the org and activates the user

@@ -93,6 +93,7 @@ type NetworkServerAPI struct {
 	applicationServerPublicHost string
 }
 
+// Store defines db APIs used by this package
 type Store interface {
 	CreateNetworkServer(ctx context.Context, n *NetworkServer) error
 	UpdateNetworkServer(ctx context.Context, n *NetworkServer) error

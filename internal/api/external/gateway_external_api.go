@@ -154,7 +154,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := a.st.GetOrganizationCount(ctx, orgs.OrganizationFilters{})
+		count, err := a.st.GetOrganizationCount(ctx, orgs.OrgFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}

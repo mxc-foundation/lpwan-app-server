@@ -19,7 +19,7 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
+	dpapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	dpmod "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
@@ -64,7 +64,7 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 		uplinkInterval = req.DeviceProfile.UplinkInterval.AsDuration()
 	}
 
-	dp := DeviceProfile{
+	dp := dpapi.DeviceProfile{
 		OrganizationID:       req.DeviceProfile.OrganizationId,
 		NetworkServerID:      req.DeviceProfile.NetworkServerId,
 		Name:                 req.DeviceProfile.Name,
@@ -331,7 +331,7 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		}
 	}
 
-	filters := DeviceProfileFilters{
+	filters := dpapi.DeviceProfileFilters{
 		Limit:          int(req.Limit),
 		Offset:         int(req.Offset),
 		OrganizationID: req.OrganizationId,
