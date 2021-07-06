@@ -28,6 +28,7 @@ import (
 	dps "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -45,6 +46,7 @@ import (
 // DeviceAPI exports the Node related functions.
 type DeviceAPI struct {
 	st                  *store.Handler
+	auth                auth.Authenticator
 	ApplicationServerID uuid.UUID
 	mxpCli              pb.DSDeviceServiceClient
 	psCli               psPb.DeviceProvisionClient
@@ -80,10 +82,6 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := devmod.NewValidator(a.st).ValidateGlobalNodesAccess(ctx, authcus.Create, req.Device.ApplicationId); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	// if Name is "", set it to the DevEUI
 	if req.Device.Name == "" {
 		req.Device.Name = req.Device.DevEui
@@ -101,6 +99,14 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 	}
 	if app.OrganizationID != dp.OrganizationID {
 		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
+	}
+
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(app.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	// Set Device struct.
@@ -147,13 +153,22 @@ func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.Ge
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := devmod.NewValidator(a.st).ValidateNodeAccess(ctx, authcus.Read, eui); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	d, err := a.st.GetDevice(ctx, eui, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
+	}
+
+	app, err := a.st.GetApplication(ctx, d.ApplicationID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(app.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	n, err := a.st.GetNetworkServerForDevEUI(ctx, d.DevEUI)
@@ -323,10 +338,6 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := devmod.NewValidator(a.st).ValidateNodeAccess(ctx, authcus.Update, devEUI); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	// get device
 	d, err := a.st.GetDevice(ctx, devEUI, true)
 	if err != nil {
@@ -379,6 +390,14 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 	   when device is created, same organization is guaranted to be shared between application and device profile,
 	   so there is no need to check application's organization against device profile again
 	*/
+
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(appOld.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
 
 	// get network server client
 	nsClient, err := a.nsCli.GetNetworkServerServiceClient(dpNew.NetworkServerID)
@@ -445,13 +464,25 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *api.DeleteDeviceRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := devmod.NewValidator(a.st).ValidateNodeAccess(ctx, authcus.Delete, eui); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	dev, err := a.st.GetDevice(ctx, eui, false)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	app, err := a.st.GetApplication(ctx, dev.ApplicationID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(app.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsDeviceAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
-	err := device.DeleteDevice(ctx, a.st, eui, a.mxpCli, a.psCli)
+	err = device.DeleteDevice(ctx, a.st, eui, a.mxpCli, a.psCli, a.nsCli)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
