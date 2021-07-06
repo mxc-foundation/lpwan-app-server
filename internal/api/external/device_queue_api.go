@@ -13,7 +13,8 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
@@ -24,14 +25,16 @@ import (
 // DeviceQueueAPI exposes the downlink queue methods.
 type DeviceQueueAPI struct {
 	st    *store.Handler
+	auth  auth.Authenticator
 	nsCli *nscli.Client
 }
 
 // NewDeviceQueueAPI creates a new DeviceQueueAPI.
-func NewDeviceQueueAPI(h *store.Handler, nsCli *nscli.Client) *DeviceQueueAPI {
+func NewDeviceQueueAPI(h *store.Handler, nsCli *nscli.Client, auth auth.Authenticator) *DeviceQueueAPI {
 	return &DeviceQueueAPI{
 		st:    h,
 		nsCli: nsCli,
+		auth:  auth,
 	}
 }
 
@@ -52,7 +55,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, auth.Create); !valid || err != nil {
+	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, authcus.Create); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -115,7 +118,7 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, auth.Delete); !valid || err != nil {
+	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, authcus.Delete); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -144,13 +147,24 @@ func (d *DeviceQueueAPI) List(ctx context.Context, req *pb.ListDeviceQueueItemsR
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, auth.List); !valid || err != nil {
+	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, authcus.List); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	device, err := d.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
+	}
+	app, err := d.st.GetApplication(ctx, device.ApplicationID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	cred, err := d.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(app.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	n, err := d.st.GetNetworkServerForDevEUI(ctx, devEUI)

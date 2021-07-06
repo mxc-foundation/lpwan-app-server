@@ -24,7 +24,8 @@ import (
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	devd "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	nsportal "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
@@ -108,19 +109,14 @@ func CreateDevice(ctx context.Context, st Store, d *devd.Device, app *appd.Appli
 
 // DeleteDevice deletes device and sync across all relevant servers. Must be called from within transaction
 func DeleteDevice(ctx context.Context, st Store, devEUI lorawan.EUI64, mxpCli pb.DSDeviceServiceClient,
-	psCli psPb.DeviceProvisionClient) error {
+	psCli psPb.DeviceProvisionClient, nsCli *nscli.Client) error {
 	n, err := st.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
-
-	d, err := st.GetDevice(ctx, devEUI, false)
+	nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
-		return err
-	}
-
-	if err := st.DeleteDevice(ctx, devEUI); err != nil {
-		return err
+		return errors.Wrap(err, "get network-server client error")
 	}
 
 	// delete device from m2m server, this procedure should not block delete device from appserver once it's deleted from
@@ -134,24 +130,17 @@ func DeleteDevice(ctx context.Context, st Store, devEUI lorawan.EUI64, mxpCli pb
 	}
 
 	// delete device from networkserver
-	nsStruct := nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nsStruct.GetNetworkServiceClient()
-	if err != nil {
-		return errors.Wrap(err, "get network-server client error")
-	}
-
-	_, err = client.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
+	_, err = nsClient.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
 		DevEui: devEUI[:],
 	})
 	if err != nil && status.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete device error")
 	}
 
+	d, err := st.GetDevice(ctx, devEUI, false)
+	if err != nil {
+		return err
+	}
 	// Set device to no server at PS
 	if d.ProvisionID != "" {
 		log.Debugf("DeleteDevice() Clear server addr for %v at PS", d.ProvisionID)
@@ -161,6 +150,9 @@ func DeleteDevice(ctx context.Context, st Store, devEUI lorawan.EUI64, mxpCli pb
 		}
 	}
 
+	if err := st.DeleteDevice(ctx, devEUI); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -173,7 +165,7 @@ func EnqueueDownlinkPayload(ctx context.Context, st Store, devEUI lorawan.EUI64,
 		return 0, errors.Wrap(err, "get network-server error")
 	}
 
-	nstruct := nscli.NSStruct{
+	nstruct := nsportal.NSStruct{
 		Server:  n.Server,
 		CACert:  n.CACert,
 		TLSCert: n.TLSCert,
