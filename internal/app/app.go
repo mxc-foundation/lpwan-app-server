@@ -60,6 +60,8 @@ type App struct {
 	mailer *email.Mailer
 	// uuid of appserver used by other internal servers to identify appserver
 	applicationServerID uuid.UUID
+	// device provisioning session list
+	devSessionList *devprovision.DeviceSessionList
 }
 
 // Start starts all the routines required for appserver and returns the App
@@ -231,8 +233,13 @@ func (app *App) initInParallel(ctx context.Context, cfg config.Config) error {
 // the gRPC servers
 func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	var err error
+	app.devSessionList, err = devprovision.Start(app.psCli, app.nsCli)
+	if err != nil {
+		return err
+	}
 	// API for network-server
-	if app.nsSrv, err = as.Start(store.NewStore(), cfg.ApplicationServer.API, app.integrations); err != nil {
+	if app.nsSrv, err = as.Start(store.NewStore(), cfg.ApplicationServer.API, app.integrations,
+		app.psCli, app.nsCli, app.devSessionList); err != nil {
 		return err
 	}
 	// API for mxprotocol server
@@ -265,10 +272,6 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	app.newGwSrv, app.oldGwSrv, err = gateway.Start(app.pgstore, cfg.General.ServerAddr,
 		app.psCli, cfg.ApplicationServer.APIForGateway, cfg.ProvisionServer.UpdateSchedule)
 	if err != nil {
-		return err
-	}
-
-	if err := devprovision.Start(app.psCli, app.nsCli); err != nil {
 		return err
 	}
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/jacobsa/crypto/cmac"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	gwV3 "github.com/brocaar/chirpstack-api/go/v3/gw"
@@ -53,7 +53,9 @@ type proprietaryPayload struct {
 	Mic             []byte
 }
 
-type deviceSessionList struct {
+// DeviceSessionList defines a struct maintaining device session information, this data shall be stored in app package
+// on start and shared between as and devprovision packages
+type DeviceSessionList struct {
 	maxNumberOfDevSession  int //5000
 	sessionlist            map[uint64]deviceSession
 	mutexSessionList       sync.RWMutex
@@ -67,10 +69,8 @@ type nsClient interface {
 type controller struct {
 	psCli          psPb.DeviceProvisionClient
 	nsCli          nsClient
-	devSessionList deviceSessionList
+	devSessionList *DeviceSessionList
 }
-
-var ctrl *controller
 
 func (c *controller) sendToNs(networkServerID int64, req *nsPb.SendDelayedProprietaryPayloadRequest) error {
 	nsClient, err := c.nsCli.GetNetworkServerExtraServiceClient(networkServerID)
@@ -86,23 +86,24 @@ func (c *controller) sendToNs(networkServerID int64, req *nsPb.SendDelayedPropri
 }
 
 // Start prepares device provisioning service module
-func Start(psCli *pscli.Client, nsCli *nscli.Client) error {
-	ctrl = &controller{
-		nsCli: nsCli,
-		psCli: psCli.GetDeviceProvisionServiceClient(),
-		devSessionList: deviceSessionList{
-			sessionlist:            make(map[uint64]deviceSession),
-			mutexSessionList:       sync.RWMutex{},
-			maxNumberOfDevSession:  5000,
-			deviceSessionLifeCycle: time.Minute * 5,
-		},
+func Start(psCli *pscli.Client, nsCli *nscli.Client) (*DeviceSessionList, error) {
+	devSessionList := &DeviceSessionList{
+		sessionlist:            make(map[uint64]deviceSession),
+		mutexSessionList:       sync.RWMutex{},
+		maxNumberOfDevSession:  5000,
+		deviceSessionLifeCycle: time.Minute * 5,
+	}
+	ctrl := &controller{
+		nsCli:          nsCli,
+		psCli:          psCli.GetDeviceProvisionServiceClient(),
+		devSessionList: devSessionList,
 	}
 
 	ctrl.devSessionList.clearDeviceSessionList()
 
 	go ctrl.cleanUpLoop()
 
-	return nil
+	return devSessionList, nil
 }
 
 // cleanUpLoop is a never returning function, performing cleanup
@@ -120,19 +121,19 @@ func (c *controller) processMessage(ctx context.Context, nID int64, req *as.Hand
 	messageSize := len(req.MacPayload)
 
 	if (messageType == upMessageHello) && (messageSize == sizeUpMessageHello) {
-		err := ctrl.handleHello(ctx, nID, req, targetgateway)
+		err := c.handleHello(ctx, nID, req, targetgateway)
 		if err != nil {
 			return false, errors.Wrap(err, "process HELLO msg error")
 		}
 		processed = true
 	} else if (messageType == upMessageAuth) && (messageSize == sizeUpMessageAuth) {
-		err := ctrl.handleAuth(ctx, nID, req, targetgateway)
+		err := c.handleAuth(ctx, nID, req, targetgateway)
 		if err != nil {
 			return false, errors.Wrap(err, "process AUTH msg error")
 		}
 		processed = true
 	} else {
-		log.Debug("Unknown Message.")
+		logrus.Debug("Unknown Message.")
 	}
 
 	return processed, nil
@@ -145,12 +146,13 @@ type Store interface {
 }
 
 // HandleReceivedFrame handles a ping received by one or multiple gateways.
-func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkRequest, h Store) (bool, error) {
+func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkRequest, h Store,
+	psCli psPb.DeviceProvisionClient, nsCli nsClient, sessionList *DeviceSessionList) (bool, error) {
 	var mic lorawan.MIC
 	copy(mic[:], req.Mic)
 
-	// log.Debugf("Rx MacPayload:\n%s", hex.Dump(req.MacPayload))
-	// log.Debugf("          MIC: %s", hex.EncodeToString(req.Mic))
+	// logrus.Debugf("Rx MacPayload:\n%s", hex.Dump(req.MacPayload))
+	// logrus.Debugf("          MIC: %s", hex.EncodeToString(req.Mic))
 
 	// Find max RSSI gw
 	var maxRssiRx *gwV3.UplinkRXInfo = nil
@@ -165,7 +167,7 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 		return false, errors.Errorf("No gateway found.")
 	}
 
-	log.Debugf("  MAC:%s, RSSI: %d, Context: %s", hex.EncodeToString(maxRssiRx.GatewayId), maxRssiRx.Rssi,
+	logrus.Debugf("  MAC:%s, RSSI: %d, Context: %s", hex.EncodeToString(maxRssiRx.GatewayId), maxRssiRx.Rssi,
 		hex.EncodeToString(maxRssiRx.Context))
 
 	// Get Gateway
@@ -183,14 +185,20 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 	if err != nil {
 		return false, errors.Wrap(err, "get network-server error")
 	}
-	log.Debugf("  NetworkServer: %s", n.Server)
+	logrus.Debugf("  NetworkServer: %s", n.Server)
 
 	// Check MIC
 	calmic := calProprietaryMic(req.MacPayload)
 	if !bytes.Equal(calmic, req.Mic) {
-		// log.Debugf("MacPayload:\n%s", hex.Dump(req.MacPayload))
-		log.Debugf("Wrong MIC calmic=%s, rxed mic=%s", hex.EncodeToString(calmic), hex.EncodeToString(req.Mic))
+		// logrus.Debugf("MacPayload:\n%s", hex.Dump(req.MacPayload))
+		logrus.Debugf("Wrong MIC calmic=%s, rxed mic=%s", hex.EncodeToString(calmic), hex.EncodeToString(req.Mic))
 		return false, errors.Wrap(err, "Wrong MIC for MacPayload")
+	}
+
+	ctrl := &controller{
+		psCli:          psCli,
+		nsCli:          nsCli,
+		devSessionList: sessionList,
 	}
 	return ctrl.processMessage(ctx, n.ID, req, maxRssiRx)
 }
@@ -229,13 +237,13 @@ func (c *controller) sendProprietary(networkServerID int64, payload proprietaryP
 		Delay:                 payload.Delay,
 		Mic:                   calProprietaryMic(payload.MacPayload),
 	}
-	log.Debugf("  sendProprietary() MIC: %s", hex.EncodeToString(req.Mic))
+	logrus.Debugf("  sendProprietary() MIC: %s", hex.EncodeToString(req.Mic))
 
 	err := c.sendToNs(networkServerID, &req)
 	if err != nil {
 		return errors.Wrap(err, "send proprietary payload error")
 	}
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"gateway_mac": payload.GatewayMAC,
 		"up_freq":     payload.UplinkFreq,
 		"up_bw":       payload.UplinkBandwidth,
@@ -256,7 +264,7 @@ func makeHelloResponse(session deviceSession) []byte {
 
 func (c *controller) handleHello(ctx context.Context, nID int64, req *as.HandleProprietaryUplinkRequest,
 	targetgateway *gwV3.UplinkRXInfo) error {
-	log.Debug("  HELLO Message.")
+	logrus.Debug("  HELLO Message.")
 
 	var err error
 	var frameversion byte
@@ -264,7 +272,7 @@ func (c *controller) handleHello(ctx context.Context, nID int64, req *as.HandleP
 	rdeveui := make([]byte, 8)
 	copy(rdeveui[0:], req.MacPayload[1:])
 	sessionid := binary.BigEndian.Uint64(rdeveui)
-	log.Debugf("  sessionid=%X", sessionid)
+	logrus.Debugf("  sessionid=%X", sessionid)
 	frameversion = req.MacPayload[73]
 
 	ok, currentsession := c.devSessionList.searchDeviceSession(sessionid)
@@ -272,12 +280,13 @@ func (c *controller) handleHello(ctx context.Context, nID int64, req *as.HandleP
 		rdeveui := make([]byte, 8)
 		devicepublickey := make([]byte, ecdh.K233PubKeySize)
 
-		log.Debugf("  Creating new session")
+		logrus.Debugf("  Creating new session")
 		copy(rdeveui[0:], req.MacPayload[1:])
 		copy(devicepublickey[0:], req.MacPayload[9:])
 		ok, currentsession = c.devSessionList.createDeviceSession(sessionid, rdeveui, devicepublickey)
 		if !ok {
 			// Create session failed. drop this frame. return true to mark is processed.
+			logrus.Errorf("create session failed")
 			return nil
 		}
 	}
@@ -288,13 +297,13 @@ func (c *controller) handleHello(ctx context.Context, nID int64, req *as.HandleP
 		return nil
 	}
 
-	log.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
-	log.Debugf("  devicePublicKey: %s", hex.EncodeToString(currentsession.devicePublicKey))
-	log.Debugf("  serverPrivateKey: %s", hex.EncodeToString(currentsession.serverPrivateKey))
-	log.Debugf("  serverPublicKey: %s", hex.EncodeToString(currentsession.serverPublicKey))
-	log.Debugf("  serverNonce: %s", hex.EncodeToString(currentsession.serverNonce))
-	log.Debugf("  sharedKey: %s", hex.EncodeToString(currentsession.sharedKey))
-	log.Debugf("  version: %d", frameversion)
+	logrus.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
+	logrus.Debugf("  devicePublicKey: %s", hex.EncodeToString(currentsession.devicePublicKey))
+	logrus.Debugf("  serverPrivateKey: %s", hex.EncodeToString(currentsession.serverPrivateKey))
+	logrus.Debugf("  serverPublicKey: %s", hex.EncodeToString(currentsession.serverPublicKey))
+	logrus.Debugf("  serverNonce: %s", hex.EncodeToString(currentsession.serverNonce))
+	logrus.Debugf("  sharedKey: %s", hex.EncodeToString(currentsession.sharedKey))
+	logrus.Debugf("  version: %d", frameversion)
 
 	//
 	var mac lorawan.EUI64
@@ -311,7 +320,7 @@ func (c *controller) handleHello(ctx context.Context, nID int64, req *as.HandleP
 		Context:         targetgateway.Context,
 		Mic:             []byte{0x00, 0x00, 0x00, 0x00},
 	}
-	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
+	// logrus.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
 	err = c.sendProprietary(nID, payload)
 	if err != nil {
@@ -343,18 +352,18 @@ func makeAuthReject(session deviceSession) []byte {
 
 func (c *controller) handleAuth(ctx context.Context, nID int64, req *as.HandleProprietaryUplinkRequest,
 	targetgateway *gwV3.UplinkRXInfo) error {
-	log.Debug("  AUTH Message.")
+	logrus.Debug("  AUTH Message.")
 
 	//
 	rdeveui := make([]byte, 8)
 	copy(rdeveui[0:], req.MacPayload[1:])
 	sessionid := binary.BigEndian.Uint64(rdeveui)
-	log.Debugf("  sessionid=%X", sessionid)
+	logrus.Debugf("  sessionid=%X", sessionid)
 
 	//
 	ok, currentsession := c.devSessionList.searchDeviceSession(sessionid)
 	if !ok {
-		log.Debugf("  Auth message without active session. Frame dropped.")
+		logrus.Debugf("  Auth message without active session. Frame dropped.")
 		return nil
 	}
 
@@ -375,27 +384,27 @@ func (c *controller) handleAuth(ctx context.Context, nID int64, req *as.HandlePr
 	copy(verifycode[:], authpayload[32:])
 	copy(currentsession.devNonce[:], authpayload[48:])
 
-	log.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
-	log.Debugf("  devNonce: %s", hex.EncodeToString(currentsession.devNonce))
-	log.Debugf("  privisionidhash: %s", hex.EncodeToString(privisionidhash))
-	log.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
+	logrus.Debugf("  rDevEui: %s", hex.EncodeToString(currentsession.rDevEui))
+	logrus.Debugf("  devNonce: %s", hex.EncodeToString(currentsession.devNonce))
+	logrus.Debugf("  privisionidhash: %s", hex.EncodeToString(privisionidhash))
+	logrus.Debugf("  verifycode: %s", hex.EncodeToString(verifycode))
 
 	authaccepted := true
 	found, deviceinfo := findDeviceBySnHash(ctx, privisionidhash, c.psCli)
 	if !found {
 		return errors.Errorf("Device %s not found.", hex.EncodeToString(privisionidhash))
 	} else if deviceinfo.Status == "DISABLED" {
-		log.Errorf("Device %s disabled.", deviceinfo.ProvisionID)
+		logrus.Errorf("Device %s disabled.", deviceinfo.ProvisionID)
 		authaccepted = false
 	}
-	log.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.ProvisionID, deviceinfo.ManufacturerID, deviceinfo.Server)
-	log.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s",
+	logrus.Debugf("  Device found. %s, mfgID=%d, server=%s", deviceinfo.ProvisionID, deviceinfo.ManufacturerID, deviceinfo.Server)
+	logrus.Debugf("  devEUI=%s, appEUI=%s, appKey=%s, nwkKey=%s",
 		hex.EncodeToString(deviceinfo.DevEUI), hex.EncodeToString(deviceinfo.AppEUI),
 		hex.EncodeToString(deviceinfo.AppKey), hex.EncodeToString(deviceinfo.NwkKey))
-	log.Debugf("  status=%v, model=%v, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI,
+	logrus.Debugf("  status=%v, model=%v, fixedDevEUI=%v, created=%v", deviceinfo.Status, deviceinfo.Model, deviceinfo.FixedDevEUI,
 		deviceinfo.TimeCreated)
 	if deviceinfo.Server != "" {
-		log.Errorf("Device %s registered to %v, provisioning not allowed.", deviceinfo.ProvisionID, deviceinfo.Server)
+		logrus.Errorf("Device %s registered to %v, provisioning not allowed.", deviceinfo.ProvisionID, deviceinfo.Server)
 		authaccepted = false
 	}
 
@@ -437,7 +446,7 @@ func (c *controller) handleAuth(ctx context.Context, nID int64, req *as.HandlePr
 	} else {
 		payload.MacPayload = makeAuthReject(currentsession)
 	}
-	// log.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
+	// logrus.Debugf("Tx MacPayload:\n%s", hex.Dump(payload.MacPayload))
 
 	err := c.sendProprietary(nID, payload)
 	if err != nil {
@@ -448,7 +457,7 @@ func (c *controller) handleAuth(ctx context.Context, nID int64, req *as.HandlePr
 }
 
 // Device session handling
-func (l *deviceSessionList) searchDeviceSession(sessionid uint64) (bool, deviceSession) {
+func (l *DeviceSessionList) searchDeviceSession(sessionid uint64) (bool, deviceSession) {
 	l.mutexSessionList.Lock()
 	currentsession, sessionfound := l.sessionlist[sessionid]
 	l.mutexSessionList.Unlock()
@@ -459,7 +468,7 @@ func (l *deviceSessionList) searchDeviceSession(sessionid uint64) (bool, deviceS
 	return true, currentsession
 }
 
-func (l *deviceSessionList) updateDeviceSession(sessionid uint64, newsession deviceSession) {
+func (l *DeviceSessionList) updateDeviceSession(sessionid uint64, newsession deviceSession) {
 	l.mutexSessionList.Lock()
 	_, sessionfound := l.sessionlist[sessionid]
 	l.mutexSessionList.Unlock()
@@ -469,7 +478,7 @@ func (l *deviceSessionList) updateDeviceSession(sessionid uint64, newsession dev
 	}
 }
 
-func (l *deviceSessionList) checkDeviceSession(sessionid uint64, gwcontext []byte) (bool, deviceSession) {
+func (l *DeviceSessionList) checkDeviceSession(sessionid uint64, gwcontext []byte) (bool, deviceSession) {
 	l.mutexSessionList.Lock()
 	defer l.mutexSessionList.Unlock()
 
@@ -491,12 +500,12 @@ func (l *deviceSessionList) checkDeviceSession(sessionid uint64, gwcontext []byt
 	return true, currentsession
 }
 
-func (l *deviceSessionList) createDeviceSession(sessionid uint64, rdeveui []byte, devicepublickey []byte) (bool, deviceSession) {
+func (l *DeviceSessionList) createDeviceSession(sessionid uint64, rdeveui []byte, devicepublickey []byte) (bool, deviceSession) {
 	l.mutexSessionList.Lock()
 	defer l.mutexSessionList.Unlock()
 
 	if len(l.sessionlist) >= l.maxNumberOfDevSession {
-		log.Warnf("Maximum number (%d) of device provisioning session reached. Request dropped.", l.maxNumberOfDevSession)
+		logrus.Warnf("Maximum number (%d) of device provisioning session reached. Request dropped.", l.maxNumberOfDevSession)
 		return false, deviceSession{}
 	}
 
@@ -505,7 +514,11 @@ func (l *deviceSessionList) createDeviceSession(sessionid uint64, rdeveui []byte
 	copy(currentsession.rDevEui[0:], rdeveui)
 	copy(currentsession.devicePublicKey[0:], devicepublickey)
 
-	currentsession.genServerKeys()
+	err := currentsession.genServerKeys()
+	if err != nil {
+		return false, deviceSession{}
+	}
+
 	currentsession.genSharedKey()
 	currentsession.deriveKeys()
 	l.sessionlist[sessionid] = currentsession
@@ -513,7 +526,7 @@ func (l *deviceSessionList) createDeviceSession(sessionid uint64, rdeveui []byte
 	return true, currentsession
 }
 
-func (l *deviceSessionList) clearExpiredDevSession() {
+func (l *DeviceSessionList) clearExpiredDevSession() {
 	l.mutexSessionList.Lock()
 	now := time.Now()
 	for key, session := range l.sessionlist {
@@ -524,7 +537,7 @@ func (l *deviceSessionList) clearExpiredDevSession() {
 	l.mutexSessionList.Unlock()
 }
 
-func (l *deviceSessionList) clearDeviceSessionList() {
+func (l *DeviceSessionList) clearDeviceSessionList() {
 	l.mutexSessionList.Lock()
 	for k := range l.sessionlist {
 		delete(l.sessionlist, k)

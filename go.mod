@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.56.0 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
-	github.com/apex/log v1.9.0
 	github.com/aws/aws-sdk-go v1.26.3
 	github.com/brocaar/chirpstack-api/go/v3 v3.7.7
 	github.com/brocaar/lorawan v0.0.0-20200726141338-ee070f85d494
@@ -29,6 +28,7 @@ require (
 	github.com/jacobsa/crypto v0.0.0-20190317225127-9f44e2d11115
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/jung-kurt/gofpdf v1.16.2
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lestrrat-go/jwx v1.0.3
 	github.com/lib/pq v1.2.0
 	github.com/mmcloughlin/geohash v0.9.0
@@ -45,6 +45,7 @@ require (
 	github.com/segmentio/kafka-go v0.3.6
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.4.2
+	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -62,6 +63,7 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
 )
 
 // remove when https://github.com/tmc/grpc-websocket-proxy/pull/23 has been merged

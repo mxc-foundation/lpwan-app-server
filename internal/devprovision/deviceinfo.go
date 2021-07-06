@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/apex/log"
+	"github.com/sirupsen/logrus"
 
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 )
@@ -32,7 +32,7 @@ func findDeviceBySnHash(ctx context.Context, provisionIdhash []byte, psCli psPb.
 	resp, err := psCli.GetDeviceByIDHash(ctx, &psPb.GetDeviceByIdHashRequest{
 		ProvisionIdHash: hex.EncodeToString(provisionIdhash)})
 	if err != nil {
-		log.WithError(err).Errorf("Failed to get device, hash: %s", hex.EncodeToString(provisionIdhash))
+		logrus.WithError(err).Errorf("Failed to get device, hash: %s", hex.EncodeToString(provisionIdhash))
 		return false, deviceInfo{}
 	}
 

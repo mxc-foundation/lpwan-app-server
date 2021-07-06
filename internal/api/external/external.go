@@ -179,7 +179,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	authcus.SetupCred(pgs, jwtValidator, otpValidator)
 
 	pb.RegisterFUOTADeploymentServiceServer(srv.gs, NewFUOTADeploymentAPI(h))
-	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h))
+	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h, conf.NSCli))
 	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(conf.ApplicationServerID, h, conf.NSCli))
 	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h, grpcAuth, conf.NSCli))
 	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h, grpcAuth, conf.NSCli))

@@ -53,28 +53,28 @@ func makeDeviceSession(sessionLifecycle time.Duration) deviceSession {
 }
 
 // Gen 128 bytes of random numbers
-func gen128Rand() []byte {
+func gen128Rand() ([]byte, error) {
 	randbuf := make([]byte, 128)
 	_, err := cryptorand.Read(randbuf[:])
 	if err != nil {
-		log.Error("crypto.rand() failed. Fallback to Pseudorandom")
-		// Fallback to Pseudorandom
-		softrand := softRand{}
-		for i := range randbuf {
-			randbuf[i] = uint8(softrand.Get())
-		}
+		return nil, err
 	}
-	return randbuf
+	return randbuf, nil
 }
 
-func (d *deviceSession) genServerKeys() {
-	randbuf := gen128Rand()
+func (d *deviceSession) genServerKeys() error {
+	randbuf, err := gen128Rand()
+	if err != nil {
+		return err
+	}
+
 	privateKey, publickey := d.ecdhK223.GenerateKeys(randbuf)
 	if privateKey != nil {
 		copy(d.serverPrivateKey[:], privateKey[:])
 		copy(d.serverPublicKey[:], publickey[:])
 	}
 	copy(d.serverNonce[0:], randbuf[ecdh.K233PrvKeySize:])
+	return nil
 }
 
 func (d *deviceSession) genSharedKey() {

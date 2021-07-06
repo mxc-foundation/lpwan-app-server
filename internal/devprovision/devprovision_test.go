@@ -112,7 +112,7 @@ func testSetup() (Store, *controller) {
 	testCtrl := &controller{
 		psCli: newTestPsCli(testPsCli{}),
 		nsCli: newTestNsCli(testNsCli{}),
-		devSessionList: deviceSessionList{
+		devSessionList: &DeviceSessionList{
 			sessionlist:            make(map[uint64]deviceSession),
 			mutexSessionList:       sync.RWMutex{},
 			maxNumberOfDevSession:  10,
@@ -124,8 +124,7 @@ func testSetup() (Store, *controller) {
 
 func TestDeviceSessionHandling(t *testing.T) {
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 	// Prepare keys
 	devicepublickey := make([]byte, ecdh.K233PubKeySize)
 	fillByteArray(devicepublickey, 0x01)
@@ -138,7 +137,7 @@ func TestDeviceSessionHandling(t *testing.T) {
 	request.Mic = calProprietaryMic(request.MacPayload)
 
 	// Send 1st frame
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
@@ -150,7 +149,7 @@ func TestDeviceSessionHandling(t *testing.T) {
 	}
 
 	// Send 2nd frame, same rDevEui
-	processed, err = HandleReceivedFrame(ctx, &request, handler)
+	processed, err = HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
@@ -166,7 +165,7 @@ func TestDeviceSessionHandling(t *testing.T) {
 	request.MacPayload = prepareHelloMessage(otherdeveui, devicepublickey)
 	request.Mic = calProprietaryMic(request.MacPayload)
 
-	processed, err = HandleReceivedFrame(ctx, &request, handler)
+	processed, err = HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
@@ -180,8 +179,7 @@ func TestDeviceSessionHandling(t *testing.T) {
 
 func TestDeviceSessionExpire(t *testing.T) {
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 	// Prepare keys
 	devicepublickey := make([]byte, ecdh.K233PubKeySize)
 	fillByteArray(devicepublickey, 0x01)
@@ -201,7 +199,7 @@ func TestDeviceSessionExpire(t *testing.T) {
 		seqdeveui[1] = uint8(i)
 		request.MacPayload = prepareHelloMessage(seqdeveui, devicepublickey)
 		request.Mic = calProprietaryMic(request.MacPayload)
-		_, err := HandleReceivedFrame(ctx, &request, handler)
+		_, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 		if err != nil {
 			t.Fatalf("HandleReceivedFrame failed. %s", err)
 		}
@@ -214,7 +212,7 @@ func TestDeviceSessionExpire(t *testing.T) {
 	// Queue one more
 	request.MacPayload = prepareHelloMessage(rDevEui, devicepublickey)
 	request.Mic = calProprietaryMic(request.MacPayload)
-	_, err := HandleReceivedFrame(ctx, &request, handler)
+	_, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Fatalf("HandleReceivedFrame failed. %s", err)
 	}
@@ -249,8 +247,7 @@ func TestDeviceSessionExpire(t *testing.T) {
 
 func TestHandleReceivedFrameValidHello(t *testing.T) {
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 	// Prepare keys
 	var ecdhK233 ecdh.K233
 	//	var devicepublickey []byte
@@ -278,7 +275,7 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 		// Handle uplink request
 		mockData.request = nil
 		changeGwContext(&request)
-		processed, err := HandleReceivedFrame(ctx, &request, handler)
+		processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 		if err != nil {
 			t.Errorf("HandleReceivedFrame failed. %s", err)
 		}
@@ -347,8 +344,7 @@ func TestHandleReceivedFrameValidHello(t *testing.T) {
 
 func TestHandleReceivedFrameWrongHello(t *testing.T) {
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 	// Wrong MIC
 	devicepublickey := make([]byte, 64)
 	request := as.HandleProprietaryUplinkRequest{
@@ -358,7 +354,7 @@ func TestHandleReceivedFrameWrongHello(t *testing.T) {
 		RxInfo:     mockRxInfo,
 	}
 	changeGwContext(&request)
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -371,7 +367,7 @@ func TestHandleReceivedFrameWrongHello(t *testing.T) {
 	request.Mic = calProprietaryMic(request.MacPayload)
 
 	changeGwContext(&request)
-	processed, err = HandleReceivedFrame(ctx, &request, handler)
+	processed, err = HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -401,8 +397,7 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 		0x2c, 0x7c, 0xa6, 0xa3, 0xcf, 0xe9, 0x31, 0x94, 0x6c, 0xa9, 0x28, 0x00, 0x09, 0xc5, 0xa3, 0xdc}
 
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 	// Create a device sssion
 	mockRandValue = 1
 	session := makeDeviceSession(ctrl.devSessionList.deviceSessionLifeCycle)
@@ -426,7 +421,7 @@ func TestHandleReceivedFrameValidAuth(t *testing.T) {
 	request.Mic = calProprietaryMic(request.MacPayload)
 
 	changeGwContext(&request)
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -493,8 +488,7 @@ func TestHandleReceivedFrameAuthReject(t *testing.T) {
 		0x68, 0xE9, 0xE8, 0xE6, 0xCA, 0xB9, 0xD1, 0xED, 0x91, 0x01, 0x00, 0x00}
 
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 
 	// Create a device sssion
 	mockRandValue = 1
@@ -520,7 +514,7 @@ func TestHandleReceivedFrameAuthReject(t *testing.T) {
 
 	//
 	changeGwContext(&request)
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -583,8 +577,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 		0x68, 0xE9, 0xE8, 0xE6, 0xCA, 0xB9, 0xD1, 0xED, 0x91, 0x01, 0x00, 0x00}
 
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 
 	// Create a device sssion
 	session := makeDeviceSession(ctrl.devSessionList.deviceSessionLifeCycle)
@@ -609,7 +602,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 	// Wrong MIC
 	request.Mic = []byte{0x01, 0x02, 0x03, 0x04}
 	changeGwContext(&request)
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -621,7 +614,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 	request.MacPayload = append(request.MacPayload, []byte{0}...)
 	request.Mic = calProprietaryMic(request.MacPayload)
 	changeGwContext(&request)
-	processed, err = HandleReceivedFrame(ctx, &request, handler)
+	processed, err = HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -633,8 +626,7 @@ func TestHandleReceivedFrameWrongAuth(t *testing.T) {
 
 func TestHandleReceivedFrameUnknownMsg(t *testing.T) {
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 
 	request := as.HandleProprietaryUplinkRequest{
 		MacPayload: []byte{0x00, 0x02, 0x03, 0x04},
@@ -646,7 +638,7 @@ func TestHandleReceivedFrameUnknownMsg(t *testing.T) {
 
 	//
 	changeGwContext(&request)
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err != nil {
 		t.Errorf("HandleReceivedFrame failed. %s", err)
 	}
@@ -657,8 +649,7 @@ func TestHandleReceivedFrameUnknownMsg(t *testing.T) {
 }
 func TestHandleReceivedFrameNoRxInfo(t *testing.T) {
 	ctx := context.Background()
-	var handler Store
-	handler, ctrl = testSetup()
+	handler, ctrl := testSetup()
 
 	rxInfo := []*gwV3.UplinkRXInfo{}
 
@@ -672,7 +663,7 @@ func TestHandleReceivedFrameNoRxInfo(t *testing.T) {
 
 	//
 	changeGwContext(&request)
-	processed, err := HandleReceivedFrame(ctx, &request, handler)
+	processed, err := HandleReceivedFrame(ctx, &request, handler, ctrl.psCli, ctrl.nsCli, ctrl.devSessionList)
 	if err == nil {
 		t.Error("Expected fail but it passed.")
 	}
@@ -691,7 +682,7 @@ func TestDeriveKeys(t *testing.T) {
 	expectednwkkey := []byte{0x5B, 0x87, 0x83, 0xAF, 0x06, 0xFF, 0xB3, 0x62, 0x9D, 0x03, 0x77, 0x9B, 0xF3, 0x4E, 0x12, 0x89}
 	expectedprovkey := []byte{0x29, 0x53, 0x01, 0x98, 0x2D, 0x35, 0xC7, 0x2F, 0x71, 0x42, 0xB9, 0xDD, 0x07, 0xFE, 0x1D, 0xEF}
 
-	_, ctrl = testSetup()
+	_, ctrl := testSetup()
 	session := makeDeviceSession(ctrl.devSessionList.deviceSessionLifeCycle)
 
 	copy(session.rDevEui[:], rDevEui[:])
@@ -723,7 +714,7 @@ func TestEncryptAuthPayload(t *testing.T) {
 		0x7D, 0x28, 0x5E, 0x23, 0x08, 0xF7, 0x77, 0x44, 0xEE, 0x43, 0x33, 0xB9, 0x27, 0x2C, 0xB6, 0x3D,
 		0x6D, 0x38, 0x4E, 0x33}
 
-	_, ctrl = testSetup()
+	_, ctrl := testSetup()
 	session := makeDeviceSession(ctrl.devSessionList.deviceSessionLifeCycle)
 	copy(session.rDevEui[:], rDevEui[:])
 	copy(session.provKey[:], provkey[:])
@@ -763,7 +754,7 @@ func TestCalVerifyCode(t *testing.T) {
 	expectedserveroutput := []byte{0x2E, 0x69, 0xBB, 0x5E, 0xD7, 0x8B, 0x5E, 0xE8, 0x0C, 0x6A, 0x8A, 0xDC, 0x81, 0x91, 0xDD, 0xF8}
 	expecteddeviceoutput := []byte{0xF8, 0x4A, 0xE2, 0x97, 0x9C, 0x56, 0x49, 0x03, 0xB4, 0xFE, 0x7A, 0x93, 0xF1, 0xD6, 0xF8, 0x26}
 
-	_, ctrl = testSetup()
+	_, ctrl := testSetup()
 	session := makeDeviceSession(ctrl.devSessionList.deviceSessionLifeCycle)
 	copy(session.serverNonce[:], servernonce[:])
 	copy(session.devNonce[:], devicenonce[:])

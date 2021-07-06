@@ -7,30 +7,31 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
-
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // DeviceQueueAPI exposes the downlink queue methods.
 type DeviceQueueAPI struct {
-	st *store.Handler
+	st    *store.Handler
+	nsCli *nscli.Client
 }
 
 // NewDeviceQueueAPI creates a new DeviceQueueAPI.
-func NewDeviceQueueAPI(h *store.Handler) *DeviceQueueAPI {
+func NewDeviceQueueAPI(h *store.Handler, nsCli *nscli.Client) *DeviceQueueAPI {
 	return &DeviceQueueAPI{
-		st: h,
+		st:    h,
+		nsCli: nsCli,
 	}
 }
 
@@ -122,19 +123,10 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	// add this device to network server
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-
-	nsClient, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := d.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-
 	_, err = nsClient.FlushDeviceQueueForDevEUI(ctx, &ns.FlushDeviceQueueForDevEUIRequest{
 		DevEui: devEUI[:],
 	})

@@ -7,6 +7,9 @@ import (
 	"math"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
+
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
@@ -31,15 +34,22 @@ import (
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.
 type ApplicationServerAPI struct {
-	st            *store.Handler
-	gIntegrations []models.IntegrationHandler
+	st             *store.Handler
+	gIntegrations  []models.IntegrationHandler
+	psCli          *pscli.Client
+	nsCli          *nscli.Client
+	devSessionList *devprovision.DeviceSessionList
 }
 
 // NewApplicationServerAPI returns a new ApplicationServerAPI.
-func NewApplicationServerAPI(h *store.Handler, gIntegrations []models.IntegrationHandler) *ApplicationServerAPI {
+func NewApplicationServerAPI(h *store.Handler, gIntegrations []models.IntegrationHandler,
+	psCli *pscli.Client, nsCli *nscli.Client, devSessionList *devprovision.DeviceSessionList) *ApplicationServerAPI {
 	return &ApplicationServerAPI{
-		st:            h,
-		gIntegrations: gIntegrations,
+		st:             h,
+		gIntegrations:  gIntegrations,
+		psCli:          psCli,
+		nsCli:          nsCli,
+		devSessionList: devSessionList,
 	}
 }
 
@@ -242,7 +252,8 @@ func (a *ApplicationServerAPI) HandleProprietaryUplink(ctx context.Context, req 
 		return nil, status.Errorf(codes.InvalidArgument, "tx_info must not be nil")
 	}
 
-	processed, errForDev := devprovision.HandleReceivedFrame(ctx, req, a.st)
+	processed, errForDev := devprovision.HandleReceivedFrame(ctx, req, a.st, a.psCli.GetDeviceProvisionServiceClient(),
+		a.nsCli, a.devSessionList)
 	if errForDev != nil {
 		errStr := fmt.Sprintf("handle received proprietary error: %s", errForDev)
 		logrus.Error(errStr)

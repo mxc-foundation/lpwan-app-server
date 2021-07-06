@@ -1,6 +1,9 @@
 package as
 
 import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"net"
 
 	"github.com/pkg/errors"
@@ -22,7 +25,8 @@ type NetworkServerAPIServer struct {
 }
 
 // Start configures the package.
-func Start(h *store.Handler, config AppserverStruct, gIntegrations []models.IntegrationHandler) (*NetworkServerAPIServer, error) {
+func Start(h *store.Handler, config AppserverStruct, gIntegrations []models.IntegrationHandler,
+	psCli *pscli.Client, nsCli *nscli.Client, devSessionList *devprovision.DeviceSessionList) (*NetworkServerAPIServer, error) {
 	log.WithFields(log.Fields{
 		"bind":     config.Bind,
 		"ca_cert":  config.CACert,
@@ -39,7 +43,7 @@ func Start(h *store.Handler, config AppserverStruct, gIntegrations []models.Inte
 		grpcOpts = append(grpcOpts, grpc.Creds(creds))
 	}
 	server := grpc.NewServer(grpcOpts...)
-	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI(h, gIntegrations))
+	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI(h, gIntegrations, psCli, nsCli, devSessionList))
 
 	ln, err := net.Listen("tcp", config.Bind)
 	if err != nil {
