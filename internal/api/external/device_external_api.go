@@ -55,10 +55,11 @@ type DeviceAPI struct {
 
 // NewDeviceAPI creates a new NodeAPI.
 func NewDeviceAPI(applicationID uuid.UUID, h *store.Handler, mxpCli *mxpcli.Client,
-	psCli *pscli.Client, nsCli *nscli.Client) *DeviceAPI {
+	psCli *pscli.Client, nsCli *nscli.Client, auth auth.Authenticator) *DeviceAPI {
 	return &DeviceAPI{
 		st:                  h,
 		ApplicationServerID: applicationID,
+		auth:                auth,
 		mxpCli:              mxpCli.GetM2MDeviceServiceClient(),
 		psCli:               psCli.GetDeviceProvisionServiceClient(),
 		nsCli:               nsCli,

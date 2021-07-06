@@ -13,13 +13,13 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // MigrateGatewayStats imports the gateway stats from the network-server.
-func MigrateGatewayStats(handler *store.Handler) error {
+func MigrateGatewayStats(handler *store.Handler, nsCli *nscli.Client) error {
 	ctx := context.Background()
 	ids, err := handler.GetAllGatewayIDs(ctx)
 	if err != nil {
@@ -27,7 +27,7 @@ func MigrateGatewayStats(handler *store.Handler) error {
 	}
 
 	for _, id := range ids {
-		if err := migrateGatewayStatsForGatewayID(handler, id); err != nil {
+		if err := migrateGatewayStatsForGatewayID(handler, id, nsCli); err != nil {
 			log.WithError(err).WithFields(log.Fields{
 				"gateway_id": id,
 			}).Error("migrate gateway stats error")
@@ -37,7 +37,7 @@ func MigrateGatewayStats(handler *store.Handler) error {
 	return nil
 }
 
-func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.EUI64) error {
+func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.EUI64, nsCli *nscli.Client) error {
 	gw, err := handler.GetGateway(context.Background(), gatewayID, true)
 	if err != nil {
 		return errors.Wrap(err, "get gateway error")
@@ -48,7 +48,7 @@ func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.E
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}

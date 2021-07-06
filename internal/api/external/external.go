@@ -190,6 +190,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 		conf.MXPCli,
 		conf.PSCli,
 		conf.NSCli,
+		grpcAuth,
 	))
 	// gateway
 	api.RegisterGatewayServiceServer(srv.gs, NewGatewayAPI(
