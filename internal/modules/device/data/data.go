@@ -88,6 +88,12 @@ type Device struct {
 	DevAddr                   lorawan.DevAddr   `db:"dev_addr"`
 	AppSKey                   lorawan.AES128Key `db:"app_s_key"`
 	IsDisabled                bool              `db:"-"`
+	// new attributes only requried for device provisioning
+	// all can be null in db
+	ProvisionID  string `db:"provision_id"`
+	Model        string `db:"model"`
+	SerialNumber string `db:"serial_number"`
+	Manufacturer string `db:"manufacturer"`
 }
 
 // DeviceListItem defines the Device as list item.

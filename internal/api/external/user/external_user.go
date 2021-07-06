@@ -227,7 +227,7 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 			}
 		}
 
-		err = a.store.ActivateUser(ctx, u.ID, "", req.OrganizationName, req.OrganizationName)
+		err = a.ActivateUserAndNewOrganization(ctx, u.ID, "", req.OrganizationName, req.OrganizationName)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}

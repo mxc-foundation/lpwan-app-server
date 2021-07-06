@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -65,7 +65,7 @@ func handleAppTimeReq(ctx context.Context, handler *store.Handler, devEUI lorawa
 		return errors.Wrap(err, "marshal command error")
 	}
 
-	_, err = devmod.EnqueueDownlinkPayload(ctx, handler, devEUI, false, uint8(clocksync.DefaultFPort), b)
+	_, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, false, uint8(clocksync.DefaultFPort), b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

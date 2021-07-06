@@ -16,33 +16,38 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/extapi"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dfi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/mqttauth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/report"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
@@ -56,19 +61,24 @@ type ExtAPIServer struct {
 
 // ExtAPIConfig defines all attributes for ext api service
 type ExtAPIConfig struct {
-	S                      ExternalAPIStruct
-	ApplicationServerID    string
-	ServerAddr             string
-	Recaptcha              user.RecaptchaConfig
-	Enable2FA              bool
-	ServerRegion           string
-	PasswordHashIterations int
-	EnableSTC              bool
-	ExternalAuth           user.ExternalAuthentication
-	ShopifyConfig          user.Shopify
-	OperatorLogo           string
-	Mailer                 *email.Mailer
-	MXPCli                 *mxpcli.Client
+	S                           ExternalAPIStruct
+	ApplicationServerID         uuid.UUID
+	ApplicationServerPublicHost string
+	ServerAddr                  string
+	BindNewGateway              string
+	BindOldGateway              string
+	Recaptcha                   user.RecaptchaConfig
+	Enable2FA                   bool
+	ServerRegion                string
+	PasswordHashIterations      int
+	EnableSTC                   bool
+	ExternalAuth                user.ExternalAuthentication
+	ShopifyConfig               user.Shopify
+	OperatorLogo                string
+	Mailer                      *email.Mailer
+	MXPCli                      *mxpcli.Client
+	PSCli                       *pscli.Client
+	NSCli                       *nscli.Client
 }
 
 // Stop gracefully stops gRPC server
@@ -168,49 +178,70 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 	grpcAuth := grpcauth.New(pgs, jwtValidator, otpValidator)
 	authcus.SetupCred(pgs, jwtValidator, otpValidator)
 
-	rpID, err := uuid.FromString(conf.ApplicationServerID)
-	if err != nil {
-		return fmt.Errorf("failed to convert application server id from string to uuid: %v", err)
-	}
-
 	pb.RegisterFUOTADeploymentServiceServer(srv.gs, NewFUOTADeploymentAPI(h))
-	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h))
-	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(rpID, h))
-	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h))
-	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h))
+	pb.RegisterDeviceQueueServiceServer(srv.gs, NewDeviceQueueAPI(h, conf.NSCli))
+	pb.RegisterMulticastGroupServiceServer(srv.gs, NewMulticastGroupAPI(conf.ApplicationServerID, h, conf.NSCli))
+	pb.RegisterServiceProfileServiceServer(srv.gs, NewServiceProfileServiceAPI(h, grpcAuth, conf.NSCli))
+	pb.RegisterDeviceProfileServiceServer(srv.gs, NewDeviceProfileServiceAPI(h, grpcAuth, conf.NSCli))
 	// device
-	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(rpID, h))
+	api.RegisterDeviceServiceServer(srv.gs, NewDeviceAPI(
+		conf.ApplicationServerID,
+		h,
+		conf.MXPCli,
+		conf.PSCli,
+		conf.NSCli,
+	))
 	// gateway
-	psCli, err := pscli.GetPServerClient()
-	if err != nil {
-		return err
-	}
 	api.RegisterGatewayServiceServer(srv.gs, NewGatewayAPI(
 		h.PgStore,
 		grpcAuth,
 		GwConfig{
-			ApplicationServerID: rpID,
+			ApplicationServerID: conf.ApplicationServerID,
 			ServerAddr:          conf.ServerAddr,
 			EnableSTC:           conf.EnableSTC,
 		},
-		psCli,
+		conf.PSCli,
+		conf.MXPCli,
+		conf.ServerAddr,
+		conf.BindOldGateway,
+		conf.BindNewGateway,
+	))
+	// device provision
+	api.RegisterDeviceProvisioningServiceServer(srv.gs, device.NewDeviceProvisionAPI(
+		h,
+		grpcAuth,
+		conf.ApplicationServerID,
+		conf.ServerAddr,
+		conf.PSCli,
+		conf.MXPCli,
+		conf.NSCli,
 	))
 
 	// gateway profile
-	api.RegisterGatewayProfileServiceServer(srv.gs, NewGatewayProfileAPI(h))
+	api.RegisterGatewayProfileServiceServer(srv.gs, gp.NewGatewayProfileAPI(h, conf.NSCli, grpcAuth))
 	// application
-	api.RegisterApplicationServiceServer(srv.gs, NewApplicationAPI(h))
+	api.RegisterApplicationServiceServer(srv.gs, NewApplicationAPI(h, conf.NSCli))
 	// network server
-	api.RegisterNetworkServerServiceServer(srv.gs, NewNetworkServerAPI(h))
+	api.RegisterNetworkServerServiceServer(srv.gs, ns.NewNetworkServerAPI(
+		h,
+		pgs,
+		conf.NSCli,
+		grpcAuth,
+		conf.ApplicationServerID,
+		conf.ApplicationServerPublicHost,
+	))
 	// orgnization
-	api.RegisterOrganizationServiceServer(srv.gs, NewOrganizationAPI(h))
+	api.RegisterOrganizationServiceServer(srv.gs, NewOrganizationAPI(h, conf.NSCli))
 	// user
 	pwhasher, err := pwhash.New(16, conf.PasswordHashIterations)
 	if err != nil {
 		return err
 	}
 	userSrv := user.NewServer(
-		pgs,
+		pgs, // user.Store
+		pgs, // org.Store
+		pgs, // sp.Store
+		pgs, // dp.Store
 		conf.Mailer,
 		grpcAuth,
 		jwtValidator,
@@ -224,6 +255,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 			DebugWeChatLogin: conf.ExternalAuth.DebugWechatAuth,
 			ShopifyConfig:    conf.ShopifyConfig,
 		},
+		conf.NSCli,
 	)
 	api.RegisterUserServiceServer(srv.gs, userSrv)
 	api.RegisterInternalServiceServer(srv.gs, userSrv)
@@ -376,6 +408,9 @@ func (srv *ExtAPIServer) getJSONGateway(ctx context.Context, conf ExtAPIConfig) 
 
 	err = pb.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register device-profile handler: %v", err)
+
+	err = api.RegisterDeviceProvisioningServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
+	log.Infof("register device-provision handler: %v", err)
 
 	err = pb.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts)
 	log.Infof("register multicast-group handler: %v", err)

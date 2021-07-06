@@ -11,7 +11,6 @@ import (
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -19,10 +18,10 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
-	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
@@ -39,7 +38,7 @@ var ctrl struct {
 }
 
 func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
+	if ctrl.moduleUp {
 		return nil
 	}
 	defer func() {
@@ -102,10 +101,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 
 			var receivedAt *time.Time
 			if rx.Time != nil {
-				ts, err := ptypes.Timestamp(rx.Time)
-				if err != nil {
-					return err
-				}
+				ts := rx.Time.AsTime()
 				receivedAt = &ts
 			}
 

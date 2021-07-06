@@ -94,7 +94,7 @@ func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*g
 		grpc.WithStreamInterceptor(
 			grpc_logrus.StreamClientInterceptor(logrusEntry, logrusOpts...),
 		),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(roundrobin.Name),
 	}
 
 	if len(caCert) == 0 && len(tlsCert) == 0 && len(tlsKey) == 0 {

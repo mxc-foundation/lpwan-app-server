@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"
@@ -40,10 +39,7 @@ func (hb *HEXBytes) UnmarshalText(text []byte) error {
 func GetTimestamp(rxInfo []*gw.UplinkRXInfo) time.Time {
 	for i := range rxInfo {
 		if rxInfo[i].Time != nil {
-			t, err := ptypes.Timestamp(rxInfo[i].Time)
-			if err == nil {
-				return t
-			}
+			return rxInfo[i].Time.AsTime()
 		}
 	}
 
@@ -87,16 +83,18 @@ func (b *EUI64) UnmarshalText(text []byte) error {
 // GetTimeSinceGPSEpoch returns the time since GPS epoch if it is available
 // in the uplink payload.
 func GetTimeSinceGPSEpoch(rxInfo []*gw.UplinkRXInfo) *time.Duration {
+	var d time.Duration
 	for i := range rxInfo {
 		if rxInfo[i].TimeSinceGpsEpoch != nil {
-			d, err := ptypes.Duration(rxInfo[i].TimeSinceGpsEpoch)
-			if err == nil {
-				return &d
+			err := rxInfo[i].TimeSinceGpsEpoch.CheckValid()
+			if err != nil {
+				return nil
 			}
+			d = rxInfo[i].TimeSinceGpsEpoch.AsDuration()
 		}
 	}
 
-	return nil
+	return &d
 }
 
 // GetStartLocation returns the location of the gateway closest to the device

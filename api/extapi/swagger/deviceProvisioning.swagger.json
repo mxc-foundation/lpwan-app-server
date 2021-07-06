@@ -1,0 +1,109 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "deviceProvisioning.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/device-provision": {
+      "post": {
+        "summary": "Create - creates the given provisioned device.",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/extapiCreateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/extapiCreateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DeviceProvisioningService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "extapiCreateRequest": {
+      "type": "object",
+      "properties": {
+        "provisionId": {
+          "type": "string",
+          "title": "provision id, scan result from the tag provided by manufacturer"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "applicationId": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application to which the device must be added.\nIt is possible to move a device to a different application on update,\ngiven that both the old and the new application share the same\nservice-profile."
+        }
+      }
+    },
+    "extapiCreateResponse": {
+      "type": "object",
+      "properties": {
+        "devEui": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

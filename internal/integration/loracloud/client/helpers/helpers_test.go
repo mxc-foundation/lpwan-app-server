@@ -35,8 +35,7 @@ func TestGetTimestamp(t *testing.T) {
 		},
 	}
 
-	now, err := ptypes.Timestamp(nowPB)
-	assert.NoError(err)
+	now := nowPB.AsTime()
 	assert.True(GetTimestamp(rxInfo).Equal(now))
 }
 

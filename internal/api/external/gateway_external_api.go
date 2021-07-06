@@ -8,13 +8,14 @@ import (
 	"strconv"
 	"strings"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/lib/pq/hstore"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -27,19 +28,18 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/mannr"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
+	nsapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
+	orgs "github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
-
 	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
-	orgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 )
 
@@ -49,6 +49,11 @@ type GatewayAPI struct {
 	config GwConfig
 	auth   auth.Authenticator
 	pscli  psPb.ProvisionClient
+	mxpCli pb.GSGatewayServiceClient
+
+	serverAddr     string
+	bindOldGateway string
+	bindNewGateway string
 }
 
 type GwConfig struct {
@@ -58,12 +63,17 @@ type GwConfig struct {
 }
 
 // NewGatewayAPI creates a new GatewayAPI.
-func NewGatewayAPI(h *pgstore.PgStore, auth auth.Authenticator, config GwConfig, pscli psPb.ProvisionClient) *GatewayAPI {
+func NewGatewayAPI(st *pgstore.PgStore, auth auth.Authenticator, config GwConfig, pscli *pscli.Client,
+	mxpCli *mxpcli.Client, serverAddr, bindOldGateway, bindNewGateway string) *GatewayAPI {
 	return &GatewayAPI{
-		st:     h,
-		auth:   auth,
-		config: config,
-		pscli:  pscli,
+		st:             st,
+		auth:           auth,
+		config:         config,
+		pscli:          pscli.GetPServerClient(),
+		mxpCli:         mxpCli.GetM2MGatewayServiceClient(),
+		serverAddr:     serverAddr,
+		bindNewGateway: bindNewGateway,
+		bindOldGateway: bindOldGateway,
 	}
 }
 
@@ -116,7 +126,7 @@ func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterRese
 func (a *GatewayAPI) ManualTriggerUpdateFirmware(ctx context.Context, req *api.ManualTriggerUpdateFirmwareRequest) (*api.ManualTriggerUpdateFirmwareResponse, error) {
 	log.Info("ManualTriggerUpdateFirmware is called")
 
-	if err := gw.UpdateFirmware(ctx); err != nil {
+	if err := gw.UpdateFirmware(ctx, a.st, a.bindOldGateway, a.bindNewGateway, a.serverAddr, a.pscli); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -144,14 +154,14 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := organization.GetOrganizationCount(ctx, orgs.OrganizationFilters{})
+		count, err := a.st.GetOrganizationCount(ctx, orgs.OrgFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		limit := 100
 		for offset := 0; offset <= count/limit; offset += limit {
-			list, err := organization.GetOrganizationIDList(ctx, limit, offset, "")
+			list, err := a.st.GetOrganizationIDList(ctx, limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -385,6 +395,7 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *api.GetDe
 
 // Create creates the given gateway.
 func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.Gateway == nil {
 		return nil, status.Error(codes.InvalidArgument, "gateway must not be nil")
 	}
@@ -410,7 +421,7 @@ func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) 
 		return nil, err
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) error {
@@ -503,7 +514,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		tags.Map[k] = sql.NullString{Valid: true, String: v}
 	}
 
-	if err := gw.AddGateway(ctx, &Gateway{
+	if err := gw.AddGateway(ctx, a.st, &Gateway{
 		MAC:                mac,
 		Name:               req.Name,
 		Description:        req.Description,
@@ -525,7 +536,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		SerialNumber:       defaultGw.SerialNumber,
 		FirmwareHash:       types.MD5SUM{},
 		AutoUpdateFirmware: true,
-	}, createReq); err != nil {
+	}, createReq, a.mxpCli); err != nil {
 		return err
 	}
 
@@ -622,27 +633,15 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 		},
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(gw.CreatedAt)
+	resp.UpdatedAt = timestamppb.New(gw.UpdatedAt)
 
 	if gw.FirstSeenAt != nil {
-		resp.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		resp.FirstSeenAt = timestamppb.New(*gw.FirstSeenAt)
 	}
 
 	if gw.LastSeenAt != nil {
-		resp.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		resp.LastSeenAt = timestamppb.New(*gw.LastSeenAt)
 	}
 
 	if len(getResp.Gateway.GatewayProfileId) != 0 {
@@ -715,26 +714,14 @@ func (a *GatewayAPI) listGateways(ctx context.Context, filters GatewayFilters) (
 			row.Name = "STC_" + row.Name
 		}
 
-		row.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
-		if err != nil {
-			return 0, nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
-		if err != nil {
-			return 0, nil, helpers.ErrToRPCError(err)
-		}
+		row.CreatedAt = timestamppb.New(gw.CreatedAt)
+		row.UpdatedAt = timestamppb.New(gw.UpdatedAt)
 
 		if gw.FirstSeenAt != nil {
-			row.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
-			if err != nil {
-				return 0, nil, helpers.ErrToRPCError(err)
-			}
+			row.FirstSeenAt = timestamppb.New(*gw.FirstSeenAt)
 		}
 		if gw.LastSeenAt != nil {
-			row.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
-			if err != nil {
-				return 0, nil, helpers.ErrToRPCError(err)
-			}
+			row.LastSeenAt = timestamppb.New(*gw.LastSeenAt)
 		}
 
 		gwList = append(gwList, &row)
@@ -892,6 +879,7 @@ func (a *GatewayAPI) ensureGatewayAdmin(ctx context.Context, mac lorawan.EUI64) 
 
 // Update updates the given gateway.
 func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	if req.Gateway == nil {
 		return nil, status.Error(codes.InvalidArgument, "gateway must not be nil")
 	}
@@ -909,8 +897,8 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, err
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *pgstore.PgStore) error {
-		gw, err := handler.GetGateway(ctx, mac, true)
+	if err := a.st.Tx(ctx, func(ctx context.Context, ps *pgstore.PgStore) error {
+		gw, err := ps.GetGateway(ctx, mac, true)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -923,7 +911,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		gw.Altitude = req.Gateway.Location.Altitude
 		//gw.Tags = tags
 
-		err = handler.UpdateGateway(ctx, &gw)
+		err = ps.UpdateGateway(ctx, &gw)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -965,7 +953,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 			updateReq.Gateway.Boards = append(updateReq.Gateway.Boards, &gwBoard)
 		}
 
-		n, err := handler.GetNetworkServer(ctx, gw.NetworkServerID)
+		n, err := ps.GetNetworkServer(ctx, gw.NetworkServerID)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -991,11 +979,12 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // Delete deletes the gateway matching the given ID.
 func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) (*empty.Empty, error) {
+	var response empty.Empty
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1005,11 +994,11 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, err
 	}
 
-	if err := gw.DeleteGateway(ctx, mac); err != nil {
+	if err := gw.DeleteGateway(ctx, mac, a.st, a.pscli); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &response, nil
 }
 
 // GetStats gets the gateway statistics for the gateway with the given Mac.
@@ -1022,15 +1011,8 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *api.GetGatewayStatsReque
 		return nil, err
 	}
 
-	start, err := ptypes.Timestamp(req.StartTimestamp)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	end, err := ptypes.Timestamp(req.EndTimestamp)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
+	start := req.StartTimestamp.AsTime()
+	end := req.EndTimestamp.AsTime()
 
 	_, ok := ns.AggregationInterval_value[strings.ToUpper(req.Interval)]
 	if !ok {
@@ -1051,10 +1033,7 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *api.GetGatewayStatsReque
 			TxPacketsEmitted:    int32(m.Metrics["tx_ok_count"]),
 		}
 
-		result[i].Timestamp, err = ptypes.TimestampProto(m.Time)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+		result[i].Timestamp = timestamppb.New(m.Time)
 	}
 
 	return &api.GetGatewayStatsResponse{
@@ -1083,10 +1062,7 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *api.GetLastPingReques
 		Dr:        uint32(ping.DR),
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(ping.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	resp.CreatedAt = timestamppb.New(ping.CreatedAt)
 
 	for _, rx := range pingRX {
 		resp.PingRx = append(resp.PingRx, &api.PingRX{
@@ -1253,13 +1229,8 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		}
 	}
 
-	provClient, err := pscli.GetPServerClient()
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
-	}
-
 	// check whether gateway is allowed to be registered on current supernode
-	res, err := provClient.PreRegisterGW(ctx, &psPb.PreRegisterGWRequest{Sn: req.Sn})
+	res, err := a.pscli.PreRegisterGW(ctx, &psPb.PreRegisterGWRequest{Sn: req.Sn})
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "get gateway info from ps by sn failed: %v", err)
 	}
@@ -1274,7 +1245,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		OrgId:         req.OrganizationId,
 	}
 
-	resp, err := provClient.RegisterGW(ctx, &provReq)
+	resp, err := a.pscli.RegisterGW(ctx, &provReq)
 	if err != nil {
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	}
@@ -1321,7 +1292,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	}
 
 	for _, v := range gpList {
-		if v.Name != "default_gateway_profile" {
+		if v.Name != nsapi.DefaultGatewayProfileName {
 			continue
 		}
 
@@ -1378,12 +1349,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *api.GetGwPwdRequest) (*a
 		return nil, err
 	}
 
-	provClient, err := pscli.GetPServerClient()
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "failed to connect to provisioning server")
-	}
-
-	resp, err := provClient.GetRootPWD(context.Background(), &psPb.GetRootPWDRequest{
+	resp, err := a.pscli.GetRootPWD(context.Background(), &psPb.GetRootPWDRequest{
 		Sn:  req.Sn,
 		Mac: req.GatewayId,
 	})

@@ -6,7 +6,7 @@ import (
 	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 
-	nss "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
+	nss "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 

@@ -4,7 +4,6 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -12,24 +11,27 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // DeviceQueueAPI exposes the downlink queue methods.
 type DeviceQueueAPI struct {
-	st *store.Handler
+	st    *store.Handler
+	nsCli *nscli.Client
 }
 
 // NewDeviceQueueAPI creates a new DeviceQueueAPI.
-func NewDeviceQueueAPI(h *store.Handler) *DeviceQueueAPI {
+func NewDeviceQueueAPI(h *store.Handler, nsCli *nscli.Client) *DeviceQueueAPI {
 	return &DeviceQueueAPI{
-		st: h,
+		st:    h,
+		nsCli: nsCli,
 	}
 }
 
@@ -72,7 +74,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 			dp, err := handler.GetDeviceProfile(ctx, dev.DeviceProfileID, false)
 			if err != nil {
 				log.WithError(err).WithField("id", dev.DeviceProfileID).Error("get device-profile error")
-				return grpc.Errorf(codes.Internal, "get device-profile error: %s", err)
+				return status.Errorf(codes.Internal, "get device-profile error: %s", err)
 			}
 
 			// TODO: in the next major release, remove this and always use the
@@ -91,7 +93,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 			}
 		}
 
-		fCnt, err = devmod.EnqueueDownlinkPayload(ctx, handler, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
+		fCnt, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
 		if err != nil {
 			return status.Errorf(codes.Internal, "enqueue downlink payload error: %s", err)
 		}
@@ -121,19 +123,10 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	// add this device to network server
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-
-	nsClient, err := nStruct.GetNetworkServiceClient()
+	nsClient, err := d.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-
 	_, err = nsClient.FlushDeviceQueueForDevEUI(ctx, &ns.FlushDeviceQueueForDevEUIRequest{
 		DevEui: devEUI[:],
 	})
@@ -148,7 +141,7 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 func (d *DeviceQueueAPI) List(ctx context.Context, req *pb.ListDeviceQueueItemsRequest) (*pb.ListDeviceQueueItemsResponse, error) {
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if valid, err := devmod.NewValidator(d.st).ValidateDeviceQueueAccess(ctx, devEUI, auth.List); !valid || err != nil {

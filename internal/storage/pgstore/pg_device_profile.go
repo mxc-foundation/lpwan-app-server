@@ -10,9 +10,9 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	dpapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 )
 
 func (ps *PgStore) CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
@@ -167,7 +167,7 @@ func (ps *PgStore) CheckListDeviceProfilesAccess(ctx context.Context, username s
 // DeleteAllDeviceProfilesForOrganizationID deletes all device-profiles
 // given an organization id.
 func (ps *PgStore) DeleteAllDeviceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
-	var dps []DeviceProfileMeta
+	var dps []dpapi.DeviceProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &dps, `
 		select
 			device_profile_id,
@@ -198,20 +198,15 @@ func (ps *PgStore) DeleteAllDeviceProfilesForOrganizationID(ctx context.Context,
 // CreateDeviceProfile creates the given device-profile.
 // This will create the device-profile at the network-server side and will
 // create a local reference record.
-func (ps *PgStore) CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
+func (ps *PgStore) CreateDeviceProfile(ctx context.Context, dp *dpapi.DeviceProfile) error {
 	if err := dp.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
 
-	dpID, err := uuid.NewV4()
+	dpID, err := uuid.FromBytes(dp.DeviceProfile.Id)
 	if err != nil {
-		return errors.Wrap(err, "new uuid v4 error")
+		return err
 	}
-
-	now := time.Now()
-	dp.DeviceProfile.Id = dpID.Bytes()
-	dp.CreatedAt = now
-	dp.UpdatedAt = now
 
 	_, err = ps.db.ExecContext(ctx, `
         insert into device_profile (
@@ -273,17 +268,68 @@ func (ps *PgStore) DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
-// GetDeviceProfile returns the device-profile matching the given id.
-// When forUpdate is set to true, then db must be a db transaction.
-// When localOnly is set to true, no call to the network-server is made to
-// retrieve additional device data.
-func (ps *PgStore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate bool) (DeviceProfile, error) {
+// GetDeviceProfileWithIDAndOrganizationID returns the device-profile matching the given id and organization id
+func (ps *PgStore) GetDeviceProfileWithIDAndOrganizationID(ctx context.Context, id uuid.UUID,
+	orgID int64, forUpdate bool) (dpapi.DeviceProfile, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var dp DeviceProfile
+	var dp dpapi.DeviceProfile
+
+	row := ps.db.QueryRowxContext(ctx, `
+		select
+			network_server_id,
+			organization_id,
+			created_at,
+			updated_at,
+			name,
+			payload_codec,
+			payload_encoder_script,
+			payload_decoder_script,
+			tags,
+			uplink_interval
+		from device_profile
+		where
+			device_profile_id = $1 and organization_id = $2`+fu,
+		id,
+		orgID,
+	)
+	if err := row.Err(); err != nil {
+		return dp, handlePSQLError(Select, err, "select error")
+	}
+
+	err := row.Scan(
+		&dp.NetworkServerID,
+		&dp.OrganizationID,
+		&dp.CreatedAt,
+		&dp.UpdatedAt,
+		&dp.Name,
+		&dp.PayloadCodec,
+		&dp.PayloadEncoderScript,
+		&dp.PayloadDecoderScript,
+		&dp.Tags,
+		&dp.UplinkInterval,
+	)
+	if err != nil {
+		return dp, handlePSQLError(Scan, err, "scan error")
+	}
+
+	return dp, nil
+}
+
+// GetDeviceProfile returns the device-profile matching the given id.
+// When forUpdate is set to true, then db must be a db transaction.
+// When localOnly is set to true, no call to the network-server is made to
+// retrieve additional device data.
+func (ps *PgStore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate bool) (dpapi.DeviceProfile, error) {
+	var fu string
+	if forUpdate {
+		fu = " for update"
+	}
+
+	var dp dpapi.DeviceProfile
 
 	row := ps.db.QueryRowxContext(ctx, `
 		select
@@ -325,8 +371,37 @@ func (ps *PgStore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate
 	return dp, nil
 }
 
+// GetDefaultDeviceProfileID returns the default device profile id with given organization id and network server id
+func (ps *PgStore) GetDefaultDeviceProfileID(ctx context.Context, orgID, nsID int64, forUpdate bool) (*uuid.UUID, error) {
+	var fu string
+	if forUpdate {
+		fu = " for update"
+	}
+
+	var dpID uuid.UUID
+
+	row := ps.db.QueryRowxContext(ctx, `
+		select
+			device_profile_id
+		from device_profile
+		where
+			network_server_id = $1 and organization_id = $2`+fu,
+		nsID, orgID,
+	)
+	if err := row.Err(); err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	err := row.Scan(&dpID)
+	if err != nil {
+		return nil, handlePSQLError(Scan, err, "scan error")
+	}
+
+	return &dpID, nil
+}
+
 // UpdateDeviceProfile updates the given device-profile.
-func (ps *PgStore) UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
+func (ps *PgStore) UpdateDeviceProfile(ctx context.Context, dp *dpapi.DeviceProfile) error {
 	if err := dp.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -378,7 +453,7 @@ func (ps *PgStore) UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) e
 }
 
 // GetDeviceProfileCount returns the total number of device-profiles.
-func (ps *PgStore) GetDeviceProfileCount(ctx context.Context, filters DeviceProfileFilters) (int, error) {
+func (ps *PgStore) GetDeviceProfileCount(ctx context.Context, filters dpapi.DeviceProfileFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct dp.*)
@@ -411,7 +486,7 @@ func (ps *PgStore) GetDeviceProfileCount(ctx context.Context, filters DeviceProf
 }
 
 // GetDeviceProfiles returns a slice of device-profiles.
-func (ps *PgStore) GetDeviceProfiles(ctx context.Context, filters DeviceProfileFilters) ([]DeviceProfileMeta, error) {
+func (ps *PgStore) GetDeviceProfiles(ctx context.Context, filters dpapi.DeviceProfileFilters) ([]dpapi.DeviceProfileMeta, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			dp.device_profile_id,
@@ -448,7 +523,7 @@ func (ps *PgStore) GetDeviceProfiles(ctx context.Context, filters DeviceProfileF
 		return nil, errors.Wrap(err, "named query error")
 	}
 
-	var dps []DeviceProfileMeta
+	var dps []dpapi.DeviceProfileMeta
 	err = sqlx.SelectContext(ctx, ps.db, &dps, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")

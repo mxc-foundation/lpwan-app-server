@@ -10,12 +10,12 @@ import (
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -104,7 +104,7 @@ func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDo
 			}
 		}
 
-		if _, err := devmod.EnqueueDownlinkPayload(ctx, handler, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
+		if _, err := device.EnqueueDownlinkPayload(ctx, handler, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
 			return errors.Wrap(err, "enqueue downlink device-queue item error")
 		}
 

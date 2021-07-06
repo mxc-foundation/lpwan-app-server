@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -124,10 +123,8 @@ func jsonv3MarshalUplinkEvent(msg *integration.UplinkEvent) ([]byte, error) {
 		copy(rxInfo.UplinkID[:], msg.RxInfo[i].UplinkId)
 
 		if msg.RxInfo[i].Time != nil {
-			t, err := ptypes.Timestamp(msg.RxInfo[i].Time)
-			if err == nil {
-				rxInfo.Time = &t
-			}
+			t := msg.RxInfo[i].Time.AsTime()
+			rxInfo.Time = &t
 		}
 
 		if msg.RxInfo[i].Location != nil {
@@ -181,10 +178,8 @@ func jsonv3MarshalJoinEvent(msg *integration.JoinEvent) ([]byte, error) {
 		copy(rxInfo.UplinkID[:], msg.RxInfo[i].UplinkId)
 
 		if msg.RxInfo[i].Time != nil {
-			t, err := ptypes.Timestamp(msg.RxInfo[i].Time)
-			if err == nil {
-				rxInfo.Time = &t
-			}
+			t := msg.RxInfo[i].Time.AsTime()
+			rxInfo.Time = &t
 		}
 
 		if msg.RxInfo[i].Location != nil {

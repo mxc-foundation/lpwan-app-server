@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	gwps "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
+	gwps "github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 

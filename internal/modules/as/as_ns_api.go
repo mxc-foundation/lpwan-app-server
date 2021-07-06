@@ -7,18 +7,22 @@ import (
 	"math"
 	"time"
 
-	"github.com/brocaar/chirpstack-api/go/v3/as"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
+
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	"github.com/brocaar/chirpstack-api/go/v3/as"
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
 	"github.com/mxc-foundation/lpwan-app-server/internal/events/uplink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
@@ -30,22 +34,29 @@ import (
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.
 type ApplicationServerAPI struct {
-	st            *store.Handler
-	gIntegrations []models.IntegrationHandler
+	st             *store.Handler
+	gIntegrations  []models.IntegrationHandler
+	psCli          *pscli.Client
+	nsCli          *nscli.Client
+	devSessionList *devprovision.DeviceSessionList
 }
 
 // NewApplicationServerAPI returns a new ApplicationServerAPI.
-func NewApplicationServerAPI(h *store.Handler, gIntegrations []models.IntegrationHandler) *ApplicationServerAPI {
+func NewApplicationServerAPI(h *store.Handler, gIntegrations []models.IntegrationHandler,
+	psCli *pscli.Client, nsCli *nscli.Client, devSessionList *devprovision.DeviceSessionList) *ApplicationServerAPI {
 	return &ApplicationServerAPI{
-		st:            h,
-		gIntegrations: gIntegrations,
+		st:             h,
+		gIntegrations:  gIntegrations,
+		psCli:          psCli,
+		nsCli:          nsCli,
+		devSessionList: devSessionList,
 	}
 }
 
 // HandleUplinkData handles incoming (uplink) data.
 func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.HandleUplinkDataRequest) (*empty.Empty, error) {
 	if err := uplink.Handle(ctx, *req, a.st, a.gIntegrations); err != nil {
-		return nil, grpc.Errorf(codes.Internal, "handle uplink data error: %s", err)
+		return nil, status.Errorf(codes.Internal, "handle uplink data error: %s", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -60,13 +71,13 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		logrus.WithField("dev_eui", devEUI).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		logrus.WithField("id", d.ApplicationID).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -114,13 +125,13 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		logrus.WithField("dev_eui", devEUI).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		logrus.WithField("id", d.ApplicationID).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -167,14 +178,14 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		logrus.WithField("dev_eui", devEUI).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		logrus.WithField("id", d.ApplicationID).Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -229,7 +240,7 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	if err != nil {
 		errStr := fmt.Sprintf("send error notification to integration error: %s", err)
 		logrus.Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
 	}
 
 	return &empty.Empty{}, nil
@@ -238,14 +249,23 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 // HandleProprietaryUplink handles proprietary uplink payloads.
 func (a *ApplicationServerAPI) HandleProprietaryUplink(ctx context.Context, req *as.HandleProprietaryUplinkRequest) (*empty.Empty, error) {
 	if req.TxInfo == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "tx_info must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "tx_info must not be nil")
 	}
 
-	err := gwping.HandleReceivedPing(ctx, req)
-	if err != nil {
-		errStr := fmt.Sprintf("handle received ping error: %s", err)
+	processed, errForDev := devprovision.HandleReceivedFrame(ctx, req, a.st, a.psCli.GetDeviceProvisionServiceClient(),
+		a.nsCli, a.devSessionList)
+	if errForDev != nil {
+		errStr := fmt.Sprintf("handle received proprietary error: %s", errForDev)
 		logrus.Error(errStr)
-		return nil, grpc.Errorf(codes.Internal, errStr)
+		return nil, status.Errorf(codes.Internal, errStr)
+	}
+	if !processed {
+		err := gwping.HandleReceivedPing(ctx, req)
+		if err != nil {
+			errStr := fmt.Sprintf("handle received ping error: %s", err)
+			logrus.Error(errStr)
+			return nil, status.Errorf(codes.Internal, errStr)
+		}
 	}
 
 	return &empty.Empty{}, nil
@@ -331,7 +351,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 // SetDeviceLocation updates the device-location.
 func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.SetDeviceLocationRequest) (*empty.Empty, error) {
 	if req.Location == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "location must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "location must not be nil")
 	}
 
 	var devEUI lorawan.EUI64

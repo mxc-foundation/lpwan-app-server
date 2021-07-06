@@ -12,21 +12,21 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
-	log "github.com/sirupsen/logrus"
+	"github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
+
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/extapi"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 )
 
 // Login validates the login request and returns a JWT token.
@@ -68,7 +68,7 @@ func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.Login
 
 	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email, Service: auth.EMAIL}, ttl, audience)
 	if err != nil {
-		log.Errorf("SignToken returned an error: %v", err)
+		logrus.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
 	}
 
@@ -88,7 +88,7 @@ func (a *Server) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb
 	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: cred.UserID, Username: cred.Username}, 0, nil)
 
 	if err != nil {
-		log.Errorf("SignToken returned an error: %v", err)
+		logrus.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Error(codes.Internal, "couldn't create a token")
 	}
 
@@ -110,21 +110,21 @@ func (a *Server) IsPassVerifyingGoogleRecaptcha(response string, remoteip string
 	responsePost, err := http.PostForm(postURL, postStr)
 
 	if err != nil {
-		log.Warn(err.Error())
+		logrus.Warn(err.Error())
 		return &inpb.GoogleRecaptchaResponse{}, err
 	}
 
 	defer func() {
 		err := responsePost.Body.Close()
 		if err != nil {
-			log.WithError(err).Error("cannot close the responsePost body.")
+			logrus.WithError(err).Error("cannot close the responsePost body.")
 		}
 	}()
 
 	body, err := ioutil.ReadAll(responsePost.Body)
 
 	if err != nil {
-		log.Warn(err.Error())
+		logrus.Warn(err.Error())
 		return &inpb.GoogleRecaptchaResponse{}, err
 	}
 
@@ -141,7 +141,7 @@ func (a *Server) IsPassVerifyingGoogleRecaptcha(response string, remoteip string
 func (a *Server) GetVerifyingGoogleRecaptcha(ctx context.Context, req *inpb.GoogleRecaptchaRequest) (*inpb.GoogleRecaptchaResponse, error) {
 	res, err := a.IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
 	if err != nil {
-		log.WithError(err).Error("Cannot verify from google recaptcha")
+		logrus.WithError(err).Error("Cannot verify from google recaptcha")
 		return &inpb.GoogleRecaptchaResponse{}, err
 	}
 
@@ -317,7 +317,7 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 
 	userEmail := normalizeUsername(req.Email)
 
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"userEmail": userEmail,
 		"languange": req.Language,
 	}).Info(logInfo)
@@ -336,7 +336,7 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 		if !user.IsActive && user.SecurityToken != "" {
 			err := a.mailer.SendRegistrationConfirmation(user.Email, req.Language, user.SecurityToken)
 			if err != nil {
-				log.WithError(err).Error(logInfo)
+				logrus.WithError(err).Error(logInfo)
 				return nil, helpers.ErrToRPCError(err)
 			}
 
@@ -358,7 +358,7 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 	}
 
 	if err := a.mailer.SendRegistrationConfirmation(userEmail, req.Language, token); err != nil {
-		log.WithError(err).Error(logInfo)
+		logrus.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -552,9 +552,22 @@ func (a *Server) FinishRegistration(ctx context.Context, req *inpb.FinishRegistr
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't hash the password: %v", err)
 	}
-	if err := a.store.ActivateUser(ctx, user.ID, ph, req.OrganizationName, req.OrganizationDisplayName); err != nil {
+	if err := a.ActivateUserAndNewOrganization(ctx, user.ID, ph, req.OrganizationName, req.OrganizationDisplayName); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &empty.Empty{}, nil
+}
+
+// ActivateUserAndNewOrganization creates the organization for the new user, adds the user to the org
+//  and activates the user, then create default service profile, default application and default device profile for
+//  the organization
+func (a *Server) ActivateUserAndNewOrganization(ctx context.Context, userID int64, ph, organizationName, organizationDisplayName string) error {
+	ou, err := a.store.ActivateUser(ctx, userID, ph, organizationName, organizationDisplayName)
+	if err != nil {
+		return err
+	}
+
+	organization.ActivateOrganization(ctx, a.orgStore, a.spStore, a.dpStore, ou.OrganizationID, a.nsCli)
+	return nil
 }

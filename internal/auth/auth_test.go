@@ -4,11 +4,21 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	"github.com/gofrs/uuid"
 )
 
 type tStore struct {
 	users    map[string]User
 	orgUsers map[int64]map[int64]OrgUser
+}
+
+func (ts *tStore) ApplicationOwnedByOrganization(ctx context.Context, orgID, applicationID int64) (bool, error) {
+	return false, nil
+}
+
+func (ts *tStore) DeviceProfileOwnedByOrganization(ctx context.Context, orgID int64, deviceProfile uuid.UUID) (bool, error) {
+	return false, nil
 }
 
 func (ts *tStore) AuthGetUser(ctx context.Context, username string) (User, error) {

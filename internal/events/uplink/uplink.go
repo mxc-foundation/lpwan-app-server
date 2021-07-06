@@ -8,7 +8,6 @@ import (
 	"time"
 
 	keywrap "github.com/NickBall/go-aes-key-wrap"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -26,9 +25,9 @@ import (
 	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/api/external/dp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
-	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -222,17 +221,14 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 
 			for _, rxInfo := range ctx.uplinkDataReq.RxInfo {
 				if rxInfo.TimeSinceGpsEpoch != nil {
-					timeSinceGPSEpoch, err = ptypes.Duration(rxInfo.TimeSinceGpsEpoch)
+					err = rxInfo.TimeSinceGpsEpoch.CheckValid()
 					if err != nil {
 						log.WithError(err).Error("time since gps epoch to duration error")
 						continue
 					}
+					timeSinceGPSEpoch = rxInfo.TimeSinceGpsEpoch.AsDuration()
 				} else if rxInfo.Time != nil {
-					timeField, err = ptypes.Timestamp(rxInfo.Time)
-					if err != nil {
-						log.WithError(err).Error("time to timestamp error")
-						continue
-					}
+					timeField = rxInfo.Time.AsTime()
 				}
 			}
 

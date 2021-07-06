@@ -145,21 +145,15 @@ func (ps *PgStore) CheckListServiceProfilesAccess(ctx context.Context, username 
 }
 
 // CreateServiceProfile creates the given service-profile.
-func (ps *PgStore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile) error {
+func (ps *PgStore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile) (*uuid.UUID, error) {
 	if err := sp.Validate(); err != nil {
-		return errors.Wrap(err, "validate error")
+		return nil, errors.Wrap(err, "validate error")
 	}
 
-	spID, err := uuid.NewV4()
+	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
 	if err != nil {
-		return errors.Wrap(err, "new uuid v4 error")
+		return nil, err
 	}
-
-	now := time.Now()
-	sp.CreatedAt = now
-	sp.UpdatedAt = now
-	sp.ServiceProfile.Id = spID.Bytes()
-
 	_, err = ps.db.ExecContext(ctx, `
 		insert into service_profile (
 			service_profile_id,
@@ -177,14 +171,14 @@ func (ps *PgStore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile)
 		sp.Name,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return nil, handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
 		"id":     spID,
 		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("service-profile created")
-	return nil
+	return &spID, nil
 }
 
 // GetServiceProfile returns the service-profile matching the given id.

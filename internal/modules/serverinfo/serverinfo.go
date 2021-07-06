@@ -26,7 +26,7 @@ type controller struct {
 var ctrl *controller
 
 func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
+	if ctrl.moduleUp {
 		return nil
 	}
 	defer func() {

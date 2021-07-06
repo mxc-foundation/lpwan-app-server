@@ -25,8 +25,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer a.Close()
 
-	sigChan := make(chan os.Signal)
-	exitChan := make(chan struct{})
+	sigChan := make(chan os.Signal, 1)
+	exitChan := make(chan struct{}, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	log.WithField("signal", <-sigChan).Info("signal received")
 	go func() {

@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -90,15 +91,8 @@ func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.E
 }
 
 func migrateGatewayStatsForGatewayIDInterval(nsClient ns.NetworkServerServiceClient, gatewayID lorawan.EUI64, interval ns.AggregationInterval, start, end time.Time) error {
-	startPB, err := ptypes.TimestampProto(start)
-	if err != nil {
-		return err
-	}
-
-	endPB, err := ptypes.TimestampProto(end)
-	if err != nil {
-		return err
-	}
+	startPB := timestamppb.New(start)
+	endPB := timestamppb.New(end)
 
 	metrics, err := nsClient.GetGatewayStats(context.Background(), &ns.GetGatewayStatsRequest{
 		GatewayId:      gatewayID[:],
@@ -111,11 +105,7 @@ func migrateGatewayStatsForGatewayIDInterval(nsClient ns.NetworkServerServiceCli
 	}
 
 	for _, m := range metrics.Result {
-		ts, err := ptypes.Timestamp(m.Timestamp)
-		if err != nil {
-			return err
-		}
-
+		ts := m.Timestamp.AsTime()
 		err = metricsmod.SaveMetricsForInterval(context.Background(), metricsmod.AggregationInterval(interval.String()), fmt.Sprintf("gw:%s", gatewayID), metricsmod.MetricsRecord{
 			Time: ts,
 			Metrics: map[string]float64{

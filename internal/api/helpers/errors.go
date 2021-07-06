@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -48,5 +47,5 @@ func ErrToRPCError(err error) error {
 	if !ok {
 		code = codes.Unknown
 	}
-	return grpc.Errorf(code, cause.Error())
+	return status.Errorf(code, cause.Error())
 }

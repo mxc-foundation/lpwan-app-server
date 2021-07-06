@@ -44,7 +44,7 @@ func SettingsSetup(name string, conf config.Config) error {
 
 // Setup configures the JS codec.
 func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
+	if ctrl.moduleUp {
 		return nil
 	}
 	defer func() {
