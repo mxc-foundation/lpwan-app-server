@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -21,24 +19,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	fts "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
 	mcss "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	fds "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment/data"
 	mgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group/data"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
 	. "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
-
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
-}
-
-const moduleName = "fuota"
 
 type Config struct {
 	RemoteMulticastSetupRetries       int
@@ -47,56 +38,36 @@ type Config struct {
 }
 
 type controller struct {
-	name             string
 	s                FuotaStruct
 	interval         time.Duration
 	batchSize        int
 	config           Config
 	routingProfileID uuid.UUID
-
-	moduleUp bool
+	nsCli            *nscli.Client
 }
 
-var ctrl *controller
-
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, conf config.Config) (err error) {
-
-	ctrl = &controller{
-		name: moduleName,
-		s:    conf.ApplicationServer.FUOTADeployment,
-		config: Config{
-			RemoteMulticastSetupRetries:       conf.ApplicationServer.RemoteMulticastSetup.SyncRetries,
-			RemoteFragmentationSessionRetries: conf.ApplicationServer.FragmentationSession.SyncRetries,
-			ApplicationServerID:               conf.ApplicationServer.ID,
-		},
+// Setup configures the package.
+func Setup(name string, h *store.Handler, conf Config, s FuotaStruct, nsCli *nscli.Client) error {
+	var err error
+	ctrl := &controller{
+		s:         s,
+		config:    conf,
+		interval:  time.Second,
+		batchSize: 1,
+		nsCli:     nsCli,
 	}
 
-	ctrl.routingProfileID, err = uuid.FromString(conf.ApplicationServer.ID)
+	ctrl.routingProfileID, err = uuid.FromString(conf.ApplicationServerID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
 	}
 
-	ctrl.interval = time.Second
-	ctrl.batchSize = 1
-	return nil
-}
-
-// Setup configures the package.
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp {
-		return nil
-	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
-
-	go fuotaDeploymentLoop(h)
+	go ctrl.fuotaDeploymentLoop(h)
 
 	return nil
 }
 
-func fuotaDeploymentLoop(h *store.Handler) {
+func (c *controller) fuotaDeploymentLoop(h *store.Handler) {
 	for {
 		ctxID, err := uuid.NewV4()
 		if err != nil {
@@ -107,23 +78,23 @@ func fuotaDeploymentLoop(h *store.Handler) {
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
 		err = h.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-			return fuotaDeployments(ctx, handler)
+			return c.fuotaDeployments(ctx, handler)
 		})
 		if err != nil {
 			log.WithError(err).Error("fuota deployment error")
 		}
-		time.Sleep(ctrl.interval)
+		time.Sleep(c.interval)
 	}
 }
 
-func fuotaDeployments(ctx context.Context, handler *store.Handler) error {
-	items, err := handler.GetPendingFUOTADeployments(ctx, ctrl.batchSize)
+func (c *controller) fuotaDeployments(ctx context.Context, handler *store.Handler) error {
+	items, err := handler.GetPendingFUOTADeployments(ctx, c.batchSize)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := fuotaDeployment(ctx, handler, item); err != nil {
+		if err := c.fuotaDeployment(ctx, handler, item); err != nil {
 			return errors.Wrap(err, "fuota deployment error")
 		}
 	}
@@ -131,30 +102,30 @@ func fuotaDeployments(ctx context.Context, handler *store.Handler) error {
 	return nil
 }
 
-func fuotaDeployment(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) fuotaDeployment(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	switch item.State {
 	case fds.FUOTADeploymentMulticastCreate:
-		return stepMulticastCreate(ctx, handler, item)
+		return c.stepMulticastCreate(ctx, handler, item)
 	case fds.FUOTADeploymentMulticastSetup:
-		return stepMulticastSetup(ctx, handler, item)
+		return c.stepMulticastSetup(ctx, handler, item)
 	case fds.FUOTADeploymentFragmentationSessSetup:
-		return stepFragmentationSessSetup(ctx, handler, item)
+		return c.stepFragmentationSessSetup(ctx, handler, item)
 	case fds.FUOTADeploymentMulticastSessCSetup:
-		return stepMulticastSessCSetup(ctx, handler, item)
+		return c.stepMulticastSessCSetup(ctx, handler, item)
 	case fds.FUOTADeploymentEnqueue:
-		return stepEnqueue(ctx, handler, item)
+		return c.stepEnqueue(ctx, handler, item)
 	case fds.FUOTADeploymentStatusRequest:
-		return stepStatusRequest(ctx, handler, item)
+		return c.stepStatusRequest(ctx, handler, item)
 	case fds.FUOTADeploymentSetDeviceStatus:
-		return stepSetDeviceStatus(ctx, handler, item)
+		return c.stepSetDeviceStatus(ctx, handler, item)
 	case fds.FUOTADeploymentCleanup:
-		return stepCleanup(ctx, handler, item)
+		return c.stepCleanup(ctx, handler, item)
 	default:
 		return fmt.Errorf("unexpected state: %s", item.State)
 	}
 }
 
-func stepMulticastCreate(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepMulticastCreate(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	var devAddr lorawan.DevAddr
 	if _, err := rand.Read(devAddr[:]); err != nil {
 		return errors.Wrap(err, "read random bytes error")
@@ -193,7 +164,7 @@ func stepMulticastCreate(ctx context.Context, handler *store.Handler, item fds.F
 			Frequency:        uint32(item.Frequency),
 			PingSlotPeriod:   uint32(item.PingSlotPeriod),
 			ServiceProfileId: spID.Bytes(),
-			RoutingProfileId: ctrl.routingProfileID.Bytes(),
+			RoutingProfileId: c.routingProfileID.Bytes(),
 		},
 	}
 
@@ -206,7 +177,7 @@ func stepMulticastCreate(ctx context.Context, handler *store.Handler, item fds.F
 		return fmt.Errorf("unknown group-type: %s", item.GroupType)
 	}
 
-	err = multicast.CreateMulticastGroup(ctx, &mg)
+	err = multicast.CreateMulticastGroup(ctx, &mg, c.nsCli)
 	if err != nil {
 		return errors.Wrap(err, "create multicast-group error")
 	}
@@ -226,12 +197,12 @@ func stepMulticastCreate(ctx context.Context, handler *store.Handler, item fds.F
 	return nil
 }
 
-func stepMulticastSetup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepMulticastSetup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
 
-	mcg, err := multicast.GetMulticastGroup(ctx, *item.MulticastGroupID, false, false)
+	mcg, err := multicast.GetMulticastGroup(ctx, *item.MulticastGroupID, false, false, c.nsCli)
 	if err != nil {
 		return errors.Wrap(err, "get multicast group error")
 	}
@@ -274,7 +245,7 @@ func stepMulticastSetup(ctx context.Context, handler *store.Handler, item fds.FU
 		rms := mcss.RemoteMulticastSetup{
 			DevEUI:           dk.DevEUI,
 			MulticastGroupID: *item.MulticastGroupID,
-			McGroupID:        ctrl.s.McGroupID,
+			McGroupID:        c.s.McGroupID,
 			McKeyEncrypted:   mcKeyEncrypted,
 			MinMcFCnt:        0,
 			MaxMcFCnt:        (1 << 32) - 1,
@@ -290,7 +261,7 @@ func stepMulticastSetup(ctx context.Context, handler *store.Handler, item fds.FU
 	}
 
 	item.State = fds.FUOTADeploymentFragmentationSessSetup
-	item.NextStepAfter = time.Now().Add(time.Duration(ctrl.config.RemoteMulticastSetupRetries) * item.UnicastTimeout)
+	item.NextStepAfter = time.Now().Add(time.Duration(c.config.RemoteMulticastSetupRetries) * item.UnicastTimeout)
 
 	err = handler.UpdateFUOTADeployment(ctx, &item)
 	if err != nil {
@@ -300,7 +271,7 @@ func stepMulticastSetup(ctx context.Context, handler *store.Handler, item fds.FU
 	return nil
 }
 
-func stepFragmentationSessSetup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepFragmentationSessSetup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -319,15 +290,15 @@ func stepFragmentationSessSetup(ctx context.Context, handler *store.Handler, ite
 
 	for _, devEUI := range devEUIs {
 		// delete existing fragmentation session if it exist
-		err = handler.DeleteRemoteFragmentationSession(ctx, devEUI, ctrl.s.FragIndex)
+		err = handler.DeleteRemoteFragmentationSession(ctx, devEUI, c.s.FragIndex)
 		if err != nil && err != errHandler.ErrDoesNotExist {
 			return errors.Wrap(err, "delete remote fragmentation session error")
 		}
 
 		fs := fts.RemoteFragmentationSession{
 			DevEUI:              devEUI,
-			FragIndex:           ctrl.s.FragIndex,
-			MCGroupIDs:          []int{ctrl.s.McGroupID},
+			FragIndex:           c.s.FragIndex,
+			MCGroupIDs:          []int{c.s.McGroupID},
 			NbFrag:              nbFrag,
 			FragSize:            item.FragSize,
 			FragmentationMatrix: item.FragmentationMatrix,
@@ -344,7 +315,7 @@ func stepFragmentationSessSetup(ctx context.Context, handler *store.Handler, ite
 	}
 
 	item.State = fds.FUOTADeploymentMulticastSessCSetup
-	item.NextStepAfter = time.Now().Add(time.Duration(ctrl.config.RemoteFragmentationSessionRetries) * item.UnicastTimeout)
+	item.NextStepAfter = time.Now().Add(time.Duration(c.config.RemoteFragmentationSessionRetries) * item.UnicastTimeout)
 
 	err = handler.UpdateFUOTADeployment(ctx, &item)
 	if err != nil {
@@ -354,17 +325,17 @@ func stepFragmentationSessSetup(ctx context.Context, handler *store.Handler, ite
 	return nil
 }
 
-func stepMulticastSessCSetup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepMulticastSessCSetup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
 
-	mcg, err := multicast.GetMulticastGroup(ctx, *item.MulticastGroupID, false, false)
+	mcg, err := multicast.GetMulticastGroup(ctx, *item.MulticastGroupID, false, false, c.nsCli)
 	if err != nil {
 		return errors.Wrap(err, "get multicast group error")
 	}
 
-	devEUIs, err := handler.GetDevEUIsWithFragmentationSessionSetup(ctx, item.MulticastGroupID, ctrl.s.FragIndex)
+	devEUIs, err := handler.GetDevEUIsWithFragmentationSessionSetup(ctx, item.MulticastGroupID, c.s.FragIndex)
 	if err != nil {
 		return errors.Wrap(err, "get devices with fragmentation session setup error")
 	}
@@ -373,10 +344,10 @@ func stepMulticastSessCSetup(ctx context.Context, handler *store.Handler, item f
 		rmccs := mcss.RemoteMulticastClassCSession{
 			DevEUI:           devEUI,
 			MulticastGroupID: *item.MulticastGroupID,
-			McGroupID:        ctrl.s.McGroupID,
+			McGroupID:        c.s.McGroupID,
 			DLFrequency:      int(mcg.MulticastGroup.Frequency),
 			DR:               int(mcg.MulticastGroup.Dr),
-			SessionTime:      time.Now().Add(time.Duration(ctrl.config.RemoteMulticastSetupRetries) * item.UnicastTimeout),
+			SessionTime:      time.Now().Add(time.Duration(c.config.RemoteMulticastSetupRetries) * item.UnicastTimeout),
 			SessionTimeOut:   item.MulticastTimeout,
 			RetryInterval:    item.UnicastTimeout,
 		}
@@ -387,7 +358,7 @@ func stepMulticastSessCSetup(ctx context.Context, handler *store.Handler, item f
 	}
 
 	item.State = fds.FUOTADeploymentEnqueue
-	item.NextStepAfter = time.Now().Add(time.Duration(ctrl.config.RemoteMulticastSetupRetries) * item.UnicastTimeout)
+	item.NextStepAfter = time.Now().Add(time.Duration(c.config.RemoteMulticastSetupRetries) * item.UnicastTimeout)
 
 	err = handler.UpdateFUOTADeployment(ctx, &item)
 	if err != nil {
@@ -397,7 +368,7 @@ func stepMulticastSessCSetup(ctx context.Context, handler *store.Handler, item f
 	return nil
 }
 
-func stepEnqueue(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepEnqueue(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -416,7 +387,7 @@ func stepEnqueue(ctx context.Context, handler *store.Handler, item fds.FUOTADepl
 			CID: fragmentation.DataFragment,
 			Payload: &fragmentation.DataFragmentPayload{
 				IndexAndN: fragmentation.DataFragmentPayloadIndexAndN{
-					FragIndex: uint8(ctrl.s.FragIndex),
+					FragIndex: uint8(c.s.FragIndex),
 					N:         uint16(i + 1),
 				},
 				Payload: fragments[i],
@@ -431,7 +402,7 @@ func stepEnqueue(ctx context.Context, handler *store.Handler, item fds.FUOTADepl
 	}
 
 	// enqueue the payloads
-	_, err = multicast.EnqueueMultiple(ctx, handler, *item.MulticastGroupID, fragmentation.DefaultFPort, payloads)
+	_, err = multicast.EnqueueMultiple(ctx, handler, *item.MulticastGroupID, fragmentation.DefaultFPort, payloads, c.nsCli)
 	if err != nil {
 		return errors.Wrap(err, "enqueue multiple error")
 	}
@@ -453,12 +424,12 @@ func stepEnqueue(ctx context.Context, handler *store.Handler, item fds.FUOTADepl
 	return nil
 }
 
-func stepStatusRequest(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepStatusRequest(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
 
-	devEUIs, err := handler.GetDevEUIsWithFragmentationSessionSetup(ctx, item.MulticastGroupID, ctrl.s.FragIndex)
+	devEUIs, err := handler.GetDevEUIsWithFragmentationSessionSetup(ctx, item.MulticastGroupID, c.s.FragIndex)
 	if err != nil {
 		return errors.Wrap(err, "get devices with fragmentation session setup error")
 	}
@@ -468,7 +439,7 @@ func stepStatusRequest(ctx context.Context, handler *store.Handler, item fds.FUO
 			CID: fragmentation.FragSessionStatusReq,
 			Payload: &fragmentation.FragSessionStatusReqPayload{
 				FragStatusReqParam: fragmentation.FragSessionStatusReqPayloadFragStatusReqParam{
-					FragIndex:    uint8(ctrl.s.FragIndex),
+					FragIndex:    uint8(c.s.FragIndex),
 					Participants: true,
 				},
 			},
@@ -478,7 +449,7 @@ func stepStatusRequest(ctx context.Context, handler *store.Handler, item fds.FUO
 			return errors.Wrap(err, "marshal binary error")
 		}
 
-		_, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, false, fragmentation.DefaultFPort, b)
+		_, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, false, fragmentation.DefaultFPort, b, c.nsCli)
 		if err != nil {
 			return errors.Wrap(err, "enqueue downlink payload error")
 		}
@@ -495,7 +466,7 @@ func stepStatusRequest(ctx context.Context, handler *store.Handler, item fds.FUO
 	return nil
 }
 
-func stepSetDeviceStatus(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepSetDeviceStatus(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -505,7 +476,7 @@ func stepSetDeviceStatus(ctx context.Context, handler *store.Handler, item fds.F
 		return errors.Wrap(err, "set remote multicast setup error error")
 	}
 
-	err = handler.SetFromRemoteFragmentationSession(ctx, item.ID, ctrl.s.FragIndex)
+	err = handler.SetFromRemoteFragmentationSession(ctx, item.ID, c.s.FragIndex)
 	if err != nil {
 		return errors.Wrap(err, "set fragmentation session setup error error")
 	}
@@ -526,9 +497,9 @@ func stepSetDeviceStatus(ctx context.Context, handler *store.Handler, item fds.F
 	return nil
 }
 
-func stepCleanup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
+func (c *controller) stepCleanup(ctx context.Context, handler *store.Handler, item fds.FUOTADeployment) error {
 	if item.MulticastGroupID != nil {
-		if err := multicast.DeleteMulticastGroup(ctx, *item.MulticastGroupID); err != nil {
+		if err := multicast.DeleteMulticastGroup(ctx, *item.MulticastGroupID, c.nsCli); err != nil {
 			return errors.Wrap(err, "delete multicast group error")
 		}
 	}

@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
-
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/lib/pq/hstore"
@@ -34,7 +32,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
-	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
@@ -951,14 +949,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
-
-		nStruct := &nsmod.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		client, err := nStruct.GetNetworkServiceClient()
+		client, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -1090,13 +1081,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *api.StreamGatewayFrameLogsRequest, srv
 		return helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nsmod.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	client, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}

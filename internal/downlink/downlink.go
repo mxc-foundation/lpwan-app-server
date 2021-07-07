@@ -3,6 +3,8 @@ package downlink
 import (
 	"fmt"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -23,18 +25,20 @@ import (
 type controller struct {
 	h             *store.Handler
 	gIntegrations []models.IntegrationHandler
+	nsCli         *nscli.Client
 }
 
 // Start starts service which handles received downlink payloads to be emitted to the devices.
-func Start(h *store.Handler, gIntegrations []models.IntegrationHandler) {
+func Start(h *store.Handler, gIntegrations []models.IntegrationHandler, nsCli *nscli.Client) {
 	ctrl := &controller{
 		h:             h,
 		gIntegrations: gIntegrations,
+		nsCli:         nsCli,
 	}
 	downChan := make(chan models.DataDownPayload)
 
 	go func() {
-		downChan = integration.ForApplicationID(0, gIntegrations).DataDownChan()
+		downChan = integration.ForApplicationID(context.Background(), 0, gIntegrations, h).DataDownChan()
 		for pl := range downChan {
 			go func(pl models.DataDownPayload) {
 				ctxID, err := uuid.NewV4()
@@ -104,7 +108,7 @@ func (c *controller) handleDataDownPayload(ctx context.Context, pl models.DataDo
 			}
 		}
 
-		if _, err := device.EnqueueDownlinkPayload(ctx, handler, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
+		if _, err := device.EnqueueDownlinkPayload(ctx, handler, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data, c.nsCli); err != nil {
 			return errors.Wrap(err, "enqueue downlink device-queue item error")
 		}
 
@@ -136,7 +140,7 @@ func (c *controller) logCodecError(ctx context.Context, a apps.Application, d ds
 		}
 	}
 
-	if err := integration.ForApplicationID(a.ID, c.gIntegrations).HandleErrorEvent(ctx, vars, errEvent); err != nil {
+	if err := integration.ForApplicationID(ctx, a.ID, c.gIntegrations, c.h).HandleErrorEvent(ctx, vars, errEvent); err != nil {
 		log.WithError(err).WithField("ctx_id", ctx.Value(logging.ContextIDKey)).Error("send error event to integration error")
 	}
 }

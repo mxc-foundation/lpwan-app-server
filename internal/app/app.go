@@ -281,6 +281,6 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 		return err
 	}
 
-	downlink.Start(store.NewStore(), app.integrations)
+	downlink.Start(store.NewStore(), app.integrations, app.nsCli)
 	return nil
 }

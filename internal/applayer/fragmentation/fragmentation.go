@@ -17,52 +17,30 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	. "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
-}
-
-const moduleName = "fragmentation"
-
 type controller struct {
-	name string
-	s    FragmentationStruct
-
-	moduleUp bool
+	s FragmentationStruct
 }
 
 var ctrl *controller
 
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, conf config.Config) error {
-
-	ctrl = &controller{
-		name: moduleName,
-		s:    conf.ApplicationServer.FragmentationSession,
-	}
-	return nil
-}
-
 // Setup configures the package.
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp {
-		return nil
+func Setup(name string, h *store.Handler, s FragmentationStruct, nsCli *nscli.Client) error {
+	ctrl = &controller{
+		s: s,
 	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
 
-	go SyncRemoteFragmentationSessionsLoop()
+	go SyncRemoteFragmentationSessionsLoop(nsCli)
 
 	return nil
 }
 
 // SyncRemoteFragmentationSessionsLoop syncs the fragmentation sessions with the devices.
-func SyncRemoteFragmentationSessionsLoop() {
+func SyncRemoteFragmentationSessionsLoop(nsCli *nscli.Client) {
 	for {
 		ctxID, err := uuid.NewV4()
 		if err != nil {
@@ -73,7 +51,7 @@ func SyncRemoteFragmentationSessionsLoop() {
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
 		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
-			return syncRemoteFragmentationSessions(ctx, handler)
+			return syncRemoteFragmentationSessions(ctx, handler, nsCli)
 		})
 		if err != nil {
 			log.WithError(err).Error("sync remote fragmentation setup error")
@@ -122,14 +100,14 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, handler *store
 	return nil
 }
 
-func syncRemoteFragmentationSessions(ctx context.Context, handler *store.Handler) error {
+func syncRemoteFragmentationSessions(ctx context.Context, handler *store.Handler, nsCli *nscli.Client) error {
 	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, handler, ctrl.s.SyncBatchSize, ctrl.s.SyncRetries)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := syncRemoteFragmentationSession(ctx, handler, item); err != nil {
+		if err := syncRemoteFragmentationSession(ctx, handler, item, nsCli); err != nil {
 			return errors.Wrap(err, "sync remote fragmentation session error")
 		}
 	}
@@ -137,7 +115,8 @@ func syncRemoteFragmentationSessions(ctx context.Context, handler *store.Handler
 	return nil
 }
 
-func syncRemoteFragmentationSession(ctx context.Context, handler *store.Handler, item storage.RemoteFragmentationSession) error {
+func syncRemoteFragmentationSession(ctx context.Context, handler *store.Handler,
+	item storage.RemoteFragmentationSession, nsCli *nscli.Client) error {
 	var cmd fragmentation.Command
 
 	switch item.State {
@@ -184,7 +163,7 @@ func syncRemoteFragmentationSession(ctx context.Context, handler *store.Handler,
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, fragmentation.DefaultFPort, b)
+	_, err = device.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, fragmentation.DefaultFPort, b, nsCli)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

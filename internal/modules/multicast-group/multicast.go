@@ -3,6 +3,7 @@ package multicast
 import (
 	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -16,8 +17,9 @@ import (
 )
 
 // Enqueue adds the given payload to the multicast-group queue.
-func Enqueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, fPort uint8, data []byte) (uint32, error) {
-	fCnts, err := EnqueueMultiple(ctx, handler, multicastGroupID, fPort, [][]byte{data})
+func Enqueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, fPort uint8,
+	data []byte, nsCli *nscli.Client) (uint32, error) {
+	fCnts, err := EnqueueMultiple(ctx, handler, multicastGroupID, fPort, [][]byte{data}, nsCli)
 	if err != nil {
 		return 0, err
 	}
@@ -30,11 +32,12 @@ func Enqueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.
 }
 
 // EnqueueMultiple adds the given payloads to the multicast-group queue.
-func EnqueueMultiple(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, fPort uint8, payloads [][]byte) ([]uint32, error) {
+func EnqueueMultiple(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, fPort uint8,
+	payloads [][]byte, nsCli *nscli.Client) ([]uint32, error) {
 	// Get and lock multicast-group, the lock is to make sure there are no
 	// concurrent enqueue actions for the same multicast-group, which would
 	// result in the re-use of the same frame-counter.
-	mg, err := GetMulticastGroup(ctx, multicastGroupID, true, false)
+	mg, err := GetMulticastGroup(ctx, multicastGroupID, true, false, nsCli)
 	if err != nil {
 		return nil, errors.Wrap(err, "get multicast-group error")
 	}
@@ -81,9 +84,9 @@ func EnqueueMultiple(ctx context.Context, handler *store.Handler, multicastGroup
 }
 
 // ListQueue lists the items in the multicast-group queue.
-func ListQueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID) ([]api.MulticastQueueItem, error) {
+func ListQueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, nsCli *nscli.Client) ([]api.MulticastQueueItem, error) {
 
-	mg, err := GetMulticastGroup(ctx, multicastGroupID, false, false)
+	mg, err := GetMulticastGroup(ctx, multicastGroupID, false, false, nsCli)
 	if err != nil {
 		return nil, errors.Wrap(err, "get multicast-group error")
 	}
