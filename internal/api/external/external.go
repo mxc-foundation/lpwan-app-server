@@ -203,6 +203,7 @@ func (srv *ExtAPIServer) SetupCusAPI(h *store.Handler, conf ExtAPIConfig) error 
 		},
 		conf.PSCli,
 		conf.MXPCli,
+		conf.NSCli,
 		conf.ServerAddr,
 		conf.BindOldGateway,
 		conf.BindNewGateway,

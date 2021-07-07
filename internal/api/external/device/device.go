@@ -68,11 +68,6 @@ func CreateDevice(ctx context.Context, st Store, d *devd.Device, app *appd.Appli
 		}
 	}
 
-	err = st.CreateDevice(ctx, d)
-	if err != nil {
-		return status.Errorf(codes.Unknown, "%v", err)
-	}
-
 	timestampCreatedAt := timestamppb.New(time.Now())
 
 	// add this device to m2m server
@@ -85,7 +80,7 @@ func CreateDevice(ctx context.Context, st Store, d *devd.Device, app *appd.Appli
 			CreatedAt:     timestampCreatedAt,
 		},
 	})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.AlreadyExists {
 		return status.Errorf(codes.Unknown, "m2m server create device api error: %v", err)
 	}
 
@@ -100,6 +95,11 @@ func CreateDevice(ctx context.Context, st Store, d *devd.Device, app *appd.Appli
 			ReferenceAltitude: d.ReferenceAltitude,
 		},
 	})
+	if err != nil && status.Code(err) != codes.AlreadyExists {
+		return status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	err = st.CreateDevice(ctx, d)
 	if err != nil {
 		return status.Errorf(codes.Unknown, "%v", err)
 	}
@@ -145,7 +145,7 @@ func DeleteDevice(ctx context.Context, st Store, devEUI lorawan.EUI64, mxpCli pb
 	if d.ProvisionID != "" {
 		log.Debugf("DeleteDevice() Clear server addr for %v at PS", d.ProvisionID)
 		_, err = psCli.SetDeviceServer(ctx, &psPb.SetDeviceServerRequest{ProvisionId: d.ProvisionID, Server: ""})
-		if err != nil {
+		if err != nil && status.Code(err) != codes.NotFound {
 			return err
 		}
 	}

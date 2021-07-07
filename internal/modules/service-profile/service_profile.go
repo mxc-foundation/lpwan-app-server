@@ -47,7 +47,7 @@ func CreateServiceProfile(ctx context.Context, st Store, sp *ServiceProfile, nsC
 	_, err = nsClient.CreateServiceProfile(ctx, &ns.CreateServiceProfileRequest{
 		ServiceProfile: &sp.ServiceProfile,
 	})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.AlreadyExists {
 		return nil, errors.Wrap(err, "create service-profile error")
 	}
 

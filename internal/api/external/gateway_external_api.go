@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/lib/pq/hstore"
@@ -50,6 +52,7 @@ type GatewayAPI struct {
 	auth   auth.Authenticator
 	pscli  psPb.ProvisionClient
 	mxpCli pb.GSGatewayServiceClient
+	nsCli  *nscli.Client
 
 	serverAddr     string
 	bindOldGateway string
@@ -64,13 +67,14 @@ type GwConfig struct {
 
 // NewGatewayAPI creates a new GatewayAPI.
 func NewGatewayAPI(st *pgstore.PgStore, auth auth.Authenticator, config GwConfig, pscli *pscli.Client,
-	mxpCli *mxpcli.Client, serverAddr, bindOldGateway, bindNewGateway string) *GatewayAPI {
+	mxpCli *mxpcli.Client, nsCli *nscli.Client, serverAddr, bindOldGateway, bindNewGateway string) *GatewayAPI {
 	return &GatewayAPI{
 		st:             st,
 		auth:           auth,
 		config:         config,
 		pscli:          pscli.GetPServerClient(),
 		mxpCli:         mxpCli.GetM2MGatewayServiceClient(),
+		nsCli:          nsCli,
 		serverAddr:     serverAddr,
 		bindNewGateway: bindNewGateway,
 		bindOldGateway: bindOldGateway,
@@ -409,11 +413,7 @@ func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) 
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	nsAllowed, err := a.st.OrganizationCanAccessNetworkServer(ctx, req.Gateway.OrganizationId, req.Gateway.NetworkServerId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	if !cred.IsGatewayAdmin || !nsAllowed {
+	if !cred.IsGatewayAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
@@ -536,7 +536,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		SerialNumber:       defaultGw.SerialNumber,
 		FirmwareHash:       types.MD5SUM{},
 		AutoUpdateFirmware: true,
-	}, createReq, a.mxpCli); err != nil {
+	}, createReq, a.mxpCli, a.nsCli); err != nil {
 		return err
 	}
 
@@ -596,13 +596,7 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nsmod.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	client, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -994,7 +988,7 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, err
 	}
 
-	if err := gw.DeleteGateway(ctx, mac, a.st, a.pscli); err != nil {
+	if err := gw.DeleteGateway(ctx, mac, a.st, a.pscli, a.nsCli); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
