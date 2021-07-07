@@ -119,7 +119,7 @@ func CreateDeviceProfile(ctx context.Context, st Store, nsCli *nscli.Client, dp 
 	_, err = nsClient.CreateDeviceProfile(ctx, &ns.CreateDeviceProfileRequest{
 		DeviceProfile: &dp.DeviceProfile,
 	})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.AlreadyExists {
 		return errors.Wrap(err, "create device-profile errror")
 	}
 	if err := st.CreateDeviceProfile(ctx, dp); err != nil {

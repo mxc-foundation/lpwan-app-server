@@ -25,7 +25,6 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/storage"
 

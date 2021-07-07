@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/clocksync"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // HandleClockSyncCommand handles an uplink clock synchronization command.
-func HandleClockSyncCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration, b []byte) error {
+func HandleClockSyncCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64,
+	timeSinceGPSEpoch time.Duration, b []byte, nsCli *nscli.Client) error {
 	var cmd clocksync.Command
 
 	if err := cmd.UnmarshalBinary(true, b); err != nil {
@@ -30,7 +31,7 @@ func HandleClockSyncCommand(ctx context.Context, handler *store.Handler, devEUI 
 		if !ok {
 			return fmt.Errorf("expected *clocksync.AppTimeReqPayload, got: %T", cmd.Payload)
 		}
-		if err := handleAppTimeReq(ctx, handler, devEUI, timeSinceGPSEpoch, pl); err != nil {
+		if err := handleAppTimeReq(ctx, handler, devEUI, timeSinceGPSEpoch, pl, nsCli); err != nil {
 			return errors.Wrap(err, "handle AppTimeReq error")
 		}
 	default:
@@ -40,7 +41,8 @@ func HandleClockSyncCommand(ctx context.Context, handler *store.Handler, devEUI 
 	return nil
 }
 
-func handleAppTimeReq(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration, pl *clocksync.AppTimeReqPayload) error {
+func handleAppTimeReq(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration,
+	pl *clocksync.AppTimeReqPayload, nsCli *nscli.Client) error {
 	deviceGPSTime := int64(pl.DeviceTime)
 	networkGPSTime := int64((timeSinceGPSEpoch / time.Second) % (1 << 32))
 
@@ -65,7 +67,7 @@ func handleAppTimeReq(ctx context.Context, handler *store.Handler, devEUI lorawa
 		return errors.Wrap(err, "marshal command error")
 	}
 
-	_, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, false, uint8(clocksync.DefaultFPort), b)
+	_, err = device.EnqueueDownlinkPayload(ctx, handler, devEUI, false, uint8(clocksync.DefaultFPort), b, nsCli)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

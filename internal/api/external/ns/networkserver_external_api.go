@@ -147,30 +147,17 @@ func CreateNetworkServer(ctx context.Context, n *NetworkServer, st Store, gpSt g
 		return err
 	}
 	nsClient := ns.NewNetworkServerServiceClient(conn)
-	// adding application server id of local appserver to network server, this is unique in network server
-	// check whether application server id already exists
-	_, err = nsClient.GetRoutingProfile(ctx, &ns.GetRoutingProfileRequest{
-		Id: applicationServerID.Bytes(),
-	})
-	if err != nil {
-		if strings.Contains(err.Error(), "code = NotFound") {
-			// create routing profile if none exists
-			if _, err = nsClient.CreateRoutingProfile(ctx, &ns.CreateRoutingProfileRequest{
-				RoutingProfile: &ns.RoutingProfile{
-					Id:      applicationServerID.Bytes(),
-					AsId:    applicationServerPublicHost,
-					CaCert:  n.RoutingProfileCACert,
-					TlsCert: n.RoutingProfileTLSCert,
-					TlsKey:  n.RoutingProfileTLSKey,
-				},
-			}); err != nil {
-				return err
-			}
-		} else {
-			// unknow error
-			return err
-		}
-	} // do not create routing profile if there is one existing already
+	if _, err = nsClient.CreateRoutingProfile(ctx, &ns.CreateRoutingProfileRequest{
+		RoutingProfile: &ns.RoutingProfile{
+			Id:      applicationServerID.Bytes(),
+			AsId:    applicationServerPublicHost,
+			CaCert:  n.RoutingProfileCACert,
+			TlsCert: n.RoutingProfileTLSCert,
+			TlsKey:  n.RoutingProfileTLSKey,
+		},
+	}); err != nil && status.Code(err) != codes.AlreadyExists {
+		return err
+	}
 
 	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
 	if err != nil {
@@ -235,24 +222,16 @@ func UpdateNetworkServer(ctx context.Context, n *NetworkServer,
 
 // DeleteNetworkServer deletes network server config from appserver and network server
 func DeleteNetworkServer(ctx context.Context, id int64, st Store, nsCli *nscli.Client, applicationServerID uuid.UUID) error {
-
 	nsClient, err := nsCli.GetNetworkServerServiceClient(id)
 	if err != nil {
 		return fmt.Errorf("failed to get ns client for network server %d: %v", id, err)
 	}
-
-	_, err = nsClient.GetRoutingProfile(ctx, &ns.GetRoutingProfileRequest{
+	_, err = nsClient.DeleteRoutingProfile(ctx, &ns.DeleteRoutingProfileRequest{
 		Id: applicationServerID.Bytes(),
 	})
-	if err == nil {
-		_, err = nsClient.DeleteRoutingProfile(ctx, &ns.DeleteRoutingProfileRequest{
-			Id: applicationServerID.Bytes(),
-		})
-		if err != nil {
-			return errors.Wrap(err, "delete routing-profile error")
-		}
+	if err != nil && status.Code(err) != codes.NotFound {
+		return errors.Wrap(err, "delete routing-profile error")
 	}
-
 	// delete remote routing profile first, so that user can try again if local change fails to be done
 	if err := st.DeleteNetworkServer(ctx, id); err != nil {
 		return err

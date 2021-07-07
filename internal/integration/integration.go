@@ -23,7 +23,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/types"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 )
 
 // Handler kinds
@@ -95,19 +95,24 @@ func SetupGlobalIntegrations(config types.IntegrationStruct) ([]models.Integrati
 	return ints, nil
 }
 
+// Store defines db APIs used by integration package
+type Store interface {
+	GetIntegrationsForApplicationID(ctx context.Context, applicationID int64) ([]appd.Integration, error)
+}
+
 // ForApplicationID returns the integration handler for the given application ID.
 // The returned handler will be a "multi-handler", containing both the global
 // integrations and the integrations setup specifically for the given
 // application ID.
 // When the given application ID equals 0, only the global integrations are
 // returned.
-func ForApplicationID(id int64, gIntegrations []models.IntegrationHandler) models.Integration {
-	var appints []storage.Integration
+func ForApplicationID(ctx context.Context, id int64, gIntegrations []models.IntegrationHandler, st Store) models.Integration {
+	var appints []appd.Integration
 	var err error
 
 	// retrieve application integrations when ID != 0
 	if id != 0 {
-		appints, err = storage.GetIntegrationsForApplicationID(context.TODO(), storage.DB(), id)
+		appints, err = st.GetIntegrationsForApplicationID(ctx, id)
 		if err != nil {
 			log.WithError(err).WithFields(log.Fields{
 				"application_id": id,

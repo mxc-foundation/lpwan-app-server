@@ -16,8 +16,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-// Setup checks migration status and runs migration scripts right after db is ready
-func Setup(h *store.Handler, autoMigrate bool, nsCli *nscli.Client) error {
+// Setup checks migration status and updates db schemas
+func Setup(h *store.Handler, autoMigrate bool) error {
 	if autoMigrate {
 
 		if err := MigrateGorpMigrations(h); err != nil {
@@ -36,6 +36,11 @@ func Setup(h *store.Handler, autoMigrate bool, nsCli *nscli.Client) error {
 		}
 	}
 
+	return nil
+}
+
+// RunDBMigrationScripts executes data migration scripts after initialization of network server client
+func RunDBMigrationScripts(h *store.Handler, nsCli *nscli.Client) error {
 	if err := Migrate("migrate_gw_stats", h, nsCli, MigrateGatewayStats); err != nil {
 		log.Fatal(errors.Wrap(err, "migration error"))
 	}

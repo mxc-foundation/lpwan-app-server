@@ -246,6 +246,34 @@ func (ps *PgStore) GetNetworkServer(ctx context.Context, id int64) (nsapi.Networ
 	return networkServer, nil
 }
 
+// UpdateNetworkServerRegionAndVersion updates region and version with given network server id
+func (ps *PgStore) UpdateNetworkServerRegionAndVersion(ctx context.Context, nID int64, region, version string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update network_server
+		set
+			updated_at = NOW(),
+			version = $1,
+			region = $2
+		where id = $3`,
+		version,
+		region,
+		nID,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return errHandler.ErrDoesNotExist
+	}
+
+	return nil
+}
+
 // UpdateNetworkServer updates the given network-server.
 func (ps *PgStore) UpdateNetworkServer(ctx context.Context, n *nsapi.NetworkServer) error {
 	if err := n.Validate(); err != nil {

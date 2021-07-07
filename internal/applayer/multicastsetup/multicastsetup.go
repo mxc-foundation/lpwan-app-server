@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -15,57 +13,36 @@ import (
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
 	"github.com/brocaar/lorawan/gps"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
-func init() {
-	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
-	mgr.RegisterModuleSetup(moduleName, Setup)
-}
-
-const moduleName = "multicastsetup"
-
 type controller struct {
-	name string
-	s    MulticastStruct
-
-	moduleUp bool
+	s MulticastStruct
 }
 
 var ctrl *controller
 
-// SettingsSetup initialize module settings on start
-func SettingsSetup(name string, conf config.Config) error {
-	ctrl = &controller{
-		name: moduleName,
-		s:    conf.ApplicationServer.RemoteMulticastSetup,
-	}
-	return nil
-}
-
 // Setup configures the package.
-func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp {
-		return nil
+func Setup(nsCli *nscli.Client, s MulticastStruct) error {
+	ctrl = &controller{
+		s: s,
 	}
-	defer func() {
-		ctrl.moduleUp = true
-	}()
 
-	go SyncRemoteMulticastSetupLoop()
-	go SyncRemoteMulticastClassCSessionLoop()
+	go SyncRemoteMulticastSetupLoop(nsCli)
+	go SyncRemoteMulticastClassCSessionLoop(nsCli)
 
 	return nil
 }
 
 // SyncRemoteMulticastSetupLoop syncs the multicast setup with the devices.
-func SyncRemoteMulticastSetupLoop() {
+func SyncRemoteMulticastSetupLoop(nsCli *nscli.Client) {
 	for {
 		ctxID, err := uuid.NewV4()
 		if err != nil {
@@ -76,7 +53,7 @@ func SyncRemoteMulticastSetupLoop() {
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
 		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
-			return syncRemoteMulticastSetup(ctx, handler)
+			return syncRemoteMulticastSetup(ctx, handler, nsCli)
 		})
 
 		if err != nil {
@@ -88,7 +65,7 @@ func SyncRemoteMulticastSetupLoop() {
 
 // SyncRemoteMulticastClassCSessionLoop syncs the multicast Class-C session
 // with the devices.
-func SyncRemoteMulticastClassCSessionLoop() {
+func SyncRemoteMulticastClassCSessionLoop(nsCli *nscli.Client) {
 	for {
 		ctxID, err := uuid.NewV4()
 		if err != nil {
@@ -99,7 +76,7 @@ func SyncRemoteMulticastClassCSessionLoop() {
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
 		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
-			return syncRemoteMulticastClassCSession(ctx, handler)
+			return syncRemoteMulticastClassCSession(ctx, handler, nsCli)
 		})
 
 		if err != nil {
@@ -110,7 +87,8 @@ func SyncRemoteMulticastClassCSessionLoop() {
 }
 
 // HandleRemoteMulticastSetupCommand handles an uplink remote multicast setup command.
-func HandleRemoteMulticastSetupCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, b []byte) error {
+func HandleRemoteMulticastSetupCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64,
+	b []byte, nsCli *nscli.Client) error {
 	var cmd multicastsetup.Command
 
 	if err := cmd.UnmarshalBinary(true, b); err != nil {
@@ -131,7 +109,7 @@ func HandleRemoteMulticastSetupCommand(ctx context.Context, handler *store.Handl
 		if !ok {
 			return fmt.Errorf("expected *multicastsetup.McGroupDeleteAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleMcGroupDeleteAns(ctx, handler, devEUI, pl); err != nil {
+		if err := handleMcGroupDeleteAns(ctx, handler, devEUI, pl, nsCli); err != nil {
 			return errors.Wrap(err, "handle McGroupDeleteAns error")
 		}
 	case multicastsetup.McClassCSessionAns:
@@ -139,7 +117,7 @@ func HandleRemoteMulticastSetupCommand(ctx context.Context, handler *store.Handl
 		if !ok {
 			return fmt.Errorf("expected *multicastsetup.McClassCSessionAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleMcClassCSessionAns(ctx, handler, devEUI, pl); err != nil {
+		if err := handleMcClassCSessionAns(ctx, handler, devEUI, pl, nsCli); err != nil {
 			return errors.Wrap(err, "handle McClassCSessionAns error")
 		}
 	default:
@@ -174,7 +152,8 @@ func handleMcGroupSetupAns(ctx context.Context, handler *store.Handler, devEUI l
 	return nil
 }
 
-func handleMcGroupDeleteAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *multicastsetup.McGroupDeleteAnsPayload) error {
+func handleMcGroupDeleteAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64,
+	pl *multicastsetup.McGroupDeleteAnsPayload, nsCli *nscli.Client) error {
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,
 		"mc_group_id":        pl.McGroupIDHeader.McGroupID,
@@ -196,7 +175,7 @@ func handleMcGroupDeleteAns(ctx context.Context, handler *store.Handler, devEUI 
 		return errors.Wrap(err, "update remote multicast-setup error")
 	}
 
-	if err := multicast.RemoveDeviceFromMulticastGroup(ctx, rms.MulticastGroupID, devEUI); err != nil {
+	if err := multicast.RemoveDeviceFromMulticastGroup(ctx, rms.MulticastGroupID, devEUI, nsCli); err != nil {
 		if err == errHandler.ErrDoesNotExist {
 			log.WithFields(log.Fields{
 				"dev_eui":            devEUI,
@@ -211,7 +190,8 @@ func handleMcGroupDeleteAns(ctx context.Context, handler *store.Handler, devEUI 
 	return nil
 }
 
-func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *multicastsetup.McClassCSessionAnsPayload) error {
+func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64,
+	pl *multicastsetup.McClassCSessionAnsPayload, nsCli *nscli.Client) error {
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,
 		"time_to_start":      pl.TimeToStart,
@@ -236,7 +216,7 @@ func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEU
 		return errors.Wrap(err, "update remote multicast class-c session error")
 	}
 
-	if err := multicast.AddDeviceToMulticastGroup(ctx, sess.MulticastGroupID, devEUI); err != nil {
+	if err := multicast.AddDeviceToMulticastGroup(ctx, sess.MulticastGroupID, devEUI, nsCli); err != nil {
 		if err == errHandler.ErrAlreadyExists {
 			log.WithFields(log.Fields{
 				"dev_eui":            devEUI,
@@ -251,14 +231,14 @@ func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEU
 	return nil
 }
 
-func syncRemoteMulticastSetup(ctx context.Context, handler *store.Handler) error {
+func syncRemoteMulticastSetup(ctx context.Context, handler *store.Handler, nsCli *nscli.Client) error {
 	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, handler, ctrl.s.SyncBatchSize, ctrl.s.SyncRetries)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := syncRemoteMulticastSetupItem(ctx, handler, item); err != nil {
+		if err := syncRemoteMulticastSetupItem(ctx, handler, item, nsCli); err != nil {
 			return errors.Wrap(err, "sync remote multicast-setup error")
 		}
 	}
@@ -266,7 +246,8 @@ func syncRemoteMulticastSetup(ctx context.Context, handler *store.Handler) error
 	return nil
 }
 
-func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler, item storage.RemoteMulticastSetup) error {
+func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler,
+	item storage.RemoteMulticastSetup, nsCli *nscli.Client) error {
 	var cmd multicastsetup.Command
 
 	switch item.State {
@@ -301,7 +282,7 @@ func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler, i
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, multicastsetup.DefaultFPort, b)
+	_, err = device.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, multicastsetup.DefaultFPort, b, nsCli)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}
@@ -323,14 +304,14 @@ func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler, i
 	return nil
 }
 
-func syncRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler) error {
+func syncRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler, nsCli *nscli.Client) error {
 	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, handler, ctrl.s.SyncBatchSize, ctrl.s.SyncRetries)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := syncRemoteMulticastClassCSessionItem(ctx, handler, item); err != nil {
+		if err := syncRemoteMulticastClassCSessionItem(ctx, handler, item, nsCli); err != nil {
 			return errors.Wrap(err, "sync remote multicast class-c session error")
 		}
 	}
@@ -338,7 +319,8 @@ func syncRemoteMulticastClassCSession(ctx context.Context, handler *store.Handle
 	return nil
 }
 
-func syncRemoteMulticastClassCSessionItem(ctx context.Context, handler *store.Handler, item storage.RemoteMulticastClassCSession) error {
+func syncRemoteMulticastClassCSessionItem(ctx context.Context, handler *store.Handler,
+	item storage.RemoteMulticastClassCSession, nsCli *nscli.Client) error {
 	cmd := multicastsetup.Command{
 		CID: multicastsetup.McClassCSessionReq,
 		Payload: &multicastsetup.McClassCSessionReqPayload{
@@ -359,7 +341,7 @@ func syncRemoteMulticastClassCSessionItem(ctx context.Context, handler *store.Ha
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, multicastsetup.DefaultFPort, b)
+	_, err = device.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, multicastsetup.DefaultFPort, b, nsCli)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

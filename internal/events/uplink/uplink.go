@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -33,8 +35,8 @@ import (
 )
 
 type uplinkContext struct {
-	handler *store.Handler
-
+	handler       *store.Handler
+	nsCli         *nscli.Client
 	uplinkDataReq as.HandleUplinkDataRequest
 
 	ctx           context.Context
@@ -61,9 +63,10 @@ var tasks = []func(*uplinkContext) error{
 
 // Handle handles the uplink event.
 func Handle(ctx context.Context, req as.HandleUplinkDataRequest, handler *store.Handler,
-	gIntegrations []models.IntegrationHandler) error {
+	gIntegrations []models.IntegrationHandler, nsCli *nscli.Client) error {
 	uc := uplinkContext{
 		handler:       handler,
+		nsCli:         nsCli,
 		ctx:           ctx,
 		uplinkDataReq: req,
 		gIntegrations: gIntegrations,
@@ -178,7 +181,7 @@ func updateDeviceActivation(ctx *uplinkContext) error {
 		}
 	}
 
-	err = integration.ForApplicationID(ctx.device.ApplicationID, ctx.gIntegrations).HandleJoinEvent(ctx.ctx, vars, pl)
+	err = integration.ForApplicationID(ctx.ctx, ctx.device.ApplicationID, ctx.gIntegrations, ctx.handler).HandleJoinEvent(ctx.ctx, vars, pl)
 	if err != nil {
 		return errors.Wrap(err, "send join notification error")
 	}
@@ -207,7 +210,7 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 	return ctx.handler.Tx(context.Background(), func(context context.Context, handler *store.Handler) error {
 		switch ctx.uplinkDataReq.FPort {
 		case 200:
-			if err := multicastsetup.HandleRemoteMulticastSetupCommand(ctx.ctx, handler, ctx.device.DevEUI, ctx.data); err != nil {
+			if err := multicastsetup.HandleRemoteMulticastSetupCommand(ctx.ctx, handler, ctx.device.DevEUI, ctx.data, ctx.nsCli); err != nil {
 				return errors.Wrap(err, "handle remote multicast setup command error")
 			}
 		case 201:
@@ -241,7 +244,7 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 				timeSinceGPSEpoch = gps.Time(timeField).TimeSinceGPSEpoch()
 			}
 
-			if err := clocksync.HandleClockSyncCommand(ctx.ctx, handler, ctx.device.DevEUI, timeSinceGPSEpoch, ctx.data); err != nil {
+			if err := clocksync.HandleClockSyncCommand(ctx.ctx, handler, ctx.device.DevEUI, timeSinceGPSEpoch, ctx.data, ctx.nsCli); err != nil {
 				return errors.Wrap(err, "handle clocksync command error")
 			}
 		}
@@ -297,7 +300,7 @@ func handleCodec(ctx *uplinkContext) error {
 			}
 		}
 
-		if err := integration.ForApplicationID(ctx.device.ApplicationID, ctx.gIntegrations).HandleErrorEvent(ctx.ctx, vars, errEvent); err != nil {
+		if err := integration.ForApplicationID(ctx.ctx, ctx.device.ApplicationID, ctx.gIntegrations, ctx.handler).HandleErrorEvent(ctx.ctx, vars, errEvent); err != nil {
 			log.WithError(err).Error("send error event to integration error")
 		}
 	}
@@ -351,7 +354,7 @@ func handleIntegrations(ctx *uplinkContext) error {
 	// Handle the actual integration handling in a Go-routine so that the
 	// as.HandleUplinkData api can return.
 	go func() {
-		err := integration.ForApplicationID(ctx.device.ApplicationID, ctx.gIntegrations).HandleUplinkEvent(bgCtx, vars, pl)
+		err := integration.ForApplicationID(ctx.ctx, ctx.device.ApplicationID, ctx.gIntegrations, ctx.handler).HandleUplinkEvent(bgCtx, vars, pl)
 		if err != nil {
 			log.WithError(err).Error("send uplink event error")
 		}

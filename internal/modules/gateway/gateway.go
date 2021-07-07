@@ -33,7 +33,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
@@ -256,7 +256,7 @@ func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Co
 
 // AddGateway add new gateway and sync across all relevant servers
 func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns.CreateGatewayRequest,
-	mxpCli pb.GSGatewayServiceClient) error {
+	mxpCli pb.GSGatewayServiceClient, nsCli *nscli.Client) error {
 	organization, err := st.GetOrganization(ctx, gateway.OrganizationID, true)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
@@ -277,11 +277,6 @@ func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns
 		}
 	}
 
-	err = st.CreateGateway(ctx, gateway)
-	if err != nil {
-		return helpers.ErrToRPCError(err)
-	}
-
 	timestampCreatedAt := timestamppb.New(time.Now())
 	// add this gateway to m2m server
 	_, err = mxpCli.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
@@ -294,7 +289,7 @@ func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns
 			CreatedAt:   timestampCreatedAt,
 		},
 	})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.AlreadyExists {
 		return helpers.ErrToRPCError(err)
 	}
 
@@ -303,13 +298,7 @@ func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns
 		return helpers.ErrToRPCError(err)
 	}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
+	client, err := nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -319,11 +308,16 @@ func AddGateway(ctx context.Context, st Store, gateway *gw.Gateway, createReq ns
 		return err
 	}
 
+	err = st.CreateGateway(ctx, gateway)
+	if err != nil {
+		return helpers.ErrToRPCError(err)
+	}
+
 	return nil
 }
 
 // DeleteGateway deletes gateway and sync across all relevant servers. Must be called from within transaction
-func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.ProvisionClient) error {
+func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.ProvisionClient, nsCli *nscli.Client) error {
 	// if the gateway is MatchX gateway, unregister it from provisioning server
 	obj, err := st.GetGateway(ctx, mac, false)
 	if err != nil {
@@ -333,10 +327,6 @@ func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.
 	n, err := st.GetNetworkServerForGatewayMAC(ctx, mac)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
-	}
-
-	if err := st.DeleteGateway(ctx, obj.MAC); err != nil {
-		return err
 	}
 
 	// delete this gateway from m2m-server
@@ -349,13 +339,7 @@ func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.
 		log.WithError(err).Error("delete gateway from m2m-server error")
 	}
 
-	nsStruct := nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nsStruct.GetNetworkServiceClient()
+	client, err := nsCli.GetNetworkServerServiceClient(n.ID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -372,9 +356,13 @@ func DeleteGateway(ctx context.Context, mac lorawan.EUI64, st Store, psCli psPb.
 			Sn:  obj.SerialNumber,
 			Mac: obj.MAC.String(),
 		})
-		if err != nil {
+		if err != nil && status.Code(err) != codes.NotFound {
 			return errors.Wrap(err, "failed to unregister from provisioning server")
 		}
+	}
+
+	if err := st.DeleteGateway(ctx, obj.MAC); err != nil {
+		return err
 	}
 
 	log.WithFields(log.Fields{

@@ -53,18 +53,6 @@ func SetupSystemModules() error {
 		return err
 	}
 
-	criticalStartUpList := []string{"network_server"}
-	for _, v := range criticalStartUpList {
-		if _, ok := moduleSetupCallbackFunc[v]; !ok {
-			return fmt.Errorf("setup function is not found for %s", v)
-		}
-
-		f := moduleSetupCallbackFunc[v]
-		if err := (*f)(v, store.NewStore()); err != nil {
-			return err
-		}
-	}
-
 	for n, f := range moduleSetupCallbackFunc {
 		if err := (*f)(n, store.NewStore()); err != nil {
 			return err

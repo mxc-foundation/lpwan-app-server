@@ -89,7 +89,7 @@ func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
-	if err := multicast.CreateMulticastGroup(ctx, &mg); err != nil {
+	if err := multicast.CreateMulticastGroup(ctx, &mg, a.nsCli); err != nil {
 		return nil, err
 	}
 
@@ -112,7 +112,7 @@ func (a *MulticastGroupAPI) Get(ctx context.Context, req *pb.GetMulticastGroupRe
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	mg, err := multicast.GetMulticastGroup(ctx, mgID, false, false)
+	mg, err := multicast.GetMulticastGroup(ctx, mgID, false, false, a.nsCli)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
@@ -159,7 +159,7 @@ func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastG
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	mg, err := multicast.GetMulticastGroup(ctx, mgID, false, false)
+	mg, err := multicast.GetMulticastGroup(ctx, mgID, false, false, a.nsCli)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
@@ -192,7 +192,7 @@ func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
-	if err = multicast.UpdateMulticastGroup(ctx, &mg); err != nil {
+	if err = multicast.UpdateMulticastGroup(ctx, &mg, a.nsCli); err != nil {
 		return nil, err
 	}
 
@@ -206,7 +206,7 @@ func (a *MulticastGroupAPI) Delete(ctx context.Context, req *pb.DeleteMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, "id: %s", err)
 	}
 
-	if err = multicast.DeleteMulticastGroup(ctx, mgID); err != nil {
+	if err = multicast.DeleteMulticastGroup(ctx, mgID, a.nsCli); err != nil {
 		return nil, err
 	}
 
@@ -326,7 +326,7 @@ func (a *MulticastGroupAPI) AddDevice(ctx context.Context, req *pb.AddDeviceToMu
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
-	mg, err := multicast.GetMulticastGroup(ctx, mgID, false, true)
+	mg, err := multicast.GetMulticastGroup(ctx, mgID, false, true, a.nsCli)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
@@ -335,7 +335,7 @@ func (a *MulticastGroupAPI) AddDevice(ctx context.Context, req *pb.AddDeviceToMu
 		return nil, status.Errorf(codes.FailedPrecondition, "service-profile of device != service-profile of multicast-group")
 	}
 
-	if err = multicast.AddDeviceToMulticastGroup(ctx, mgID, devEUI); err != nil {
+	if err = multicast.AddDeviceToMulticastGroup(ctx, mgID, devEUI, a.nsCli); err != nil {
 		return nil, err
 	}
 
@@ -358,7 +358,7 @@ func (a *MulticastGroupAPI) RemoveDevice(ctx context.Context, req *pb.RemoveDevi
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err = multicast.RemoveDeviceFromMulticastGroup(ctx, mgID, devEUI); err != nil {
+	if err = multicast.RemoveDeviceFromMulticastGroup(ctx, mgID, devEUI, a.nsCli); err != nil {
 		return nil, err
 	}
 
@@ -388,7 +388,7 @@ func (a *MulticastGroupAPI) Enqueue(ctx context.Context, req *pb.EnqueueMulticas
 
 	if err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		var err error
-		fCnt, err = multicast.Enqueue(ctx, handler, mgID, uint8(req.MulticastQueueItem.FPort), req.MulticastQueueItem.Data)
+		fCnt, err = multicast.Enqueue(ctx, handler, mgID, uint8(req.MulticastQueueItem.FPort), req.MulticastQueueItem.Data, a.nsCli)
 		if err != nil {
 			return status.Errorf(codes.Internal, "enqueue multicast-group queue-item error: %s", err)
 		}
@@ -445,7 +445,7 @@ func (a *MulticastGroupAPI) ListQueue(ctx context.Context, req *pb.ListMulticast
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	queueItems, err := multicast.ListQueue(ctx, a.st, mgID)
+	queueItems, err := multicast.ListQueue(ctx, a.st, mgID, a.nsCli)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}

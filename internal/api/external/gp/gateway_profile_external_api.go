@@ -130,7 +130,7 @@ func CreateGatewayProfile(ctx context.Context, st Store, nsCli *nscli.Client,
 	_, err = nsClient.CreateGatewayProfile(ctx, &ns.CreateGatewayProfileRequest{
 		GatewayProfile: &gp.GatewayProfile,
 	})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.AlreadyExists {
 		return nil, fmt.Errorf("failed to create gateway profile in network server:%v", err)
 	}
 
@@ -310,13 +310,6 @@ func DeleteGatewayProfile(ctx context.Context, st Store, gpID uuid.UUID, nsCli *
 	if err != nil {
 		return err
 	}
-	// delete gateway profile from local server first, it is still acceptable to keep record in network server when deleting
-	// from network server failed, user won't be able to configure their gateways with discarded gateway profile record
-	err = st.DeleteGatewayProfile(ctx, gpID)
-	if err != nil {
-		return err
-	}
-
 	nsClient, err := nsCli.GetNetworkServerServiceClient(nID)
 	if err != nil {
 		return err
@@ -324,8 +317,12 @@ func DeleteGatewayProfile(ctx context.Context, st Store, gpID uuid.UUID, nsCli *
 	_, err = nsClient.DeleteGatewayProfile(ctx, &ns.DeleteGatewayProfileRequest{
 		Id: gpID.Bytes(),
 	})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway-profile error")
+	}
+	err = st.DeleteGatewayProfile(ctx, gpID)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -7,6 +7,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/device"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -50,16 +54,20 @@ type Config struct {
 
 // Integration implements a LoRaCloud Integration.
 type Integration struct {
+	h              *store.Handler
+	nsCli          *nscli.Client
 	config         Config
 	geolocationURI string
 	dasURI         string
 }
 
 // New creates a new LoRaCloud integration.
-func New(conf Config) (*Integration, error) {
+func New(conf Config, h *store.Handler, nsCli *nscli.Client) (*Integration, error) {
 	conf.DASGNSSPort = 198
 
 	return &Integration{
+		h:              h,
+		nsCli:          nsCli,
 		config:         conf,
 		geolocationURI: "https://gls.loracloud.com",
 		dasURI:         "https://das.loracloud.com",
@@ -578,7 +586,7 @@ func (i *Integration) handleDASResponse(ctx context.Context, vars map[string]str
 	}
 
 	if dl := devResp.Result.Downlink; dl != nil {
-		fCnt, err := storage.EnqueueDownlinkPayload(ctx, storage.DB(), devEUI, false, dl.Port, dl.Payload[:])
+		fCnt, err := device.EnqueueDownlinkPayload(ctx, storage.DB(), devEUI, false, dl.Port, dl.Payload[:], i.nsCli)
 		if err != nil {
 			log.WithError(err).Error("integration/loracloud: enqueue downlink payload error")
 		} else {

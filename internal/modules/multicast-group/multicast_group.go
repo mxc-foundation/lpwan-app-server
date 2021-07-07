@@ -8,8 +8,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
@@ -17,8 +15,9 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group/data"
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/nscli"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
 func init() {
@@ -54,7 +53,7 @@ func Setup(name string, h *store.Handler) error {
 }
 
 // CreateMulticastGroup creates the given multicast-group.
-func CreateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
+func CreateMulticastGroup(ctx context.Context, mg *MulticastGroup, nsCli *nscli.Client) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if err := handler.CreateMulticastGroup(ctx, mg); err != nil {
 			return err
@@ -64,17 +63,10 @@ func CreateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		nsClient, err := nsStruct.GetNetworkServiceClient()
+		nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return err
 		}
-
 		_, err = nsClient.CreateMulticastGroup(ctx, &ns.CreateMulticastGroupRequest{
 			MulticastGroup: &mg.MulticastGroup,
 		})
@@ -91,7 +83,7 @@ func CreateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 }
 
 // GetMulticastGroup returns the multicast-group given an id.
-func GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate, localOnly bool) (mg MulticastGroup, err error) {
+func GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate, localOnly bool, nsCli *nscli.Client) (mg MulticastGroup, err error) {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if mg, err = handler.GetMulticastGroup(ctx, id, forUpdate); err != nil {
 			return err
@@ -105,17 +97,10 @@ func GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate, localOnly b
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		nsClient, err := nsStruct.GetNetworkServiceClient()
+		nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return err
 		}
-
 		resp, err := nsClient.GetMulticastGroup(ctx, &ns.GetMulticastGroupRequest{
 			Id: id.Bytes(),
 		})
@@ -138,7 +123,7 @@ func GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate, localOnly b
 }
 
 // UpdateMulticastGroup updates the given multicast-group.
-func UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
+func UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup, nsCli *nscli.Client) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if err := handler.UpdateMulticastGroup(ctx, mg); err != nil {
 			return err
@@ -148,13 +133,7 @@ func UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		nsClient, err := nsStruct.GetNetworkServiceClient()
+		nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return err
 		}
@@ -175,7 +154,7 @@ func UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 }
 
 // DeleteMulticastGroup deletes a multicast-group given an id.
-func DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error {
+func DeleteMulticastGroup(ctx context.Context, id uuid.UUID, nsCli *nscli.Client) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		n, err := handler.GetNetworkServerForMulticastGroupID(ctx, id)
 		if err != nil {
@@ -185,13 +164,7 @@ func DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error {
 		if err := handler.DeleteMulticastGroup(ctx, id); err != nil {
 			return err
 		}
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		nsClient, err := nsStruct.GetNetworkServiceClient()
+		nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return err
 		}
@@ -213,7 +186,7 @@ func DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error {
 
 // AddDeviceToMulticastGroup adds the given device to the given multicast-group.
 // It is recommended that db is a transaction.
-func AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64, nsCli *nscli.Client) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if err := handler.AddDeviceToMulticastGroup(ctx, multicastGroupID, devEUI); err != nil {
 			return err
@@ -223,13 +196,7 @@ func AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, 
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		nsClient, err := nsStruct.GetNetworkServiceClient()
+		nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return err
 		}
@@ -252,7 +219,8 @@ func AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, 
 
 // RemoveDeviceFromMulticastGroup removes the given device from the given
 // multicast-group.
-func RemoveDeviceFromMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func RemoveDeviceFromMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID,
+	devEUI lorawan.EUI64, nsCli *nscli.Client) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if err := handler.RemoveDeviceFromMulticastGroup(ctx, multicastGroupID, devEUI); err != nil {
 			return err
@@ -262,13 +230,7 @@ func RemoveDeviceFromMulticastGroup(ctx context.Context, multicastGroupID uuid.U
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
-		nsStruct := nscli.NSStruct{
-			Server:  n.Server,
-			CACert:  n.CACert,
-			TLSCert: n.TLSCert,
-			TLSKey:  n.TLSKey,
-		}
-		nsClient, err := nsStruct.GetNetworkServiceClient()
+		nsClient, err := nsCli.GetNetworkServerServiceClient(n.ID)
 		if err != nil {
 			return err
 		}
