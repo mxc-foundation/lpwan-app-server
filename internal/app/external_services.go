@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/empty"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
@@ -33,7 +35,26 @@ func (app *App) networkServer(ctx context.Context, cfg config.Config) error {
 	if err := app.nsCli.Connect(nscfg); err != nil {
 		return err
 	}
-	// set default networkserver, gateway profile
+
+	// sync region and version from network server
+	for _, v := range nsList {
+		nsClient, err := app.nsCli.GetNetworkServerServiceClient(v.ID)
+		if err != nil {
+			return err
+		}
+		res, err := nsClient.GetVersion(ctx, &empty.Empty{})
+		if err != nil {
+			return err
+		}
+		if res.Region.String() != v.Region || res.Version != v.Version {
+			err = app.pgstore.UpdateNetworkServerRegionAndVersion(ctx, v.ID, res.Region.String(), res.Version)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// if no network server stored, set default networkserver, gateway profile
 	if 0 == app.nsCli.GetNumberOfNetworkServerClients() {
 		// create default network server
 		if err := ns.CreateNetworkServer(ctx, &ns.NetworkServer{

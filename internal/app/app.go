@@ -152,12 +152,18 @@ func (app *App) externalServices(ctx context.Context, cfg config.Config) error {
 	if err != nil {
 		return err
 	}
-	// network server client (also used by code migration)
-	if err = app.networkServer(ctx, cfg); err != nil {
+	// set up db schemas, must run right after initialization of postgres
+	err = code.Setup(store.NewStore(), cfg.PostgreSQL.Automigrate)
+	if err != nil {
 		return err
 	}
-	// data migrations
-	err = code.Setup(store.NewStore(), cfg.PostgreSQL.Automigrate, app.nsCli)
+	// network server client (also used by code migration)
+	err = app.networkServer(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	// data migration
+	err = code.RunDBMigrationScripts(store.NewStore(), app.nsCli)
 	if err != nil {
 		return err
 	}
