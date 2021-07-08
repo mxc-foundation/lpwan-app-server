@@ -354,7 +354,7 @@ func handleIntegrations(ctx *uplinkContext) error {
 	// Handle the actual integration handling in a Go-routine so that the
 	// as.HandleUplinkData api can return.
 	go func() {
-		err := integration.ForApplicationID(ctx.ctx, ctx.device.ApplicationID, ctx.gIntegrations, ctx.handler).HandleUplinkEvent(bgCtx, vars, pl)
+		err := integration.ForApplicationID(bgCtx, ctx.device.ApplicationID, ctx.gIntegrations, ctx.handler).HandleUplinkEvent(bgCtx, vars, pl)
 		if err != nil {
 			log.WithError(err).Error("send uplink event error")
 		}
