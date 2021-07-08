@@ -28,7 +28,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/mannr"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mxpcli"
 
-	nsapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
@@ -415,7 +414,24 @@ func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) 
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	if err := a.storeGateway(ctx, req.Gateway, &Gateway{}); err != nil {
+	var mac lorawan.EUI64
+	err = mac.UnmarshalText([]byte(req.Gateway.Id))
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+
+	if err := a.storeGateway(ctx, &Gateway{
+		MAC:              mac,
+		Name:             req.Gateway.Name,
+		Description:      req.Gateway.Description,
+		OrganizationID:   req.Gateway.OrganizationId,
+		Ping:             req.Gateway.DiscoveryEnabled,
+		NetworkServerID:  req.Gateway.NetworkServerId,
+		GatewayProfileID: &req.Gateway.GatewayProfileId,
+		Latitude:         req.Gateway.Location.Latitude,
+		Longitude:        req.Gateway.Location.Longitude,
+		Altitude:         req.Gateway.Location.Altitude,
+	}, req.Gateway.Boards, req.Gateway.Tags, req.Gateway.Metadata); err != nil {
 		return nil, err
 	}
 
@@ -447,29 +463,31 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 	return nil
 }
 
-func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, defaultGw *Gateway) (err error) {
-	var mac lorawan.EUI64
-	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
-		return status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
-	}
-
+func (a *GatewayAPI) storeGateway(ctx context.Context, gateway *Gateway,
+	boards []*api.GatewayBoard, tagsReq map[string]string, metaDataReq map[string]string) (err error) {
 	createReq := ns.CreateGatewayRequest{
 		Gateway: &ns.Gateway{
-			Id:               mac[:],
-			Location:         req.Location,
+			Id: gateway.MAC[:],
+			Location: &common.Location{
+				Latitude:  gateway.Latitude,
+				Longitude: gateway.Longitude,
+				Altitude:  gateway.Altitude,
+				Source:    0,
+				Accuracy:  0,
+			},
 			RoutingProfileId: a.config.ApplicationServerID.Bytes(),
 		},
 	}
-
-	if req.GatewayProfileId != "" {
-		gpID, err := uuid.FromString(req.GatewayProfileId)
+	gpIDStr := *gateway.GatewayProfileID
+	if gpIDStr != "" {
+		gpID, err := uuid.FromString(gpIDStr)
 		if err != nil {
 			return status.Error(codes.InvalidArgument, err.Error())
 		}
 		createReq.Gateway.GatewayProfileId = gpID.Bytes()
 	}
 
-	for _, board := range req.Boards {
+	for _, board := range boards {
 		var gwBoard ns.GatewayBoard
 
 		if board.FpgaId != "" {
@@ -491,9 +509,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 		createReq.Gateway.Boards = append(createReq.Gateway.Boards, &gwBoard)
 	}
 
-	defaultGw.MAC = mac
-	defaultGw.NetworkServerID = req.NetworkServerId
-	err = a.getDefaultGatewayConfig(ctx, defaultGw)
+	err = a.getDefaultGatewayConfig(ctx, gateway)
 	if err != nil {
 		return status.Error(codes.Unknown, err.Error())
 	}
@@ -501,40 +517,22 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 	tags := hstore.Hstore{
 		Map: make(map[string]sql.NullString),
 	}
-	for k, v := range req.Tags {
+	for k, v := range tagsReq {
 		tags.Map[k] = sql.NullString{Valid: true, String: v}
 	}
 
 	metadata := hstore.Hstore{
 		Map: make(map[string]sql.NullString),
 	}
-	for k, v := range req.Metadata {
-		tags.Map[k] = sql.NullString{Valid: true, String: v}
+	for k, v := range metaDataReq {
+		metadata.Map[k] = sql.NullString{Valid: true, String: v}
 	}
+	gateway.Tags = tags
+	gateway.Metadata = metadata
+	gateway.FirmwareHash = types.MD5SUM{}
+	gateway.AutoUpdateFirmware = true
 
-	if err := gw.AddGateway(ctx, a.st, &Gateway{
-		MAC:                mac,
-		Name:               req.Name,
-		Description:        req.Description,
-		OrganizationID:     req.OrganizationId,
-		Ping:               req.DiscoveryEnabled,
-		NetworkServerID:    req.NetworkServerId,
-		GatewayProfileID:   &req.GatewayProfileId,
-		Latitude:           req.Location.Latitude,
-		Longitude:          req.Location.Longitude,
-		Altitude:           req.Location.Altitude,
-		Tags:               tags,
-		Metadata:           metadata,
-		Model:              defaultGw.Model,
-		FirstHeartbeat:     0,
-		LastHeartbeat:      0,
-		Config:             defaultGw.Config,
-		OsVersion:          defaultGw.OsVersion,
-		Statistics:         defaultGw.Statistics,
-		SerialNumber:       defaultGw.SerialNumber,
-		FirmwareHash:       types.MD5SUM{},
-		AutoUpdateFirmware: true,
-	}, createReq, a.mxpCli, a.nsCli); err != nil {
+	if err := gw.AddGateway(ctx, a.st, gateway, createReq, a.mxpCli, a.nsCli); err != nil {
 		return err
 	}
 
@@ -589,23 +587,6 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := a.st.GetNetworkServer(ctx, gw.NetworkServerID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	client, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	getResp, err := client.GetGateway(ctx, &ns.GetGatewayRequest{
-		Id: mac[:],
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	resp := api.GetGatewayResponse{
 		Gateway: &api.Gateway{
 			Id:               mac.String(),
@@ -619,9 +600,6 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 				Altitude:  gw.Altitude,
 			},
 			NetworkServerId: gw.NetworkServerID,
-			// TODO: UI
-			/*			Tags:            make(map[string]string),
-						Metadata:        make(map[string]string),*/
 		},
 	}
 
@@ -636,41 +614,38 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 		resp.LastSeenAt = timestamppb.New(*gw.LastSeenAt)
 	}
 
-	if len(getResp.Gateway.GatewayProfileId) != 0 {
-		gpID, err := uuid.FromBytes(getResp.Gateway.GatewayProfileId)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		resp.Gateway.GatewayProfileId = gpID.String()
+	n, err := a.st.GetNetworkServer(ctx, gw.NetworkServerID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	for i := range getResp.Gateway.Boards {
-		var gwBoard api.GatewayBoard
-
-		if len(getResp.Gateway.Boards[i].FpgaId) != 0 {
-			var fpgaID lorawan.EUI64
-			copy(fpgaID[:], getResp.Gateway.Boards[i].FpgaId)
-			gwBoard.FpgaId = fpgaID.String()
-		}
-
-		if len(getResp.Gateway.Boards[i].FineTimestampKey) != 0 {
-			var key lorawan.AES128Key
-			copy(key[:], getResp.Gateway.Boards[i].FineTimestampKey)
-			gwBoard.FineTimestampKey = key.String()
-		}
-
-		resp.Gateway.Boards = append(resp.Gateway.Boards, &gwBoard)
+	client, err := a.nsCli.GetNetworkServerServiceClient(n.ID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	// TODO: UI
-	/*	for k, v := range gw.Tags.Map {
-			resp.Gateway.Tags[k] = v.String
-		}
-		for k, v := range gw.Metadata.Map {
-			resp.Gateway.Metadata[k] = v.String
-		}*/
+	getResp, err := client.GetGateway(ctx, &ns.GetGatewayRequest{
+		Id: mac[:],
+	})
+	if err == nil {
+		for i := range getResp.Gateway.Boards {
+			var gwBoard api.GatewayBoard
 
-	return &resp, err
+			if len(getResp.Gateway.Boards[i].FpgaId) != 0 {
+				var fpgaID lorawan.EUI64
+				copy(fpgaID[:], getResp.Gateway.Boards[i].FpgaId)
+				gwBoard.FpgaId = fpgaID.String()
+			}
+
+			if len(getResp.Gateway.Boards[i].FineTimestampKey) != 0 {
+				var key lorawan.AES128Key
+				copy(key[:], getResp.Gateway.Boards[i].FineTimestampKey)
+				gwBoard.FineTimestampKey = key.String()
+			}
+			resp.Gateway.Boards = append(resp.Gateway.Boards, &gwBoard)
+		}
+	}
+	return &resp, nil
 }
 
 func (a *GatewayAPI) listGateways(ctx context.Context, filters GatewayFilters) (int64, []*api.GatewayListItem, error) {
@@ -1165,6 +1140,17 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *api.UpdateGwConfig
 	}, nil
 }
 
+func (a *GatewayAPI) getDefaultGatewayProfile(ctx context.Context, gateway *Gateway) error {
+	gpID, nID, err := a.st.GetDefaultGatewayProfile(ctx)
+	if err != nil {
+		return err
+	}
+	gpIDStr := gpID.String()
+	gateway.GatewayProfileID = &gpIDStr
+	gateway.NetworkServerID = nID
+	return nil
+}
+
 // Register will first try to get the gateway from provision server
 func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
 	log.WithFields(log.Fields{
@@ -1229,80 +1215,42 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	}
 
-	// add new firmware if new model is registered
-	_, err = a.st.GetGatewayFirmware(ctx, resp.Model, true)
-	if err == errHandler.ErrDoesNotExist {
-		if _, err = a.st.AddGatewayFirmware(ctx, &GatewayFirmware{
-			Model: resp.Model,
-		}); err != nil {
-			log.WithError(err).Errorf("Failed to add new firmware: %s", resp.Model)
-		}
+	var mac lorawan.EUI64
+	err = mac.UnmarshalText([]byte(resp.Mac))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid mac address for gateway %s: %v", req.Sn, err)
 	}
 
-	gateway := api.Gateway{
-		Id:          resp.Mac,
-		Name:        fmt.Sprintf("Gateway_%s", resp.Sn),
-		Description: fmt.Sprintf("Gateway Model: %s\nGateway OsVersion: %s\n", resp.Model, resp.OsVersion),
-		Location: &common.Location{
-			Latitude:  52.520008,
-			Longitude: 13.404954,
-			Altitude:  0,
-			Source:    0,
-			Accuracy:  0,
-		},
-		OrganizationId:   req.OrganizationId,
-		DiscoveryEnabled: true,
-		NetworkServerId:  0,
-		GatewayProfileId: "",
-		Boards:           []*api.GatewayBoard{},
+	gw := Gateway{
+		MAC:            mac,
+		Name:           fmt.Sprintf("Gateway_%s", resp.Sn),
+		Description:    fmt.Sprintf("Gateway Model: %s\nGateway OsVersion: %s\n", resp.Model, resp.OsVersion),
+		OrganizationID: req.OrganizationId,
+		Latitude:       52.520008,
+		Longitude:      13.404954,
+		Altitude:       0,
+		Model:          resp.Model,
+		OsVersion:      resp.OsVersion,
+		Statistics:     "",
+		SerialNumber:   resp.Sn,
+		Ping:           false,
 	}
 
 	// get gateway profile id, always use the default one
-	count, err := a.st.GetGatewayProfileCount(ctx)
-	if err != nil && err != errHandler.ErrDoesNotExist {
-		return nil, status.Error(codes.Internal, err.Error())
-	} else if err == errHandler.ErrDoesNotExist {
-		return nil, status.Error(codes.NotFound, "")
-	}
-
-	gpList, err := a.st.GetGatewayProfiles(ctx, count, 0)
+	err = a.getDefaultGatewayProfile(ctx, &gw)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, status.Errorf(codes.Internal, "couldn't get default gateway profile: %v", err)
 	}
 
-	for _, v := range gpList {
-		if v.Name != nsapi.DefaultGatewayProfileName {
-			continue
-		}
-
-		gateway.GatewayProfileId = v.GatewayProfileID.String()
-	}
-
-	if gateway.GatewayProfileId == "" {
-		return nil, status.Error(codes.NotFound, "Default gateway profile does not exist")
-	}
-
-	// get network server from gateway profile
-	gpID, err := uuid.FromString(gateway.GatewayProfileId)
-	if err != nil {
-		log.WithError(err).Error("Gateway profile ID invalid")
-		return nil, status.Error(codes.DataLoss, "Gateway profile ID invalid")
-	}
-
-	nServers, err := a.st.GetNetworkServerForGatewayProfileID(ctx, gpID)
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Failed to load network servers: %s", err.Error())
-	}
-
-	gateway.NetworkServerId = nServers.ID
-
+	tagsReq := make(map[string]string)
+	metaDataReq := make(map[string]string)
 	// create gateway
-	if err := a.storeGateway(ctx, &gateway, &Gateway{
-		Model:        resp.Model,
-		OsVersion:    resp.OsVersion,
-		Statistics:   "",
-		SerialNumber: resp.Sn,
-	}); err != nil {
+	if err := a.storeGateway(
+		ctx,
+		&gw,
+		[]*api.GatewayBoard{},
+		tagsReq,
+		metaDataReq); err != nil {
 		return nil, err
 	}
 
