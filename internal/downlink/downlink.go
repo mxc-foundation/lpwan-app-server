@@ -36,9 +36,10 @@ func Start(h *store.Handler, gIntegrations []models.IntegrationHandler, nsCli *n
 		nsCli:         nsCli,
 	}
 	downChan := make(chan models.DataDownPayload)
+	bgCtx := context.Background()
 
 	go func() {
-		downChan = integration.ForApplicationID(context.Background(), 0, gIntegrations, h).DataDownChan()
+		downChan = integration.ForApplicationID(bgCtx, 0, gIntegrations, h).DataDownChan()
 		for pl := range downChan {
 			go func(pl models.DataDownPayload) {
 				ctxID, err := uuid.NewV4()
