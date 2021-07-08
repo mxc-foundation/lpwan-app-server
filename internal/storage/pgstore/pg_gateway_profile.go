@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	gpapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/gp"
+	nsapi "github.com/mxc-foundation/lpwan-app-server/internal/api/external/ns"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
@@ -134,6 +135,27 @@ func (ps *PgStore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpapi.G
 	}
 
 	return gp, nil
+}
+
+// GetDefaultGatewayProfile returns the default gateway profile
+func (ps *PgStore) GetDefaultGatewayProfile(ctx context.Context) (*uuid.UUID, int64, error) {
+	var gpID uuid.UUID
+	var nID int64
+
+	err := ps.db.QueryRowContext(ctx, `
+		select 
+			gateway_profile_id,
+		    network_server_id
+		from 
+		     gateway_profile 
+		where 
+		      name = $1`,
+		nsapi.DefaultGatewayProfileName).Scan(&gpID, &nID)
+	if err != nil {
+		return &gpID, nID, errors.Wrap(err, "select error")
+	}
+
+	return &gpID, nID, nil
 }
 
 // UpdateGatewayProfile updates the given gateway-profile.
