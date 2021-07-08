@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"strconv"
 
+	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+
 	"google.golang.org/grpc/status"
 
 	"github.com/gobuffalo/packr/v2/file/resolver/encoding/hex"
@@ -33,7 +35,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	appd "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
@@ -327,8 +328,48 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 	return a.returnList(count, devices)
 }
 
+func (a *DeviceAPI) verifyDeviceProfileChange(ctx context.Context, dpIDNew, oldDpID uuid.UUID) error {
+	var dpNew, dpOld dps.DeviceProfile
+	var err error
+	if dpIDNew != oldDpID {
+		dpOld, err = a.st.GetDeviceProfile(ctx, oldDpID, false)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		dpNew, err = a.st.GetDeviceProfile(ctx, dpIDNew, false)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		if dpOld.NetworkServerID != dpNew.NetworkServerID || dpOld.OrganizationID != dpNew.OrganizationID {
+			return status.Errorf(codes.InvalidArgument,
+				"when updating device profile for a device, "+
+					"new device profile and old device profile must share same network server and organization")
+		}
+	}
+	return nil
+}
+
+func (a *DeviceAPI) verifyApplicationChange(ctx context.Context, appNew appd.Application, applicationIDOld int64) error {
+	if appNew.ID != applicationIDOld {
+		appOld, err := a.st.GetApplication(ctx, applicationIDOld)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+
+		if appOld.ServiceProfileID != appNew.ServiceProfileID {
+			return status.Errorf(codes.InvalidArgument,
+				"when moving a device from application A to B, both A and B must share the same service-profile")
+		}
+	}
+	return nil
+}
+
 // Update updates the device matching the given DevEUI.
 func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*empty.Empty, error) {
+	log.WithFields(log.Fields{
+		"application_id":    req.Device.ApplicationId,
+		"device_profile_id": req.Device.DeviceProfileId,
+	}).Debug("update device")
 	var response empty.Empty
 	if req.Device == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
@@ -348,51 +389,31 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 	// the new application is assigned to the same service-profile.
 	// This to guarantee that the new application is still on the same
 	// network-server and is not assigned to a different organization.
-	var appNew, appOld appd.Application
-	if req.Device.ApplicationId != d.ApplicationID {
-		appOld, err = a.st.GetApplication(ctx, d.ApplicationID)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-		appNew, err = a.st.GetApplication(ctx, req.Device.ApplicationId)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-		if appOld.ServiceProfileID != appNew.ServiceProfileID {
-			return nil, status.Errorf(codes.InvalidArgument,
-				"when moving a device from application A to B, both A and B must share the same service-profile")
-		}
+	appNew, err := a.st.GetApplication(ctx, req.Device.ApplicationId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	err = a.verifyApplicationChange(ctx, appNew, d.ApplicationID)
+	if err != nil {
+		return nil, err
+	}
+	sp, err := a.st.GetServiceProfile(ctx, appNew.ServiceProfileID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "service profile %s not found: %v", appNew.ServiceProfileID.String(), err)
 	}
 
-	var dpNew, dpOld dps.DeviceProfile
+	// If the device is assigned with a different device profile, validate that
+	// the new device profile is still on the same network-server and organization.
 	dpIDNew, err := uuid.FromString(req.Device.DeviceProfileId)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, "invalid device profile : %v", err)
 	}
-	if dpIDNew != d.DeviceProfileID {
-		dpOld, err = a.st.GetDeviceProfile(ctx, d.DeviceProfileID, false)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-		dpNew, err = a.st.GetDeviceProfile(ctx, dpIDNew, false)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-		if dpOld.NetworkServerID != dpNew.NetworkServerID || dpOld.OrganizationID != dpNew.OrganizationID {
-			return nil, status.Errorf(codes.InvalidArgument,
-				"when updating device profile for a device, "+
-					"new device profile and old device profile must share same network server and organization")
-		}
+	err = a.verifyDeviceProfileChange(ctx, dpIDNew, d.DeviceProfileID)
+	if err != nil {
+		return nil, err
 	}
 
-	/* new application and old application share the same service profile,
-	   so both applications share same network server and organization;
-	   new device profile and old device profile share same organization and network server;
-	   when device is created, same organization is guaranted to be shared between application and device profile,
-	   so there is no need to check application's organization against device profile again
-	*/
-
-	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(appOld.OrganizationID))
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(sp.OrganizationID))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 	}
@@ -401,7 +422,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 	}
 
 	// get network server client
-	nsClient, err := a.nsCli.GetNetworkServerServiceClient(dpNew.NetworkServerID)
+	nsClient, err := a.nsCli.GetNetworkServerServiceClient(sp.NetworkServerID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
