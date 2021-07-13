@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"time"
 
 	"github.com/brocaar/lorawan"
@@ -715,6 +716,29 @@ func (ps *PgStore) GetGatewaysForOrganizationID(ctx context.Context, organizatio
 	return gws, nil
 }
 
+// GetGatewaysForNetworkServerID returns a slice of gateways sorted by name
+// for the given network server ID.
+func (ps *PgStore) GetGatewaysForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]Gateway, error) {
+	var gws []Gateway
+	err := sqlx.SelectContext(ctx, ps.db, &gws, `
+		select
+			*
+		from gateway
+		where
+			network_server_id = $1
+		order by
+			name
+		limit $2 offset $3`,
+		networkServerID,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "select error")
+	}
+	return gws, nil
+}
+
 // GetGatewayCountForUser returns the total number of gateways to which the
 // given user has access.
 func (ps *PgStore) GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error) {
@@ -1090,4 +1114,25 @@ func (ps *PgStore) UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI6
 		return errHandler.ErrDoesNotExist
 	}
 	return nil
+}
+
+// BatchSetNetworkServerIDAndGatewayProfileIDForGateways is only used for ensure default command
+func (ps *PgStore) BatchSetNetworkServerIDAndGatewayProfileIDForGateways(ctx context.Context, nsIDBefore,
+	nsIDAfter int64, gpIDBefore, gpIDAfter uuid.UUID) (int64, error) {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			gateway 
+		set 
+			network_server_id = $1, gateway_profile_id = $2 
+		where 
+			network_server_id = $3 
+		and 
+			(gateway_profile_id = $4 or gateway_profile_id is null)
+		`, nsIDAfter, gpIDAfter, nsIDBefore, gpIDBefore)
+	if err != nil {
+		return 0, err
+	}
+
+	ra, err := res.RowsAffected()
+	return ra, err
 }

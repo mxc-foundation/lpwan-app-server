@@ -361,6 +361,33 @@ func (ps *PgStore) GetServiceProfilesForOrganizationID(ctx context.Context, orga
 	return sps, nil
 }
 
+// GetServiceProfilesForNetworkServerID returns a slice of service-profiles
+// for the given network server id.
+func (ps *PgStore) GetServiceProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]ServiceProfileMeta, error) {
+	var sps []ServiceProfileMeta
+	err := sqlx.SelectContext(ctx, ps.db, &sps, `
+		select
+			sp.*,
+			ns.name as network_server_name
+		from
+			service_profile sp
+		inner join network_server ns
+			on sp.network_server_id = ns.id
+		where
+			sp.network_server_id = $1
+		order by sp.name
+		limit $2 offset $3`,
+		networkServerID,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return sps, nil
+}
+
 // GetServiceProfilesForUser returns a slice of service-profile for the given
 // user ID.
 func (ps *PgStore) GetServiceProfilesForUser(ctx context.Context, userID int64, limit, offset int) ([]ServiceProfileMeta, error) {
@@ -407,4 +434,21 @@ func (ps *PgStore) DeleteAllServiceProfilesForOrganizationID(ctx context.Context
 	}
 
 	return nil
+}
+
+// BatchSetNetworkServerIDForServiceProfile is only used for ensure default command
+func (ps *PgStore) BatchSetNetworkServerIDForServiceProfile(ctx context.Context, nsIDBefore, nsIDAfter int64) (int64, error) {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			service_profile 
+		set 
+			network_server_id = $1 
+		where 
+			network_server_id = $2`,
+		nsIDAfter, nsIDBefore)
+	if err != nil {
+		return 0, err
+	}
+	ra, err := res.RowsAffected()
+	return ra, err
 }

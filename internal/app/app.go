@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/cmdserver"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -52,6 +53,8 @@ type App struct {
 	newGwSrv *gateway.Server
 	// gateway server for old gateway model
 	oldGwSrv *gateway.Server
+	// serve requests to do internal inspect or management via command line
+	cmdSrv *cmdserver.CMDServer
 	// shopify service
 	shopify *shopify.Service
 	// integration handlers
@@ -114,6 +117,9 @@ func (app *App) Close() error {
 	}
 	if app.oldGwSrv != nil {
 		app.oldGwSrv.Stop()
+	}
+	if app.cmdSrv != nil {
+		app.cmdSrv.Stop()
 	}
 	if app.mxpCli != nil {
 		if err := app.mxpCli.Close(); err != nil {
@@ -282,5 +288,11 @@ func (app *App) startAPIs(ctx context.Context, cfg config.Config) error {
 	}
 
 	downlink.Start(store.NewStore(), app.integrations, app.nsCli)
+
+	app.cmdSrv, err = cmdserver.Start(app.pgstore, app.pgstore, app.pgstore, app.nsCli,
+		app.applicationServerID, cfg.ApplicationServer.API.PublicHost)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package cmdsrv;
+
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/cmdserver;cmdserver";
+
+service EnsureDefaultService {
+    rpc InspectNetworkServerSettings (InspectNetworkServerSettingsRequest) returns (InspectNetworkServerSettingsResponse);
+    rpc CorrectNetworkServerSettings (CorrectNetworkServerSettingsRequest) returns (CorrectNetworkServerSettingsResponse);
+}
+
+message InspectNetworkServerSettingsRequest {
+}
+
+message InspectNetworkServerSettingsResponse {
+    repeated string inspect_result = 1;
+}
+
+message CorrectNetworkServerSettingsRequest {
+    // only keep this network server, clean up the rest
+    int64 network_server_id = 1;
+}
+
+message CorrectNetworkServerSettingsResponse {
+    string report = 1;
+}
