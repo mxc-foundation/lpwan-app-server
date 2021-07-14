@@ -15,7 +15,7 @@ var ensureDefaultCmd = &cobra.Command{
 	Use:   "ensure-default [inspect-ns|cleanup-ns <NETWORK_SERVER_ID>|organization]",
 	Short: "connect to local command line service (:1000), inspect or manage internal services via command line",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) <= 1 {
+		if len(args) < 1 {
 			logrus.Fatal("invalid argument")
 		}
 
@@ -48,7 +48,7 @@ var ensureDefaultCmd = &cobra.Command{
 			if err != nil {
 				logrus.Fatal("invalid network server id")
 			}
-			_, err = client.CleanUpNetworkServerSettings(ctx, &pb.CleanUpNetworkServerSettingsRequest{
+			_, err = client.CorrectNetworkServerSettings(ctx, &pb.CorrectNetworkServerSettingsRequest{
 				NetworkServerId: nsID})
 			if err != nil {
 				logrus.Fatal(err)

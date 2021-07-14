@@ -388,6 +388,20 @@ func (ps *PgStore) GetServiceProfilesForNetworkServerID(ctx context.Context, net
 	return sps, nil
 }
 
+// GetServiceProfileCountForNetworkServerID returns number of service-profiles for the given network server id.
+func (ps *PgStore) GetServiceProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select count(*) from service_profile where network_server_id = $1`,
+		networkServerID,
+	)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+
+	return count, nil
+}
+
 // GetServiceProfilesForUser returns a slice of service-profile for the given
 // user ID.
 func (ps *PgStore) GetServiceProfilesForUser(ctx context.Context, userID int64, limit, offset int) ([]ServiceProfileMeta, error) {
@@ -436,19 +450,43 @@ func (ps *PgStore) DeleteAllServiceProfilesForOrganizationID(ctx context.Context
 	return nil
 }
 
-// BatchSetNetworkServerIDForServiceProfile is only used for ensure default command
-func (ps *PgStore) BatchSetNetworkServerIDForServiceProfile(ctx context.Context, nsIDBefore, nsIDAfter int64) (int64, error) {
-	res, err := ps.db.ExecContext(ctx, `
+// BatchSetNetworkServerIDForDeviceProfileAndServiceProfile is only used for ensure default command
+func (ps *PgStore) BatchSetNetworkServerIDForDeviceProfileAndServiceProfile(ctx context.Context,
+	nsIDBefore, nsIDAfter int64) (int64, int64, error) {
+	var dpChanged, spChanged int64
+	if err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
+		res, err := ps.db.ExecContext(ctx, `
 		update 
 			service_profile 
 		set 
 			network_server_id = $1 
 		where 
 			network_server_id = $2`,
-		nsIDAfter, nsIDBefore)
-	if err != nil {
-		return 0, err
+			nsIDAfter, nsIDBefore)
+		if err != nil {
+			return err
+		}
+		if spChanged, err = res.RowsAffected(); err != nil {
+			return err
+		}
+
+		res, err = ps.db.ExecContext(ctx, `
+		update 
+			device_profile 
+		set 
+			network_server_id = $1 
+		where 
+			network_server_id = $2`,
+			nsIDAfter, nsIDBefore)
+		if err != nil {
+			return err
+		}
+		if dpChanged, err = res.RowsAffected(); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, 0, err
 	}
-	ra, err := res.RowsAffected()
-	return ra, err
+	return dpChanged, spChanged, nil
 }

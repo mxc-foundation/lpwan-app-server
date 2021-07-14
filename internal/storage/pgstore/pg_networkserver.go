@@ -609,3 +609,9 @@ func (ps *PgStore) GetNetworkServerForServiceProfileID(ctx context.Context, id u
 	}
 	return n, nil
 }
+
+// UpdateNetworkServerName is only used for ensure default command
+func (ps *PgStore) UpdateNetworkServerName(ctx context.Context, nsID int64, name string) error {
+	_, err := ps.db.ExecContext(ctx, `update network_server set name = $1 where id = $2`, name, nsID)
+	return err
+}

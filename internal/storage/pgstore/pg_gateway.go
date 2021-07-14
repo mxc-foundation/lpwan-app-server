@@ -716,6 +716,23 @@ func (ps *PgStore) GetGatewaysForOrganizationID(ctx context.Context, organizatio
 	return gws, nil
 }
 
+// GetGatewaysCountForNetworkServerID returns number of gateways  for the given network server ID.
+func (ps *PgStore) GetGatewaysCountForNetworkServerID(ctx context.Context, networkServerID int64) (int64, error) {
+	var count int64
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select
+			count(mac)
+		from gateway
+		where
+			network_server_id = $1`,
+		networkServerID,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "select error")
+	}
+	return count, nil
+}
+
 // GetGatewaysForNetworkServerID returns a slice of gateways sorted by name
 // for the given network server ID.
 func (ps *PgStore) GetGatewaysForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]Gateway, error) {
@@ -737,6 +754,19 @@ func (ps *PgStore) GetGatewaysForNetworkServerID(ctx context.Context, networkSer
 		return nil, errors.Wrap(err, "select error")
 	}
 	return gws, nil
+}
+
+// GetGatewaysCountForGatewayProfileID returns a slice of gateways sorted by name
+// for the given gateway profile ID.
+func (ps *PgStore) GetGatewaysCountForGatewayProfileID(ctx context.Context, gpID uuid.UUID) (int, error) {
+	var count int
+	err := sqlx.SelectContext(ctx, ps.db, &count, `
+		select (*) from gateway where gateway_profile_id = $1`, gpID,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "select error")
+	}
+	return count, nil
 }
 
 // GetGatewayCountForUser returns the total number of gateways to which the
@@ -1116,23 +1146,15 @@ func (ps *PgStore) UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI6
 	return nil
 }
 
-// BatchSetNetworkServerIDAndGatewayProfileIDForGateways is only used for ensure default command
-func (ps *PgStore) BatchSetNetworkServerIDAndGatewayProfileIDForGateways(ctx context.Context, nsIDBefore,
-	nsIDAfter int64, gpIDBefore, gpIDAfter uuid.UUID) (int64, error) {
+// UpdateNetworkServerIDAndGatewayProfileIDForGateway is only used for ensure default command
+func (ps *PgStore) UpdateNetworkServerIDAndGatewayProfileIDForGateway(ctx context.Context,
+	nsIDAfter int64, gpIDAfter uuid.UUID, mac lorawan.EUI64) (int64, error) {
 	res, err := ps.db.ExecContext(ctx, `
-		update 
-			gateway 
-		set 
-			network_server_id = $1, gateway_profile_id = $2 
-		where 
-			network_server_id = $3 
-		and 
-			(gateway_profile_id = $4 or gateway_profile_id is null)
-		`, nsIDAfter, gpIDAfter, nsIDBefore, gpIDBefore)
+		update gateway set network_server_id = $1, gateway_profile_id = $2 where mac = $3
+		`, nsIDAfter, gpIDAfter, mac[:])
 	if err != nil {
 		return 0, err
 	}
-
 	ra, err := res.RowsAffected()
 	return ra, err
 }

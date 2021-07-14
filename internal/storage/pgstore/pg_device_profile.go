@@ -532,6 +532,18 @@ func (ps *PgStore) GetDeviceProfiles(ctx context.Context, filters dpapi.DevicePr
 	return dps, nil
 }
 
+// GetDeviceProfileCountForNetworkServerID returns number of device-profiles with given network server id
+func (ps *PgStore) GetDeviceProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select count(*) from device_profile where network_server_id = $1`, networkServerID)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+
+	return count, nil
+}
+
 // GetDeviceProfilesForNetworkServerID returns a slice of device-profiles with given network server id
 func (ps *PgStore) GetDeviceProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]dpapi.DeviceProfileMeta, error) {
 	var dps []dpapi.DeviceProfileMeta
@@ -556,21 +568,4 @@ func (ps *PgStore) GetDeviceProfilesForNetworkServerID(ctx context.Context, netw
 	}
 
 	return dps, nil
-}
-
-// BatchSetNetworkServerIDForDeviceProfile is only used for ensure default command
-func (ps *PgStore) BatchSetNetworkServerIDForDeviceProfile(ctx context.Context, nsIDBefore, nsIDAfter int64) (int64, error) {
-	res, err := ps.db.ExecContext(ctx, `
-		update 
-			device_profile 
-		set 
-			network_server_id = $1 
-		where 
-			network_server_id = $2`,
-		nsIDAfter, nsIDBefore)
-	if err != nil {
-		return 0, err
-	}
-	ra, err := res.RowsAffected()
-	return ra, err
 }
