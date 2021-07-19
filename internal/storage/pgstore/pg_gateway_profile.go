@@ -152,7 +152,7 @@ func (ps *PgStore) GetDefaultGatewayProfile(ctx context.Context) (*uuid.UUID, in
 		      name = $1`,
 		nsapi.DefaultGatewayProfileName).Scan(&gpID, &nID)
 	if err != nil {
-		return &gpID, nID, errors.Wrap(err, "select error")
+		return &gpID, nID, handlePSQLError(Select, err, "select error")
 	}
 
 	return &gpID, nID, nil

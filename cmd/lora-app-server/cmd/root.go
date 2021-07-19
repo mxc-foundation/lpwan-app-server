@@ -86,6 +86,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(streamCliCmd)
+	rootCmd.AddCommand(ensureDefaultCmd)
 }
 
 // Execute executes the root command.

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"github.com/brocaar/lorawan"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -715,6 +717,89 @@ func (ps *PgStore) GetGatewaysForOrganizationID(ctx context.Context, organizatio
 	return gws, nil
 }
 
+// GetGatewaysCountForNetworkServerID returns number of gateways  for the given network server ID.
+func (ps *PgStore) GetGatewaysCountForNetworkServerID(ctx context.Context, networkServerID int64) (int64, error) {
+	var count int64
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select
+			count(mac)
+		from gateway
+		where
+			network_server_id = $1`,
+		networkServerID,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "select error")
+	}
+	return count, nil
+}
+
+// GetGatewaysForNetworkServerID returns a slice of gateways sorted by name
+// for the given network server ID.
+func (ps *PgStore) GetGatewaysForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]Gateway, error) {
+	var gws []Gateway
+	rows, err := ps.db.QueryContext(ctx, `
+		select
+			mac, created_at, updated_at, first_seen_at, last_seen_at,
+			name, description, organization_id, ping, last_ping_id, last_ping_sent_at,
+			network_server_id, gateway_profile_id, latitude, longitude, altitude,
+			tags, metadata, model, first_heartbeat, last_heartbeat, config, os_version,
+			statistics, sn, firmware_hash, auto_update_firmware, stc_org_id
+		from gateway
+		where
+			network_server_id = $1
+		order by
+			name
+		limit $2 offset $3`,
+		networkServerID,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "select error")
+	}
+	defer rows.Close()
+
+	var gatewayProfileID sql.NullString
+	var stcOrgID, lastPingID sql.NullInt64
+	var firstSeenAt, lastSeenAt, lastPingSentAt sql.NullTime
+	for rows.Next() {
+		gwItem := Gateway{}
+		err := rows.Scan(&gwItem.MAC, &gwItem.CreatedAt, &gwItem.UpdatedAt, &firstSeenAt, &lastSeenAt,
+			&gwItem.Name, &gwItem.Description, &gwItem.OrganizationID, &gwItem.Ping, &lastPingID,
+			&lastPingSentAt, &gwItem.NetworkServerID, &gatewayProfileID,
+			&gwItem.Latitude, &gwItem.Longitude, &gwItem.Altitude, &gwItem.Tags, &gwItem.Metadata,
+			&gwItem.Model, &gwItem.FirstHeartbeat, &gwItem.LastHeartbeat, &gwItem.Config, &gwItem.OsVersion,
+			&gwItem.Statistics, &gwItem.SerialNumber, &gwItem.FirmwareHash, &gwItem.AutoUpdateFirmware,
+			&stcOrgID)
+		if err != nil {
+			return nil, err
+		}
+		gwItem.FirstSeenAt = &firstSeenAt.Time
+		gwItem.LastSeenAt = &lastSeenAt.Time
+		gwItem.LastPingID = &lastPingID.Int64
+		gwItem.LastPingSentAt = &lastPingSentAt.Time
+		gwItem.GatewayProfileID = &gatewayProfileID.String
+		gwItem.STCOrgID = &stcOrgID.Int64
+		gws = append(gws, gwItem)
+	}
+
+	return gws, rows.Err()
+}
+
+// GetGatewaysCountForGatewayProfileID returns a slice of gateways sorted by name
+// for the given gateway profile ID.
+func (ps *PgStore) GetGatewaysCountForGatewayProfileID(ctx context.Context, gpID uuid.UUID) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select count(*) from gateway where gateway_profile_id = $1`, gpID,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "select error")
+	}
+	return count, nil
+}
+
 // GetGatewayCountForUser returns the total number of gateways to which the
 // given user has access.
 func (ps *PgStore) GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error) {
@@ -1090,4 +1175,17 @@ func (ps *PgStore) UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI6
 		return errHandler.ErrDoesNotExist
 	}
 	return nil
+}
+
+// UpdateNetworkServerIDAndGatewayProfileIDForGateway is only used for ensure default command
+func (ps *PgStore) UpdateNetworkServerIDAndGatewayProfileIDForGateway(ctx context.Context,
+	nsIDAfter int64, gpIDAfter uuid.UUID, mac lorawan.EUI64) (int64, error) {
+	res, err := ps.db.ExecContext(ctx, `
+		update gateway set network_server_id = $1, gateway_profile_id = $2 where mac = $3
+		`, nsIDAfter, gpIDAfter, mac[:])
+	if err != nil {
+		return 0, err
+	}
+	ra, err := res.RowsAffected()
+	return ra, err
 }

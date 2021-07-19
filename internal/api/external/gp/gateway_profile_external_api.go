@@ -72,6 +72,7 @@ type Store interface {
 	GetGatewayProfileCount(ctx context.Context) (int, error)
 	GetNetworkServerIDForGatewayProfileID(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
+	GetDefaultGatewayProfile(ctx context.Context) (*uuid.UUID, int64, error)
 }
 
 // NewGatewayProfileAPI creates a new GatewayProfileAPI.
