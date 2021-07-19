@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/sirupsen/logrus"
@@ -32,12 +34,25 @@ var ensureDefaultCmd = &cobra.Command{
 		client := pb.NewEnsureDefaultServiceClient(conn)
 		switch args[0] {
 		case "inspect-ns":
-			res, err := client.InspectNetworkServerSettings(ctx, &pb.InspectNetworkServerSettingsRequest{})
+			resCli, err := client.InspectNetworkServerSettings(ctx, &pb.InspectNetworkServerSettingsRequest{})
 			if err != nil {
 				logrus.Fatal(err)
 			}
-			for _, v := range res.InspectResult {
-				logrus.Infof(v)
+			data := []byte("")
+			for {
+				res, err := resCli.Recv()
+				if err != nil {
+					logrus.Fatal(err)
+				}
+				data = append(data, res.Data...)
+				if res.Finish {
+					logrus.Println("Stream is over")
+					// save fullData to file
+					if err = ioutil.WriteFile("inspect_ns_report", data, os.ModePerm); err != nil {
+						logrus.Fatalf("%v", err)
+					}
+					break
+				}
 			}
 			return
 		case "cleanup-ns":
@@ -48,10 +63,26 @@ var ensureDefaultCmd = &cobra.Command{
 			if err != nil {
 				logrus.Fatal("invalid network server id")
 			}
-			_, err = client.CorrectNetworkServerSettings(ctx, &pb.CorrectNetworkServerSettingsRequest{
+			rescli, err := client.CorrectNetworkServerSettings(ctx, &pb.CorrectNetworkServerSettingsRequest{
 				NetworkServerId: nsID})
 			if err != nil {
 				logrus.Fatal(err)
+			}
+			data := []byte("")
+			for {
+				res, err := rescli.Recv()
+				if err != nil {
+					logrus.Fatal(err)
+				}
+				data = append(data, res.Data...)
+				if res.Finish {
+					logrus.Println("Stream is over")
+					// save fullData to file
+					if err = ioutil.WriteFile("cleanup_ns_report", data, os.ModePerm); err != nil {
+						logrus.Fatalf("%v", err)
+					}
+					break
+				}
 			}
 			return
 		case "organization":

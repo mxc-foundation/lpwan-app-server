@@ -62,16 +62,17 @@ func (*InspectNetworkServerSettingsRequest) Descriptor() ([]byte, []int) {
 	return file_ensure_default_proto_rawDescGZIP(), []int{0}
 }
 
-type InspectNetworkServerSettingsResponse struct {
+type EnsureDefaultServiceReport struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	InspectResult []string `protobuf:"bytes,1,rep,name=inspect_result,json=inspectResult,proto3" json:"inspect_result,omitempty"`
+	Data   []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	Finish bool   `protobuf:"varint,2,opt,name=finish,proto3" json:"finish,omitempty"`
 }
 
-func (x *InspectNetworkServerSettingsResponse) Reset() {
-	*x = InspectNetworkServerSettingsResponse{}
+func (x *EnsureDefaultServiceReport) Reset() {
+	*x = EnsureDefaultServiceReport{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_ensure_default_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -79,13 +80,13 @@ func (x *InspectNetworkServerSettingsResponse) Reset() {
 	}
 }
 
-func (x *InspectNetworkServerSettingsResponse) String() string {
+func (x *EnsureDefaultServiceReport) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InspectNetworkServerSettingsResponse) ProtoMessage() {}
+func (*EnsureDefaultServiceReport) ProtoMessage() {}
 
-func (x *InspectNetworkServerSettingsResponse) ProtoReflect() protoreflect.Message {
+func (x *EnsureDefaultServiceReport) ProtoReflect() protoreflect.Message {
 	mi := &file_ensure_default_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -97,16 +98,23 @@ func (x *InspectNetworkServerSettingsResponse) ProtoReflect() protoreflect.Messa
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use InspectNetworkServerSettingsResponse.ProtoReflect.Descriptor instead.
-func (*InspectNetworkServerSettingsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use EnsureDefaultServiceReport.ProtoReflect.Descriptor instead.
+func (*EnsureDefaultServiceReport) Descriptor() ([]byte, []int) {
 	return file_ensure_default_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *InspectNetworkServerSettingsResponse) GetInspectResult() []string {
+func (x *EnsureDefaultServiceReport) GetData() []byte {
 	if x != nil {
-		return x.InspectResult
+		return x.Data
 	}
 	return nil
+}
+
+func (x *EnsureDefaultServiceReport) GetFinish() bool {
+	if x != nil {
+		return x.Finish
+	}
+	return false
 }
 
 type CorrectNetworkServerSettingsRequest struct {
@@ -157,53 +165,6 @@ func (x *CorrectNetworkServerSettingsRequest) GetNetworkServerId() int64 {
 	return 0
 }
 
-type CorrectNetworkServerSettingsResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Report string `protobuf:"bytes,1,opt,name=report,proto3" json:"report,omitempty"`
-}
-
-func (x *CorrectNetworkServerSettingsResponse) Reset() {
-	*x = CorrectNetworkServerSettingsResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_ensure_default_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CorrectNetworkServerSettingsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CorrectNetworkServerSettingsResponse) ProtoMessage() {}
-
-func (x *CorrectNetworkServerSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ensure_default_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CorrectNetworkServerSettingsResponse.ProtoReflect.Descriptor instead.
-func (*CorrectNetworkServerSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_ensure_default_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CorrectNetworkServerSettingsResponse) GetReport() string {
-	if x != nil {
-		return x.Report
-	}
-	return ""
-}
-
 var File_ensure_default_proto protoreflect.FileDescriptor
 
 var file_ensure_default_proto_rawDesc = []byte{
@@ -211,43 +172,37 @@ var file_ensure_default_proto_rawDesc = []byte{
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06, 0x63, 0x6d, 0x64, 0x73, 0x72, 0x76, 0x22, 0x25,
 	0x0a, 0x23, 0x49, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
 	0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x4d, 0x0a, 0x24, 0x49, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74,
-	0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74,
-	0x74, 0x69, 0x6e, 0x67, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x25, 0x0a,
-	0x0e, 0x69, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x5f, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18,
-	0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0d, 0x69, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x52, 0x65,
-	0x73, 0x75, 0x6c, 0x74, 0x22, 0x51, 0x0a, 0x23, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74,
-	0x69, 0x6e, 0x67, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2a, 0x0a, 0x11, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53,
-	0x65, 0x72, 0x76, 0x65, 0x72, 0x49, 0x64, 0x22, 0x3e, 0x0a, 0x24, 0x43, 0x6f, 0x72, 0x72, 0x65,
-	0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53,
-	0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x16, 0x0a, 0x06, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x32, 0x8c, 0x02, 0x0a, 0x14, 0x45, 0x6e, 0x73, 0x75,
-	0x72, 0x65, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x12, 0x79, 0x0a, 0x1c, 0x49, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73,
-	0x12, 0x2b, 0x2e, 0x63, 0x6d, 0x64, 0x73, 0x72, 0x76, 0x2e, 0x49, 0x6e, 0x73, 0x70, 0x65, 0x63,
-	0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65,
-	0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2c, 0x2e,
-	0x63, 0x6d, 0x64, 0x73, 0x72, 0x76, 0x2e, 0x49, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x4e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69,
-	0x6e, 0x67, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x79, 0x0a, 0x1c, 0x43,
-	0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x48, 0x0a, 0x1a, 0x45, 0x6e, 0x73, 0x75, 0x72, 0x65, 0x44,
+	0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x70,
+	0x6f, 0x72, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x16, 0x0a, 0x06, 0x66, 0x69, 0x6e, 0x69, 0x73,
+	0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x66, 0x69, 0x6e, 0x69, 0x73, 0x68, 0x22,
+	0x51, 0x0a, 0x23, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2a, 0x0a, 0x11, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x0f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
+	0x49, 0x64, 0x32, 0xfc, 0x01, 0x0a, 0x14, 0x45, 0x6e, 0x73, 0x75, 0x72, 0x65, 0x44, 0x65, 0x66,
+	0x61, 0x75, 0x6c, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x71, 0x0a, 0x1c, 0x49,
+	0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x12, 0x2b, 0x2e, 0x63, 0x6d,
-	0x64, 0x73, 0x72, 0x76, 0x2e, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77,
+	0x64, 0x73, 0x72, 0x76, 0x2e, 0x49, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77,
 	0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67,
-	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2c, 0x2e, 0x63, 0x6d, 0x64, 0x73, 0x72,
-	0x76, 0x2e, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x44, 0x5a, 0x42, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x78, 0x63, 0x2d, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x2f, 0x6c, 0x70, 0x77, 0x61, 0x6e, 0x2d, 0x61, 0x70, 0x70, 0x2d, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6d, 0x64, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x3b, 0x63, 0x6d, 0x64, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x63, 0x6d, 0x64, 0x73, 0x72,
+	0x76, 0x2e, 0x45, 0x6e, 0x73, 0x75, 0x72, 0x65, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x53,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x30, 0x01, 0x12, 0x71,
+	0x0a, 0x1c, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x12, 0x2b,
+	0x2e, 0x63, 0x6d, 0x64, 0x73, 0x72, 0x76, 0x2e, 0x43, 0x6f, 0x72, 0x72, 0x65, 0x63, 0x74, 0x4e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x65, 0x74, 0x74,
+	0x69, 0x6e, 0x67, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x63, 0x6d,
+	0x64, 0x73, 0x72, 0x76, 0x2e, 0x45, 0x6e, 0x73, 0x75, 0x72, 0x65, 0x44, 0x65, 0x66, 0x61, 0x75,
+	0x6c, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x30,
+	0x01, 0x42, 0x44, 0x5a, 0x42, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x6d, 0x78, 0x63, 0x2d, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x6c,
+	0x70, 0x77, 0x61, 0x6e, 0x2d, 0x61, 0x70, 0x70, 0x2d, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f,
+	0x61, 0x70, 0x69, 0x2f, 0x63, 0x6d, 0x64, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x3b, 0x63, 0x6d,
+	0x64, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -262,18 +217,17 @@ func file_ensure_default_proto_rawDescGZIP() []byte {
 	return file_ensure_default_proto_rawDescData
 }
 
-var file_ensure_default_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_ensure_default_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_ensure_default_proto_goTypes = []interface{}{
-	(*InspectNetworkServerSettingsRequest)(nil),  // 0: cmdsrv.InspectNetworkServerSettingsRequest
-	(*InspectNetworkServerSettingsResponse)(nil), // 1: cmdsrv.InspectNetworkServerSettingsResponse
-	(*CorrectNetworkServerSettingsRequest)(nil),  // 2: cmdsrv.CorrectNetworkServerSettingsRequest
-	(*CorrectNetworkServerSettingsResponse)(nil), // 3: cmdsrv.CorrectNetworkServerSettingsResponse
+	(*InspectNetworkServerSettingsRequest)(nil), // 0: cmdsrv.InspectNetworkServerSettingsRequest
+	(*EnsureDefaultServiceReport)(nil),          // 1: cmdsrv.EnsureDefaultServiceReport
+	(*CorrectNetworkServerSettingsRequest)(nil), // 2: cmdsrv.CorrectNetworkServerSettingsRequest
 }
 var file_ensure_default_proto_depIdxs = []int32{
 	0, // 0: cmdsrv.EnsureDefaultService.InspectNetworkServerSettings:input_type -> cmdsrv.InspectNetworkServerSettingsRequest
 	2, // 1: cmdsrv.EnsureDefaultService.CorrectNetworkServerSettings:input_type -> cmdsrv.CorrectNetworkServerSettingsRequest
-	1, // 2: cmdsrv.EnsureDefaultService.InspectNetworkServerSettings:output_type -> cmdsrv.InspectNetworkServerSettingsResponse
-	3, // 3: cmdsrv.EnsureDefaultService.CorrectNetworkServerSettings:output_type -> cmdsrv.CorrectNetworkServerSettingsResponse
+	1, // 2: cmdsrv.EnsureDefaultService.InspectNetworkServerSettings:output_type -> cmdsrv.EnsureDefaultServiceReport
+	1, // 3: cmdsrv.EnsureDefaultService.CorrectNetworkServerSettings:output_type -> cmdsrv.EnsureDefaultServiceReport
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -300,7 +254,7 @@ func file_ensure_default_proto_init() {
 			}
 		}
 		file_ensure_default_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InspectNetworkServerSettingsResponse); i {
+			switch v := v.(*EnsureDefaultServiceReport); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -323,18 +277,6 @@ func file_ensure_default_proto_init() {
 				return nil
 			}
 		}
-		file_ensure_default_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CorrectNetworkServerSettingsResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -342,7 +284,7 @@ func file_ensure_default_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_ensure_default_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -368,8 +310,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type EnsureDefaultServiceClient interface {
-	InspectNetworkServerSettings(ctx context.Context, in *InspectNetworkServerSettingsRequest, opts ...grpc.CallOption) (*InspectNetworkServerSettingsResponse, error)
-	CorrectNetworkServerSettings(ctx context.Context, in *CorrectNetworkServerSettingsRequest, opts ...grpc.CallOption) (*CorrectNetworkServerSettingsResponse, error)
+	InspectNetworkServerSettings(ctx context.Context, in *InspectNetworkServerSettingsRequest, opts ...grpc.CallOption) (EnsureDefaultService_InspectNetworkServerSettingsClient, error)
+	CorrectNetworkServerSettings(ctx context.Context, in *CorrectNetworkServerSettingsRequest, opts ...grpc.CallOption) (EnsureDefaultService_CorrectNetworkServerSettingsClient, error)
 }
 
 type ensureDefaultServiceClient struct {
@@ -380,94 +322,148 @@ func NewEnsureDefaultServiceClient(cc grpc.ClientConnInterface) EnsureDefaultSer
 	return &ensureDefaultServiceClient{cc}
 }
 
-func (c *ensureDefaultServiceClient) InspectNetworkServerSettings(ctx context.Context, in *InspectNetworkServerSettingsRequest, opts ...grpc.CallOption) (*InspectNetworkServerSettingsResponse, error) {
-	out := new(InspectNetworkServerSettingsResponse)
-	err := c.cc.Invoke(ctx, "/cmdsrv.EnsureDefaultService/InspectNetworkServerSettings", in, out, opts...)
+func (c *ensureDefaultServiceClient) InspectNetworkServerSettings(ctx context.Context, in *InspectNetworkServerSettingsRequest, opts ...grpc.CallOption) (EnsureDefaultService_InspectNetworkServerSettingsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_EnsureDefaultService_serviceDesc.Streams[0], "/cmdsrv.EnsureDefaultService/InspectNetworkServerSettings", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &ensureDefaultServiceInspectNetworkServerSettingsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
 
-func (c *ensureDefaultServiceClient) CorrectNetworkServerSettings(ctx context.Context, in *CorrectNetworkServerSettingsRequest, opts ...grpc.CallOption) (*CorrectNetworkServerSettingsResponse, error) {
-	out := new(CorrectNetworkServerSettingsResponse)
-	err := c.cc.Invoke(ctx, "/cmdsrv.EnsureDefaultService/CorrectNetworkServerSettings", in, out, opts...)
+type EnsureDefaultService_InspectNetworkServerSettingsClient interface {
+	Recv() (*EnsureDefaultServiceReport, error)
+	grpc.ClientStream
+}
+
+type ensureDefaultServiceInspectNetworkServerSettingsClient struct {
+	grpc.ClientStream
+}
+
+func (x *ensureDefaultServiceInspectNetworkServerSettingsClient) Recv() (*EnsureDefaultServiceReport, error) {
+	m := new(EnsureDefaultServiceReport)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *ensureDefaultServiceClient) CorrectNetworkServerSettings(ctx context.Context, in *CorrectNetworkServerSettingsRequest, opts ...grpc.CallOption) (EnsureDefaultService_CorrectNetworkServerSettingsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_EnsureDefaultService_serviceDesc.Streams[1], "/cmdsrv.EnsureDefaultService/CorrectNetworkServerSettings", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &ensureDefaultServiceCorrectNetworkServerSettingsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type EnsureDefaultService_CorrectNetworkServerSettingsClient interface {
+	Recv() (*EnsureDefaultServiceReport, error)
+	grpc.ClientStream
+}
+
+type ensureDefaultServiceCorrectNetworkServerSettingsClient struct {
+	grpc.ClientStream
+}
+
+func (x *ensureDefaultServiceCorrectNetworkServerSettingsClient) Recv() (*EnsureDefaultServiceReport, error) {
+	m := new(EnsureDefaultServiceReport)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // EnsureDefaultServiceServer is the server API for EnsureDefaultService service.
 type EnsureDefaultServiceServer interface {
-	InspectNetworkServerSettings(context.Context, *InspectNetworkServerSettingsRequest) (*InspectNetworkServerSettingsResponse, error)
-	CorrectNetworkServerSettings(context.Context, *CorrectNetworkServerSettingsRequest) (*CorrectNetworkServerSettingsResponse, error)
+	InspectNetworkServerSettings(*InspectNetworkServerSettingsRequest, EnsureDefaultService_InspectNetworkServerSettingsServer) error
+	CorrectNetworkServerSettings(*CorrectNetworkServerSettingsRequest, EnsureDefaultService_CorrectNetworkServerSettingsServer) error
 }
 
 // UnimplementedEnsureDefaultServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedEnsureDefaultServiceServer struct {
 }
 
-func (*UnimplementedEnsureDefaultServiceServer) InspectNetworkServerSettings(context.Context, *InspectNetworkServerSettingsRequest) (*InspectNetworkServerSettingsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InspectNetworkServerSettings not implemented")
+func (*UnimplementedEnsureDefaultServiceServer) InspectNetworkServerSettings(*InspectNetworkServerSettingsRequest, EnsureDefaultService_InspectNetworkServerSettingsServer) error {
+	return status.Errorf(codes.Unimplemented, "method InspectNetworkServerSettings not implemented")
 }
-func (*UnimplementedEnsureDefaultServiceServer) CorrectNetworkServerSettings(context.Context, *CorrectNetworkServerSettingsRequest) (*CorrectNetworkServerSettingsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CorrectNetworkServerSettings not implemented")
+func (*UnimplementedEnsureDefaultServiceServer) CorrectNetworkServerSettings(*CorrectNetworkServerSettingsRequest, EnsureDefaultService_CorrectNetworkServerSettingsServer) error {
+	return status.Errorf(codes.Unimplemented, "method CorrectNetworkServerSettings not implemented")
 }
 
 func RegisterEnsureDefaultServiceServer(s *grpc.Server, srv EnsureDefaultServiceServer) {
 	s.RegisterService(&_EnsureDefaultService_serviceDesc, srv)
 }
 
-func _EnsureDefaultService_InspectNetworkServerSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InspectNetworkServerSettingsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _EnsureDefaultService_InspectNetworkServerSettings_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(InspectNetworkServerSettingsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(EnsureDefaultServiceServer).InspectNetworkServerSettings(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/cmdsrv.EnsureDefaultService/InspectNetworkServerSettings",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EnsureDefaultServiceServer).InspectNetworkServerSettings(ctx, req.(*InspectNetworkServerSettingsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(EnsureDefaultServiceServer).InspectNetworkServerSettings(m, &ensureDefaultServiceInspectNetworkServerSettingsServer{stream})
 }
 
-func _EnsureDefaultService_CorrectNetworkServerSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CorrectNetworkServerSettingsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+type EnsureDefaultService_InspectNetworkServerSettingsServer interface {
+	Send(*EnsureDefaultServiceReport) error
+	grpc.ServerStream
+}
+
+type ensureDefaultServiceInspectNetworkServerSettingsServer struct {
+	grpc.ServerStream
+}
+
+func (x *ensureDefaultServiceInspectNetworkServerSettingsServer) Send(m *EnsureDefaultServiceReport) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _EnsureDefaultService_CorrectNetworkServerSettings_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CorrectNetworkServerSettingsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(EnsureDefaultServiceServer).CorrectNetworkServerSettings(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/cmdsrv.EnsureDefaultService/CorrectNetworkServerSettings",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EnsureDefaultServiceServer).CorrectNetworkServerSettings(ctx, req.(*CorrectNetworkServerSettingsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(EnsureDefaultServiceServer).CorrectNetworkServerSettings(m, &ensureDefaultServiceCorrectNetworkServerSettingsServer{stream})
+}
+
+type EnsureDefaultService_CorrectNetworkServerSettingsServer interface {
+	Send(*EnsureDefaultServiceReport) error
+	grpc.ServerStream
+}
+
+type ensureDefaultServiceCorrectNetworkServerSettingsServer struct {
+	grpc.ServerStream
+}
+
+func (x *ensureDefaultServiceCorrectNetworkServerSettingsServer) Send(m *EnsureDefaultServiceReport) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _EnsureDefaultService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "cmdsrv.EnsureDefaultService",
 	HandlerType: (*EnsureDefaultServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "InspectNetworkServerSettings",
-			Handler:    _EnsureDefaultService_InspectNetworkServerSettings_Handler,
+			StreamName:    "InspectNetworkServerSettings",
+			Handler:       _EnsureDefaultService_InspectNetworkServerSettings_Handler,
+			ServerStreams: true,
 		},
 		{
-			MethodName: "CorrectNetworkServerSettings",
-			Handler:    _EnsureDefaultService_CorrectNetworkServerSettings_Handler,
+			StreamName:    "CorrectNetworkServerSettings",
+			Handler:       _EnsureDefaultService_CorrectNetworkServerSettings_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "ensure_default.proto",
 }

@@ -1,8 +1,10 @@
 package cmdserver
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"time"
 
@@ -147,23 +149,55 @@ type nsObject struct {
 	gwMap map[string]gwObject
 }
 
-// InspectNetworkServerSettings inspects all existsing network servers in db together with all other settings which are
-// referring to network server id
-func (a *Server) InspectNetworkServerSettings(ctx context.Context,
-	req *pb.InspectNetworkServerSettingsRequest) (*pb.InspectNetworkServerSettingsResponse, error) {
-	_, result, err := a.inspectNetworkServerSettings(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+func sendInspectReport(data io.Reader, send func(report *pb.EnsureDefaultServiceReport) error) (err error) {
+	for {
+		rb := make([]byte, 65535)
+		n, err := io.ReadFull(data, rb)
+		if err != nil {
+			if err == io.ErrUnexpectedEOF {
+				if err = send(&pb.EnsureDefaultServiceReport{
+					Data:   rb[:n],
+					Finish: true,
+				}); err != nil {
+					return status.Errorf(codes.Internal, "server failed to send report data: %v", err)
+				}
+				break
+			}
+			return status.Errorf(codes.Internal, "failed to read from buffer: %v", err)
+		}
+		if err = send(&pb.EnsureDefaultServiceReport{
+			Data:   rb,
+			Finish: false,
+		}); err != nil {
+			return status.Errorf(codes.Internal, "server failed to send report data: %v", err)
+		}
 	}
-
-	return &pb.InspectNetworkServerSettingsResponse{InspectResult: result}, nil
+	return nil
 }
 
-func (a *Server) inspectNetworkServerSettings(ctx context.Context) (map[int64]*nsObject, []string, error) {
+// InspectNetworkServerSettings inspects all existsing network servers in db together with all other settings which are
+// referring to network server id
+func (a *Server) InspectNetworkServerSettings(req *pb.InspectNetworkServerSettingsRequest, srv pb.EnsureDefaultService_InspectNetworkServerSettingsServer) error {
+	_, result, err := a.inspectNetworkServerSettings(srv.Context())
+	if err != nil {
+		return status.Errorf(codes.Internal, err.Error())
+	}
+
+	return sendInspectReport(result, srv.Send)
+}
+
+func writeBuffer(report io.StringWriter, data string) {
+	_, err := report.WriteString(data)
+	if err != nil {
+		logrus.Errorf("write to buffer error: %v", err)
+	}
+}
+
+func (a *Server) inspectNetworkServerSettings(ctx context.Context) (map[int64]*nsObject, *bytes.Buffer, error) {
 	var nsList []nsd.NetworkServer
 	var err error
 	nsMap := make(map[int64]*nsObject)
-	response := []string{""}
+	response := new(bytes.Buffer)
 
 	nsList, err = a.st.GetNetworkServers(ctx, nsd.NetworkServerFilters{
 		Limit:  999,
@@ -174,7 +208,7 @@ func (a *Server) inspectNetworkServerSettings(ctx context.Context) (map[int64]*n
 	}
 
 	if len(nsList) == 0 {
-		return nil, []string{"no netowrk servers set yet"}, nil
+		return nil, response, nil
 	}
 
 	for _, v := range nsList {
@@ -185,10 +219,10 @@ func (a *Server) inspectNetworkServerSettings(ctx context.Context) (map[int64]*n
 		nsObj.gwMap = make(map[string]gwObject)
 		nsMap[v.ID] = &nsObj
 
-		result := fmt.Sprintf("network server: id=%d, name=%s \n", v.ID, v.Name)
+		writeBuffer(response, fmt.Sprintf("network server: id=%d, name=%s \n", v.ID, v.Name))
 
 		// get gateway profiles
-		result += fmt.Sprintf("gateway profiles: \n")
+		writeBuffer(response, "gateway profiles: \n")
 		limitgp, err := a.st.GetGatewayProfileCountForNetworkServerID(ctx, v.ID)
 		if err != nil {
 			return nsMap, response, err
@@ -199,31 +233,31 @@ func (a *Server) inspectNetworkServerSettings(ctx context.Context) (map[int64]*n
 		}
 
 		for _, v := range gpList {
-			result += fmt.Sprintf("    nsID=%d, nsName=%s, gateway_profile_id=%s, gateway_profile_name=%s \n",
-				v.NetworkServerID, v.NetworkServerName, v.GatewayProfileID.String(), v.Name)
+			writeBuffer(response, fmt.Sprintf("    nsID=%d, nsName=%s, gateway_profile_id=%s, gateway_profile_name=%s \n",
+				v.NetworkServerID, v.NetworkServerName, v.GatewayProfileID.String(), v.Name))
 			nsObj.gpMap[v.GatewayProfileID] = v.Name
 		}
 
 		// get service profiles
-		result += fmt.Sprintf("service profiles: \n")
+		writeBuffer(response, "service profiles: \n")
 		limitsp, err := a.st.GetServiceProfileCountForNetworkServerID(ctx, v.ID)
 		if err != nil {
 			return nsMap, response, err
 		}
-		result += fmt.Sprintf("    nsID=%d, nsName=%s, count=%d \n", v.ID, v.Name, limitsp)
+		writeBuffer(response, fmt.Sprintf("    nsID=%d, nsName=%s, count=%d \n", v.ID, v.Name, limitsp))
 		nsObj.spMap.count = int64(limitsp)
 
 		// get device profiles
-		result += fmt.Sprintf("device profiles: \n")
+		writeBuffer(response, "device profiles: \n")
 		limitdp, err := a.st.GetDeviceProfileCountForNetworkServerID(ctx, v.ID)
 		if err != nil {
 			return nsMap, response, err
 		}
-		result += fmt.Sprintf("    nsID=%d, nsName=%s, count=%d \n", v.ID, v.Name, limitdp)
+		writeBuffer(response, fmt.Sprintf("    nsID=%d, nsName=%s, count=%d \n", v.ID, v.Name, limitdp))
 		nsObj.dpMap.count = int64(limitdp)
 
 		// get gateways
-		result += fmt.Sprintf("gateways: \n")
+		writeBuffer(response, "gateways: \n")
 		limitgw, err := a.st.GetGatewaysCountForNetworkServerID(ctx, v.ID)
 		if err != nil {
 			return nsMap, response, err
@@ -238,41 +272,48 @@ func (a *Server) inspectNetworkServerSettings(ctx context.Context) (map[int64]*n
 			}
 			nsObj.gwMap[*v.GatewayProfileID][v.MAC] = v
 		}
-		for gwpID, count := range nsObj.gwMap {
-			result += fmt.Sprintf("    nsID=%d, gateway_profile_id=%s, count=%d \n", v.ID, gwpID, count)
+		for gwpID, gwObj := range nsObj.gwMap {
+			writeBuffer(response, fmt.Sprintf("    nsID=%d, gateway_profile_id=%s, count=%d \n", v.ID, gwpID, len(gwObj)))
 		}
-
-		response = append(response, result)
 	}
 
 	return nsMap, response, nil
 }
 
-// CorrectNetworkServerSettings
+func sendStream(data *bytes.Buffer, send func(report *pb.EnsureDefaultServiceReport) error) error {
+	if err := send(&pb.EnsureDefaultServiceReport{
+		Data:   data.Bytes(),
+		Finish: true,
+	}); err != nil {
+		return status.Errorf(codes.Internal, err.Error())
+	}
+	return nil
+}
+
+// CorrectNetworkServerSettings :
 // - removes network server and all related settings from DB except for the given network server id
 // - rename the only network server to default_network_server
 // - ensure default_gateway_profile is set
-func (a *Server) CorrectNetworkServerSettings(ctx context.Context, req *pb.CorrectNetworkServerSettingsRequest) (*pb.CorrectNetworkServerSettingsResponse, error) {
-	nsMap, _, err := a.inspectNetworkServerSettings(ctx)
+func (a *Server) CorrectNetworkServerSettings(req *pb.CorrectNetworkServerSettingsRequest, srv pb.EnsureDefaultService_CorrectNetworkServerSettingsServer) error {
+	nsMap, _, err := a.inspectNetworkServerSettings(srv.Context())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return status.Errorf(codes.Internal, err.Error())
 	}
+
+	response := new(bytes.Buffer)
 
 	if len(nsMap) == 0 {
-		return &pb.CorrectNetworkServerSettingsResponse{
-			Report: "no network servers set yet",
-		}, nil
+		writeBuffer(response, "no network server set yet, nothing to do")
+		return sendStream(response, srv.Send)
 	}
-
-	// clean up redundant network server and all related settings
-	report := ""
 
 	if nsMap[req.NetworkServerId] == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "network server %d does not exist", req.NetworkServerId)
+		return status.Errorf(codes.InvalidArgument, "network server %d does not exist", req.NetworkServerId)
 	}
-	defaultGpID, err := a.ensureDefaultGatewayProfile(ctx, req.NetworkServerId, &report, nsMap)
+	defaultGpID, err := a.ensureDefaultGatewayProfile(srv.Context(), req.NetworkServerId, response, nsMap)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		writeBuffer(response, err.Error())
+		return sendStream(response, srv.Send)
 	}
 	defaultNsID := req.NetworkServerId
 
@@ -283,22 +324,13 @@ func (a *Server) CorrectNetworkServerSettings(ctx context.Context, req *pb.Corre
 		}
 		// reset network server id for device profile and service profile
 		// reset device profiles' network server id
-		dpChanged, spChanged, err := correctDeviceProfilesAndServiceProfiles(ctx, a.st, defaultNsID, nsID,
-			nsObj.dpMap.count, nsObj.spMap.count)
+		writeBuffer(response, "Step : correct device profiles and service profiles \n")
+		dpChanged, spChanged, err := correctDeviceProfilesAndServiceProfiles(srv.Context(), a.st, defaultNsID, nsID,
+			nsObj.dpMap, nsObj.spMap, response)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "%s \n %v", report, err)
+			writeBuffer(response, err.Error())
+			return sendStream(response, srv.Send)
 		}
-		report += fmt.Sprintf("INFO: changed device profiles' network server id from %d to %d \n", nsID, defaultNsID)
-		if dpChanged != nsObj.dpMap.count {
-			report += fmt.Sprintf("WARNING: reset device profiles' network server id from %d to %d, expect done %d, actually done %d \n",
-				nsID, defaultNsID, nsObj.dpMap.count, dpChanged)
-		}
-		report += fmt.Sprintf("INFO: changed service profiles' network server id from %d to %d \n", nsID, defaultNsID)
-		if spChanged != nsObj.spMap.count {
-			report += fmt.Sprintf("WARNING: reset service profiles' network server id from %d to %d, expect done %d, actually done %d \n",
-				nsID, defaultNsID, nsObj.spMap.count, spChanged)
-		}
-
 		// update nsMap
 		nsMap[defaultNsID].dpMap.count += dpChanged
 		nsObj.dpMap.count -= dpChanged
@@ -311,54 +343,62 @@ func (a *Server) CorrectNetworkServerSettings(ctx context.Context, req *pb.Corre
 			if count == 0 {
 				continue
 			}
-			gpID := uuid.UUID{}
-			if err = gpID.UnmarshalText([]byte(gpIDStr)); err != nil {
-				return nil, status.Errorf(codes.Internal, "%s \n %v", report, err)
-			}
-			if err = batchUpdateGateway(ctx, gwList, defaultNsID, defaultGpID, a.st, a.nsCli, &report,
+			writeBuffer(response, fmt.Sprintf("Step : batch update gateways with gateway profile id %s \n", gpIDStr))
+			if err = batchUpdateGateway(srv.Context(), gwList, defaultNsID, defaultGpID, a.st, a.nsCli, response,
 				nsMap[defaultNsID].gwMap[defaultGpID.String()]); err != nil {
-				return nil, status.Errorf(codes.Internal, "%s \n %v", report, err)
+				writeBuffer(response, err.Error())
+				return sendStream(response, srv.Send)
 			}
 			if len(gwList) != 0 {
 				// not all gateways have been processed, log it
-				report += fmt.Sprintf("WARNING: changed gateways number does not match for gpID=%s: expected %d, got %d \n",
-					gpIDStr, count, count-len(gwList))
+				writeBuffer(response, fmt.Sprintf("WARNING: changed gateways number does not match for gpID=%s: expected %d, got %d \n",
+					gpIDStr, count, count-len(gwList)))
 			}
 		}
 
 		// delete redundant gateway profiles
 		for gpID, gpName := range nsObj.gpMap {
-			// check whether gateway profile is still referred by gateways
-			count, err := a.st.GetGatewaysCountForGatewayProfileID(ctx, gpID)
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "%s \n %v", report, err)
+			if err = a.cleanupGatewayProfile(srv.Context(), response, gpID, gpName, nsObj.gpMap); err != nil {
+				writeBuffer(response, err.Error())
+				return sendStream(response, srv.Send)
 			}
-			if count != 0 {
-				report += fmt.Sprintf("WARNING: cannot delete gateway profile %s(%s), it's still referred by %d gateways \n",
-					gpID.String(), gpName, nsObj.gwMap[gpID.String()])
-				continue
-			}
-
-			// remove gateway profile
-			if err = gp.DeleteGatewayProfile(ctx, a.gpSt, gpID, a.nsCli); err != nil {
-				return nil, status.Errorf(codes.Internal, "%s \n %v", report, err)
-			}
-			delete(nsMap[nsID].gpMap, gpID)
-			report += fmt.Sprintf("INFO: delete gateway profile %s \n", gpID.String())
 		}
 	}
 
-	err = a.ensureDefaultNetworkServerName(ctx, defaultNsID, &report, nsMap)
+	writeBuffer(response, "Step : ensure default network server \n")
+	err = a.ensureDefaultNetworkServerName(srv.Context(), defaultNsID, response, nsMap)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%s \n %v", report, err)
+		writeBuffer(response, err.Error())
+		return sendStream(response, srv.Send)
 	}
 
-	return &pb.CorrectNetworkServerSettingsResponse{Report: report}, nil
+	return sendStream(response, srv.Send)
+}
+
+func (a *Server) cleanupGatewayProfile(ctx context.Context, response io.StringWriter, gpID uuid.UUID, gpName string,
+	gpMap gpObject) error {
+	writeBuffer(response, fmt.Sprintf("Step : correct gateway profile %s \n", gpID.String()))
+	// check whether gateway profile is still referred by gateways
+	count, err := a.st.GetGatewaysCountForGatewayProfileID(ctx, gpID)
+	if err != nil {
+		return err
+	}
+	if count != 0 {
+		writeBuffer(response, fmt.Sprintf("WARNING: cannot delete gateway profile %s(%s), it's still referred by %d gateways \n",
+			gpID.String(), gpName, count))
+		return nil
+	}
+	// remove gateway profile
+	if err = gp.DeleteGatewayProfile(ctx, a.gpSt, gpID, a.nsCli); err != nil {
+		return err
+	}
+	delete(gpMap, gpID)
+	writeBuffer(response, fmt.Sprintf("INFO: delete gateway profile %s \n", gpID.String()))
+	return nil
 }
 
 func batchUpdateGateway(ctx context.Context, gwMap map[lorawan.EUI64]gwd.Gateway, defaultNsID int64, defaultGpID uuid.UUID,
-	st Store, nsCli *nscli.Client, report *string, gwMapDS map[lorawan.EUI64]gwd.Gateway) error {
-	reportStr := *report
+	st Store, nsCli *nscli.Client, report io.StringWriter, gwMapDS map[lorawan.EUI64]gwd.Gateway) error {
 	for mac, gateway := range gwMap {
 		nsID := gateway.NetworkServerID
 		gpID := *gateway.GatewayProfileID
@@ -392,33 +432,37 @@ func batchUpdateGateway(ctx context.Context, gwMap map[lorawan.EUI64]gwd.Gateway
 			gateway.NetworkServerID = defaultNsID
 			*gateway.GatewayProfileID = defaultGpID.String()
 			gwMapDS[mac] = gateway
-			reportStr += fmt.Sprintf("INFO: updated network server id from %d to %d, gateway profile id from %s to "+
-				"%s for gateway %s \n", nsID, defaultNsID, gpID, defaultGpID.String(), mac.String())
+			writeBuffer(report, fmt.Sprintf("INFO: updated network server id from %d to %d, gateway profile id from %s to "+
+				"%s for gateway %s \n", nsID, defaultNsID, gpID, defaultGpID.String(), mac.String()))
 		}
 	}
-	*report = reportStr
 	return nil
 }
 
-func correctDeviceProfilesAndServiceProfiles(ctx context.Context, st Store, nsIDKept, nsID int64,
-	dpCount int64, spCount int64) (int64, int64, error) {
-	if dpCount == 0 && spCount == 0 {
+func correctDeviceProfilesAndServiceProfiles(ctx context.Context, st Store, defaultNsID, nsID int64,
+	dpMap dpObject, spMap spObject, response io.StringWriter) (int64, int64, error) {
+	if dpMap.count == 0 && spMap.count == 0 {
 		return 0, 0, nil
 	}
-	dpChanged, spChanged, err := st.BatchSetNetworkServerIDForDeviceProfileAndServiceProfile(ctx, nsID, nsIDKept)
+	dpChanged, spChanged, err := st.BatchSetNetworkServerIDForDeviceProfileAndServiceProfile(ctx, nsID, defaultNsID)
 	if err != nil {
 		return 0, 0, err
+	}
+	writeBuffer(response, fmt.Sprintf("INFO: changed device profiles' network server id from %d to %d \n", nsID, defaultNsID))
+	if dpChanged != dpMap.count {
+		writeBuffer(response, fmt.Sprintf("WARNING: reset device profiles' network server id from %d to %d, expect done %d, actually done %d \n",
+			nsID, defaultNsID, dpMap.count, dpChanged))
+	}
+	writeBuffer(response, fmt.Sprintf("INFO: changed service profiles' network server id from %d to %d \n", nsID, defaultNsID))
+	if spChanged != spMap.count {
+		writeBuffer(response, fmt.Sprintf("WARNING: reset service profiles' network server id from %d to %d, expect done %d, actually done %d \n",
+			nsID, defaultNsID, spMap.count, spChanged))
 	}
 	return dpChanged, spChanged, nil
 }
 
-func (a *Server) ensureDefaultGatewayProfile(ctx context.Context, defaultNsID int64, report *string, nsMap map[int64]*nsObject) (uuid.UUID, error) {
+func (a *Server) ensureDefaultGatewayProfile(ctx context.Context, defaultNsID int64, report io.StringWriter, nsMap map[int64]*nsObject) (uuid.UUID, error) {
 	var gatewayProfileID uuid.UUID
-	reportStr := *report
-	defer func() {
-		*report = reportStr
-	}()
-
 	gpID, _, err := a.st.GetDefaultGatewayProfile(ctx)
 	if err != nil && err != errHandler.ErrDoesNotExist {
 		return gatewayProfileID, err
@@ -438,8 +482,8 @@ func (a *Server) ensureDefaultGatewayProfile(ctx context.Context, defaultNsID in
 		}
 		// add default gateway profile to nsMap
 		nsMap[defaultNsID].gpMap[*newGpID] = nsd.DefaultGatewayProfileName
-		reportStr += fmt.Sprintf("INFO: created default_gateway_profile with network server id %d and gatway "+
-			"profile id %s \n", defaultNsID, newGpID.String())
+		writeBuffer(report, fmt.Sprintf("INFO: created default_gateway_profile with network server id %d and gatway "+
+			"profile id %s \n", defaultNsID, newGpID.String()))
 		return *newGpID, nil
 	} else if err == nil {
 		gatewayProfileID = *gpID
@@ -463,78 +507,80 @@ func (a *Server) ensureDefaultGatewayProfile(ctx context.Context, defaultNsID in
 		// update nsMap
 		delete(nsMap[gatewayProfile.NetworkServerID].gpMap, gatewayProfileID)
 		nsMap[defaultNsID].gpMap[gatewayProfileID] = nsd.DefaultGatewayProfileName
-		reportStr += fmt.Sprintf("INFO: updated default_gateway_profile %s, change network server id from %d "+
-			"to %d \n", gatewayProfileID.String(), gatewayProfile.NetworkServerID, defaultNsID)
+		writeBuffer(report, fmt.Sprintf("INFO: updated default_gateway_profile %s, change network server id from %d "+
+			"to %d \n", gatewayProfileID.String(), gatewayProfile.NetworkServerID, defaultNsID))
 	}
 	return gatewayProfileID, nil
 }
 
-func (a *Server) ensureDefaultNetworkServerName(ctx context.Context, defaultNsID int64, report *string, nsMap map[int64]*nsObject) error {
-	reportStr := *report
-	var defaultNsObj *nsObject
-	defer func() {
-		*report = reportStr
-	}()
+func (a *Server) removeNetworkServer(ctx context.Context, nsID int64, report io.StringWriter, nsMap map[int64]*nsObject) error {
+	// is network server used by device profiles?
+	count, err := a.st.GetDeviceProfileCountForNetworkServerID(ctx, nsID)
+	if err != nil {
+		return err
+	}
+	if count != 0 {
+		writeBuffer(report, fmt.Sprintf("WARNING: cannot delete network server %d, "+
+			"it's still referred by device profiles \n", nsID))
+		return nil
+	}
+	// is network server used by service profiles?
+	count, err = a.st.GetDeviceProfileCountForNetworkServerID(ctx, nsID)
+	if err != nil {
+		return err
+	}
+	if count != 0 {
+		writeBuffer(report, fmt.Sprintf("WARNING: cannot delete network server %d, "+
+			"it's still referred by service profiles \n", nsID))
+		return nil
+	}
+	// is network server used by gateway profiles?
+	count, err = a.st.GetGatewayProfileCountForNetworkServerID(ctx, nsID)
+	if err != nil {
+		return err
+	}
+	if count != 0 {
+		writeBuffer(report, fmt.Sprintf("WARNING: cannot delete network server %d, "+
+			"it's still referred by gateway profiles \n", nsID))
+		return nil
+	}
+	// is network server used by gateways?
+	count64, err := a.st.GetGatewaysCountForNetworkServerID(ctx, nsID)
+	if err != nil {
+		return err
+	}
+	if count64 != 0 {
+		writeBuffer(report, fmt.Sprintf("WARNING: cannot delete network server %d, "+
+			"it's still referred by gateways \n", nsID))
+		return nil
+	}
+	// delete network server **LOCALLY ONLY**
+	if err = a.st.DeleteNetworkServer(ctx, nsID); err != nil {
+		return err
+	}
+	delete(nsMap, nsID)
+	writeBuffer(report, fmt.Sprintf("INFO: delete network server %d \n", nsID))
+	return nil
+}
 
+func (a *Server) ensureDefaultNetworkServerName(ctx context.Context, defaultNsID int64, report io.StringWriter, nsMap map[int64]*nsObject) error {
+	var defaultNsObj *nsObject
 	for nsID, nsObj := range nsMap {
 		if nsID == defaultNsID {
 			defaultNsObj = nsObj
 			continue
 		}
-		// is network server used by device profiles?
-		count, err := a.st.GetDeviceProfileCountForNetworkServerID(ctx, nsID)
-		if err != nil {
+		if err := a.removeNetworkServer(ctx, nsID, report, nsMap); err != nil {
 			return err
 		}
-		if count != 0 {
-			reportStr += fmt.Sprintf("WARNING: cannot delete network server %d, "+
-				"it's still referred by device profiles \n", nsID)
-			continue
-		}
-		// is network server used by service profiles?
-		count, err = a.st.GetDeviceProfileCountForNetworkServerID(ctx, nsID)
-		if err != nil {
-			return err
-		}
-		if count != 0 {
-			reportStr += fmt.Sprintf("WARNING: cannot delete network server %d, "+
-				"it's still referred by service profiles \n", nsID)
-			continue
-		}
-		// is network server used by gateway profiles?
-		count, err = a.st.GetGatewayProfileCountForNetworkServerID(ctx, nsID)
-		if err != nil {
-			return err
-		}
-		if count != 0 {
-			reportStr += fmt.Sprintf("WARNING: cannot delete network server %d, "+
-				"it's still referred by gateway profiles \n", nsID)
-			continue
-		}
-		// is network server used by gateways?
-		count64, err := a.st.GetGatewaysCountForNetworkServerID(ctx, nsID)
-		if err != nil {
-			return err
-		}
-		if count64 != 0 {
-			reportStr += fmt.Sprintf("WARNING: cannot delete network server %d, "+
-				"it's still referred by gateways \n", nsID)
-			continue
-		}
-		// delete network server **LOCALLY ONLY**
-		if err = a.st.DeleteNetworkServer(ctx, nsID); err != nil {
-			return err
-		}
-		delete(nsMap, nsID)
-		reportStr += fmt.Sprintf("INFO: delete network server %d \n", nsID)
 	}
 
 	if len(nsMap) != 1 {
-		reportStr += fmt.Sprintf("WARNING: network server is not correted, %d left \n", len(nsMap))
+		writeBuffer(report, fmt.Sprintf("WARNING: network server is not correted, %d left \n", len(nsMap)))
 		return nil
 	}
 	if defaultNsObj == nil {
-		reportStr += fmt.Sprintf("WARNING: default network server is not assigned \n")
+		writeBuffer(report, "WARNING: default network server is not assigned \n")
 		return nil
 	}
 
@@ -542,8 +588,9 @@ func (a *Server) ensureDefaultNetworkServerName(ctx context.Context, defaultNsID
 		if err := a.st.UpdateNetworkServerName(ctx, defaultNsID, nsd.DefaultNetworkServerName); err != nil {
 			return fmt.Errorf("update network server name to %s error: %v", nsd.DefaultNetworkServerName, err)
 		}
-		reportStr += fmt.Sprintf("INFO: update name for network server %d, from %s to %s \n",
-			defaultNsID, defaultNsObj.name, nsd.DefaultNetworkServerName)
+		writeBuffer(report, fmt.Sprintf("INFO: update name for network server %d, from %s to %s \n",
+			defaultNsID, defaultNsObj.name, nsd.DefaultNetworkServerName))
+		return nil
 	}
 
 	return nil
