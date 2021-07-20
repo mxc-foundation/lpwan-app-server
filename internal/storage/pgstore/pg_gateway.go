@@ -285,42 +285,22 @@ func (ps *PgStore) UpdateGateway(ctx context.Context, gw *Gateway) error {
 	return nil
 }
 
-// UpdateFirstHeartbeat updates the first heartbeat by mac
-func (ps *PgStore) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
+// UpdateGatewayHeartbeat updates the first heartbeat and last heartbeat by mac
+func (ps *PgStore) UpdateGatewayHeartbeat(ctx context.Context, mac lorawan.EUI64, firstHeartBeat, lastHeartBeat int64) error {
 	res, err := ps.db.ExecContext(ctx, `
-		update gateway
-			set first_heartbeat = $1
+		update 
+			gateway
+		set 
+			first_heartbeat = $1,
+			last_heartbeat = $2			
 		where
-			mac = $2`,
-		time,
+			mac = $3`,
+		firstHeartBeat,
+		lastHeartBeat,
 		mac,
 	)
 	if err != nil {
 		return errors.Wrap(err, "update first heartbeat error")
-	}
-	ra, err := res.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "get rows affected error")
-	}
-	if ra == 0 {
-		return errors.New("not exist")
-	}
-
-	return nil
-}
-
-// UpdateLastHeartbeat updates the last heartbeat by mac
-func (ps *PgStore) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
-	res, err := ps.db.ExecContext(ctx, `
-		update gateway
-			set last_heartbeat = $1
-		where
-			mac = $2`,
-		time,
-		mac,
-	)
-	if err != nil {
-		return errors.Wrap(err, "update last heartbeat error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
@@ -561,24 +541,6 @@ func (ps *PgStore) GetGatewayConfigByGwID(ctx context.Context, mac lorawan.EUI64
 	return gwConfig, nil
 }
 
-// GetFirstHeartbeat returns the first heartbeat
-func (ps *PgStore) GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
-	var firstHeartbeat int64
-	err := sqlx.GetContext(ctx, ps.db, &firstHeartbeat, `
-		select 
-			first_heartbeat
-		from gateway
-		where mac = $1
-        limit 1`,
-		mac,
-	)
-	if err != nil {
-		return 0, errors.Wrap(err, "select error")
-	}
-
-	return firstHeartbeat, nil
-}
-
 func (ps *PgStore) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
 	res, err := ps.db.ExecContext(ctx, `
 		update gateway
@@ -599,25 +561,6 @@ func (ps *PgStore) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.E
 	}
 
 	return nil
-}
-
-// GetLastHeartbeat returns the last heartbeat
-func (ps *PgStore) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
-	var lastHeartbeat int64
-
-	err := sqlx.GetContext(ctx, ps.db, &lastHeartbeat, `
-		select 
-			last_heartbeat
-		from gateway
-		where mac = $1
-		limit 1`,
-		mac,
-	)
-	if err != nil {
-		return 0, errors.Wrap(err, "select error")
-	}
-
-	return lastHeartbeat, nil
 }
 
 func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]mining.GatewayMining, error) {
