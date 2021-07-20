@@ -98,7 +98,7 @@ func (a *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest
 		firstHeartbeat = currentHeartbeat
 		lastHeartbeat = currentHeartbeat
 	} else {
-		// gateway is considered as online all the time, set firstHeartbeat to lastHeartbeat
+		// gateway is considered as online all the time, no need to update firstHeartbeat unless firstHeartbeat is 0
 		if firstHeartbeat == 0 {
 			// TODO: before deploying this fix, there might be firstHeartbeat set to 0 in live servers, can be optimized
 			//  off later
