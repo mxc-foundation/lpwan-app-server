@@ -40,7 +40,7 @@ type CMDServer struct {
 	applicationServerPubHost string
 }
 
-// Start starts gRPC server that serves mxp server
+// Start starts gRPC server that serves command line request service
 func Start(st Store, nsSt nsd.Store, gpSt gp.Store, nsCli *nscli.Client,
 	applicationServerID uuid.UUID, applicationServerPubHost string) (*CMDServer, error) {
 	srv := &CMDServer{

@@ -90,14 +90,19 @@ func (a *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest
 	firstHeartbeat := gateway.FirstHeartbeat
 
 	if lastHeartbeat == 0 {
-		lastHeartbeat = currentHeartbeat
 		firstHeartbeat = currentHeartbeat
-	} else if currentHeartbeat-lastHeartbeat > mining.GetSettings().HeartbeatOfflineLimit {
 		lastHeartbeat = currentHeartbeat
-		firstHeartbeat = 0
-	} else if currentHeartbeat-lastHeartbeat <= mining.GetSettings().HeartbeatOfflineLimit {
+	} else if currentHeartbeat-lastHeartbeat > mining.GetSettings().HeartbeatOfflineLimit {
+		// gateway is considered as went offline before in this case, during offline time, gateway should not be paid
+		// set firstHeartbeat to currentHeartbeat
+		firstHeartbeat = currentHeartbeat
+		lastHeartbeat = currentHeartbeat
+	} else {
+		// gateway is considered as online all the time, set firstHeartbeat to lastHeartbeat
 		if firstHeartbeat == 0 {
-			firstHeartbeat = currentHeartbeat
+			// TODO: before deploying this fix, there might be firstHeartbeat set to 0 in live servers, can be optimized
+			//  off later
+			firstHeartbeat = lastHeartbeat
 		}
 		lastHeartbeat = currentHeartbeat
 	}
@@ -131,7 +136,7 @@ func (a *HeartbeatAPI) checkStatusAndFirmwareUpdate(ctx context.Context, gateway
 		return nil, status.Errorf(codes.DataLoss, "Failed to unmarshal config hash: %s", req.ConfigHash)
 	}
 
-	if bytes.Equal(configHash[:], b[:]) == false {
+	if !bytes.Equal(configHash[:], b[:]) {
 		response.Config = gateway.Config
 	}
 
