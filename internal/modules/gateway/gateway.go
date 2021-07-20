@@ -68,13 +68,10 @@ type Store interface {
 	DeleteGateway(ctx context.Context, mac lorawan.EUI64) error
 	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gw.Gateway, error)
 
-	UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error
-	UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error
-	UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error
-	GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error)
 	GetGatewayFirmware(ctx context.Context, model string, forUpdate bool) (gwFw gw.GatewayFirmware, err error)
 	UpdateGatewayAttributes(ctx context.Context, mac lorawan.EUI64, firmware types.MD5SUM,
 		osVersion, statistics string) error
+	UpdateGatewayHeartbeat(ctx context.Context, mac lorawan.EUI64, firstHeartBeat, lastHeartBeat int64) error
 
 	Tx(ctx context.Context, f func(context.Context, *pgstore.PgStore) error) error
 
