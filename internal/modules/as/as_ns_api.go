@@ -423,39 +423,31 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 	copy(gatewayID[:], req.GatewayId)
 
 	ts := time.Now()
-
-	err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		gw, err := handler.GetGateway(ctx, gatewayID, true)
-		if err != nil {
-			return helpers.ErrToRPCError(errors.Wrap(err, "get gateway error"))
-		}
-
-		if gw.FirstSeenAt == nil {
-			gw.FirstSeenAt = &ts
-		}
-		gw.LastSeenAt = &ts
-
-		if loc := req.Location; loc != nil {
-			gw.Latitude = loc.Latitude
-			gw.Longitude = loc.Longitude
-			gw.Altitude = loc.Altitude
-		}
-
-		gw.Metadata = hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		}
-		for k, v := range req.Metadata {
-			gw.Metadata.Map[k] = sql.NullString{Valid: true, String: v}
-		}
-
-		if err := handler.UpdateGateway(ctx, &gw); err != nil {
-			return helpers.ErrToRPCError(errors.Wrap(err, "update gateway error"))
-		}
-
-		return nil
-	})
+	gw, err := a.st.GetGateway(ctx, gatewayID, true)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get gateway error"))
+	}
+
+	if gw.FirstSeenAt == nil {
+		gw.FirstSeenAt = &ts
+	}
+	gw.LastSeenAt = &ts
+
+	if loc := req.Location; loc != nil {
+		gw.Latitude = loc.Latitude
+		gw.Longitude = loc.Longitude
+		gw.Altitude = loc.Altitude
+	}
+
+	gw.Metadata = hstore.Hstore{
+		Map: make(map[string]sql.NullString),
+	}
+	for k, v := range req.Metadata {
+		gw.Metadata.Map[k] = sql.NullString{Valid: true, String: v}
+	}
+
+	if err := a.st.UpdateGateway(ctx, &gw); err != nil {
+		return nil, helpers.ErrToRPCError(errors.Wrap(err, "update gateway error"))
 	}
 
 	metrics := metricsmod.MetricsRecord{
