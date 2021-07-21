@@ -251,6 +251,7 @@ func (a *Server) DHXGetLastMining(ctx context.Context, req *api.DHXGetLastMining
 		MiningPower:        res.MiningPower,
 		DhxAllocated:       res.DhxAllocated,
 		DhxAmount:          res.DhxDistributed,
+		GlobalMiningPower:  res.GlobalMiningPower,
 		OrgId:              res.OrgId,
 		OrgMiningPower:     res.OrgMiningPower,
 		OrgDhxLimit:        res.OrgDhxLimit,

@@ -124,6 +124,8 @@ message DHXGetLastMiningResponse {
     string dhx_allocated = 12;
     // the amount of DHX that supernode actually distributed
     string dhx_amount = 3;
+    // combined mining power of all supernodes
+    string global_mining_power = 13;
     // organization id, mining power, mining limit and revenue (if requested)
     int64 org_id = 4;
     string org_mining_power = 5;
