@@ -251,6 +251,10 @@
         "organizationId": {
           "type": "string",
           "format": "int64"
+        },
+        "ttlInSeconds": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
