@@ -78,7 +78,7 @@ func (s *Server) GetJWT(ctx context.Context, req *pb.GetJWTRequest) (*pb.GetJWTR
 		UserID:         cred.UserID,
 		Username:       cred.Username,
 		OrganizationID: req.OrganizationId,
-	}, 0, []string{"mosquitto-auth"})
+	}, req.TtlInSeconds, []string{"mosquitto-auth"})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
 	}

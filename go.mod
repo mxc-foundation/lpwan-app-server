@@ -59,7 +59,7 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	google.golang.org/genproto v0.0.0-20210716133855-ce7ef5c701ea
+	google.golang.org/genproto v0.0.0-20210729151513-df9385d47c1b
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
