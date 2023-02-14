@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.56.0 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
-	github.com/aws/aws-sdk-go v1.26.3
+	github.com/aws/aws-sdk-go v1.34.0
 	github.com/brocaar/chirpstack-api/go/v3 v3.7.7
 	github.com/brocaar/lorawan v0.0.0-20200726141338-ee070f85d494
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
@@ -14,12 +14,10 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/elazarl/go-bindata-assetfs v1.0.1
-	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/gobuffalo/packr/v2 v2.7.1
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c // indirect
 	github.com/gorilla/mux v1.7.3
